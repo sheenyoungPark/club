@@ -1,6 +1,6 @@
 $(document).ready(function() {
     let selectedChoice;
-    let userAnswers = {}; // 사용자의 답변을 저장하는 객체
+    let memberAnswers = {}; // 사용자의 답변을 저장하는 객체
 
     // 세션에 저장된 이전 답변이 있으면 가져오기
     loadPreviousAnswers();
@@ -17,8 +17,8 @@ $(document).ready(function() {
 
         selectedChoice = $(this).data('choice-key');
 
-        // 현재 선택을 userAnswers에 저장
-        userAnswers[currentQuestionNum] = selectedChoice;
+        // 현재 선택을 memberAnswers에 저장
+        memberAnswers[currentQuestionNum] = selectedChoice;
 
         if (selectedChoice !== undefined) {
             $('#btn-next').prop('disabled', false);

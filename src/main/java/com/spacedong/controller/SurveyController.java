@@ -29,7 +29,7 @@ public class SurveyController {
     public String startSurvey(Model model, HttpSession session) {
         // 설문 시작 - 첫 번째 문제 표시
         session.setAttribute("currentQuestionNum", 1);
-        session.setAttribute("userAnswers", new HashMap<Integer, String>());
+        session.setAttribute("memberAnswers", new HashMap<Integer, String>());
 
         QuestionBean question = surveyService.getQuestionByNum(1);
         model.addAttribute("question", question);

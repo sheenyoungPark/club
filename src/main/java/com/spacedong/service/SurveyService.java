@@ -120,7 +120,7 @@ public class SurveyService {
         return "우티와 함께 먼 우주의 미지의 행성을 탐사하러 떠나는 여정! \n 이 모험에서 당신은 어떤 선택을 할까요? \n당신의 선택이 곧 당신의 우주 성격 유형을 결정합니다.";
     }
 
-    public Map<String, Integer> calculateResult(Map<Integer, String> userAnswers) {
+    public Map<String, Integer> calculateResult(Map<Integer, String> memberAnswers) {
         Map<String, Integer> typeCount = new HashMap<>();
         typeCount.put("탐험가", 0);
         typeCount.put("관리자", 0);
@@ -134,7 +134,7 @@ public class SurveyService {
                 "D", "분석가"
         );
 
-        for (String answer : userAnswers.values()) {
+        for (String answer : memberAnswers.values()) {
             String type = answerMapping.get(answer);
             if (type != null) {
                 typeCount.put(type, typeCount.get(type) + 1);

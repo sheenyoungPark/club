@@ -12,11 +12,11 @@ import com.spacedong.beans.BoardBean;
 public interface BoardMapper {
 
     // 회원 게시판 게시글 조회 (페이징 적용)
-    @Select("SELECT * FROM user_board ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
-    List<BoardBean> getUserBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
+    @Select("SELECT * FROM member_board ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
+    List<BoardBean> getMemberBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
-    @Select("SELECT COUNT(*) FROM user_board")
-    int getUserBoardCount();
+    @Select("SELECT COUNT(*) FROM member_board")
+    int getMemberBoardCount();
     
     /** 판매자 게시판 **/
     @Select("SELECT * FROM business_board ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
@@ -33,9 +33,9 @@ public interface BoardMapper {
     int getAdminBoardCount();
 
     /** 통합 게시판 **/
-    @Select("SELECT * FROM (SELECT * FROM user_board UNION ALL SELECT * FROM business_board UNION ALL SELECT * FROM admin_board) ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
+    @Select("SELECT * FROM (SELECT * FROM member_board UNION ALL SELECT * FROM business_board UNION ALL SELECT * FROM admin_board) ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getAllBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
-    @Select("SELECT COUNT(*) FROM (SELECT board_id FROM user_board UNION ALL SELECT board_id FROM business_board UNION ALL SELECT board_id FROM admin_board)")
+    @Select("SELECT COUNT(*) FROM (SELECT board_id FROM member_board UNION ALL SELECT board_id FROM business_board UNION ALL SELECT board_id FROM admin_board)")
     int getAllBoardCount();
 }

@@ -7,40 +7,40 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.spacedong.beans.MemberBean;
-import com.spacedong.repository.UserRepository;
+import com.spacedong.repository.MemberRepository;
 
 @Service
-public class UserService {
+public class MemberService {
 	
 	@Resource(name = "loginUser")
 	private MemberBean loginUser;	
 
 	@Autowired
-	private UserRepository userRepository;
+	private MemberRepository memberRepository;
 		 
 	@Transactional
 	public void signupUser(MemberBean memberBean) {
 		
 		System.out.println("서비스: " + memberBean.getMember_id());
-		userRepository.signupUser(memberBean);
+		memberRepository.signupMember(memberBean);
 	}	
 	
 	
 	public void naverLogin(MemberBean memberBean) {
         // DB에서 사용자가 존재하는지 확인 (sns_id로 체크)
-        MemberBean existingUser = userRepository.getUserBySnsId(memberBean.getSns_id());
+        MemberBean existingUser = memberRepository.getMemberBySnsId(memberBean.getSns_id());
 
         if (existingUser != null) {
             // 사용자 정보가 존재하면, 정보를 업데이트
-        	userRepository.updateUser(memberBean);
+        	memberRepository.updateMember(memberBean);
         } else {
             // 사용자가 존재하지 않으면, 신규 사용자로 등록
-        	userRepository.naverSignUp(memberBean);
+        	memberRepository.naverSignUp(memberBean);
         }
     }
 	
 	public boolean getLoginUser(MemberBean tempLoginUser) {
-		MemberBean temp = userRepository.getLoginUser(tempLoginUser);
+		MemberBean temp = memberRepository.getLoginMember(tempLoginUser);
 		if(temp!=null) {
 			loginUser.setMember_id(temp.getMember_id());
 			loginUser.setMember_name(temp.getMember_name());

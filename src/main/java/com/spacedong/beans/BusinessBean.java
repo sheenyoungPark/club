@@ -14,9 +14,9 @@ import java.util.Date;
 public class BusinessBean {
 
 	@NotBlank
-	@Pattern(regexp = "^[^\\s]+$")
+	@Pattern(regexp = "^\\S+$")
 	@Size(min = 5, max = 40)
-	private String busines_id;
+	private String business_id;
 	
 	@NotBlank
 	@Size(min = 8, max = 80)
@@ -40,12 +40,14 @@ public class BusinessBean {
 	
 	private String business_public;
 
+	private  boolean login;
+
 	public String getBusines_id() {
-		return busines_id;
+		return business_id;
 	}
 
 	public void setBusines_id(String busines_id) {
-		this.busines_id = busines_id;
+		this.business_id = busines_id;
 	}
 
 	public String getBusiness_pw() {

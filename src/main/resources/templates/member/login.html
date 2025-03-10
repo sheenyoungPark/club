@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 페이지</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-tabs">
+        <div class="tab active" data-tab="personal">개인회원</div>
+        <div class="tab" data-tab="business">기업회원</div>
+    </div>
+
+    <div th:if="${fail}" class="alert alert-danger">
+        <h3>로그인 실패</h3>
+        <p>아이디 비밀번호를 확인해주세요</p>
+    </div>
+
+    <form id="personal-form" th:action="@{/member/login_pro}" method="post" th:object="${tempLoginUser}">
+        <input type="text" th:field="*{member_id}" class="input-field" placeholder="아이디" />
+        <input type="password" th:field="*{member_pw}" class="input-field" placeholder="비밀번호" />
+
+        <button type="submit" class="login-button">로그인</button>
+    </form>
+
+    <form id="business-form" th:action="@{/business/login_pro}" method="post" style="display: none;" th:object="${businessBean}">
+        <input type="text" name="busines_id" class="input-field" placeholder="기업 아이디" />
+        <input type="password" name="business_pw" class="input-field" placeholder="기업 비밀번호" />
+
+        <button type="submit" class="login-button">로그인</button>
+    </form>
+
+    <div class="login-options">
+        <span class="login-option">아이디 찾기</span>
+        <span class="separator">|</span>
+        <span class="login-option">비밀번호 찾기</span>
+    </div>
+
+    <button type="button" class="signup-button" th:onclick="|location.href='@{/member/signup}'|">회원가입</button>
+
+    <div class="social-login">
+        <a th:href="@{/login/naver}" class="naver-login">
+            <img src="https://static.nid.naver.com/oauth/small_g_in.PNG" alt="네이버 로그인"/>
+        </a>
+    </div>
+</div>
+
+<script th:src="@{/js/login.js}"></script>
+</body>
+</html>

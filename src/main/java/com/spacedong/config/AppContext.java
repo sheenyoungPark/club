@@ -1,6 +1,7 @@
 package com.spacedong.config;
 
 import com.spacedong.beans.AdminBean;
+import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.MemberBean;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -20,6 +21,12 @@ public class AppContext {
     @SessionScope
     public MemberBean loginUser(){
         return new MemberBean();
+    }
+
+    @Bean("loginBusiness")
+    @SessionScope
+    public BusinessBean loginBusiness() {
+        return new BusinessBean();
     }
 
     @Bean(name = "loginAdmin")

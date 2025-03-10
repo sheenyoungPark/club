@@ -4,7 +4,7 @@ import com.spacedong.beans.MemberBean;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-public class UserValidator implements Validator {
+public class MemberValidator implements Validator {
 
 	@Override
 	public boolean supports(Class<?> clazz) {

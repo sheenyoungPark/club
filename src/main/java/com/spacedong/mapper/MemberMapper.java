@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Update;
 import com.spacedong.beans.MemberBean;
 
 @Mapper
-public interface UserMapper {
+public interface MemberMapper {
 
 	@Insert("INSERT INTO member (member_id, member_pw, member_name, member_email, "
             + "member_phone, member_address, member_joindate, member_nickname, "
@@ -17,10 +17,10 @@ public interface UserMapper {
             + "VALUES (#{member_id}, #{member_pw}, #{member_name}, #{member_email}, "
             + "#{member_phone}, #{member_address}, sysdate, #{member_nickname}, "
             + "NVL(#{member_personality}, 0), NVL(#{member_point}, 0))")
-	void signupUser(MemberBean user);
+	void signupMember(MemberBean memberBean);
 	
 	@Select("select * from member where member_id = #{member_id} and member_pw = #{member_pw}")
-	MemberBean getLoginUser(MemberBean tempLoginUser);
+	MemberBean getLoginMember(MemberBean tempLoginMember);
 	
 
 	@Select("select member_id from member where member_id =#{member_id}")
@@ -31,13 +31,13 @@ public interface UserMapper {
 	
 	 
     @Select("select * from member where sns_id = #{sns_id} ")
-    MemberBean getUserBySnsId(@Param("sns_id") String sns_id);
+    MemberBean getMemberBySnsId(@Param("sns_id") String sns_id);
 	
     @Update("update member set member_email = #{member_email}, member_name = #{member_name}, member_phone = #{member_phone}  WHERE sns_id = #{sns_id}")
-    public void updateUser(MemberBean memberBean);
+    public void updateMember(MemberBean memberBean);
     
     @Insert("insert into member(member_id, sns_id, member_name, member_email, member_phone, sns_type) values(#{member_id}, #{sns_id}, #{member_name}, #{member_email}, #{member_phone}, 'naver')")
     public void naverSignUp(MemberBean memberBean);
-    
-    
+
+
 }
