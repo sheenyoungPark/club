@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 실패</title>
+</head>
+<body>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    alert('로그인에 실패하였습니다');
+    location.href = /*[[@{/user/login?fail=true}]]*/ '/user/login?fail=true';
+    /*]]>*/
+</script>
+</body>
+</html>
