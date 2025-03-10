@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>웹사이트</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}">
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+</head>
+<body>
+
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="slider">
+  <div class="arrow-left">◀</div>
+  <div class="arrow-right">▶</div>
+  <div class="slider-images">
+    <div class="slider-image" style="display: none;">
+      <img th:src="@{/sources/picture/설명2.jpg}" alt="이미지 1">
+    </div>
+    <div class="slider-image" style="display: none;">
+      <img th:src="@{/sources/picture/설명3.jpg}" alt="이미지 2">
+    </div>
+    <div class="slider-image" style="display: none;">
+      <img th:src="@{/sources/picture/설명4.jpg}" alt="이미지 3">
+    </div>
+    <div class="slider-image" style="display: none;">
+      <img th:src="@{/sources/picture/설명5.jpg}" alt="이미지 4">
+    </div>
+    <div class="slider-image" style="display: none;">
+      <img th:src="@{/sources/picture/설명6.jpg}" alt="이미지 5">
+    </div>
+    <div class="slider-image" style="display: none;">
+      <img th:src="@{/sources/picture/설명7.jpg}" alt="이미지 6">
+    </div>
+  </div>
+  <div class="slider-nav">
+    <div class="slider-dot"></div>
+    <div class="slider-dot"></div>
+    <div class="slider-dot"></div>
+    <div class="slider-dot"></div>
+    <div class="slider-dot"></div>
+    <div class="slider-dot"></div>
+  </div>
+</div>
+
+
+<section class="categories">
+  <h2>인기 카테고리</h2>
+  <div class="category-icons">
+    <div class="category">
+      <button class="category-icon">
+        <img th:src="@{/sources/picture/soccer.png}" alt="운동/스포츠 아이콘">
+      </button>
+      <span class="category-name">운동/스포츠</span>
+    </div>
+    <div class="category">
+      <button class="category-icon">
+        <img th:src="@{/sources/picture/cook.jpg}" alt="식사/인맥 아이콘">
+      </button>
+      <span class="category-name">식사/인맥</span>
+    </div>
+    <div class="category">
+      <button class="category-icon">
+        <img th:src="@{/sources/picture/read.png}" alt="독서 아이콘">
+      </button>
+      <span class="category-name">독서</span>
+    </div>
+    <div class="category">
+      <button class="category-icon">
+        <img th:src="@{/sources/picture/outdoor.jpg}" alt="아웃도어 아이콘">
+      </button>
+      <span class="category-name">아웃도어</span>
+    </div>
+    <div class="category">
+      <button class="category-icon">
+        <img th:src="@{/sources/picture/music.jpg}" alt="음악 아이콘">
+      </button>
+      <span class="category-name">음악</span>
+    </div>
+  </div>
+</section>
+
+<section class="recommended-clubs" id="recommended-clubs">
+  <h2>추천 동호회</h2>
+  <div class="club-container">
+    <button class="club-box" th:onclick="'handleClubClick(\'축구 동호회\')'">
+      <img th:src="@{/sources/picture/soccer.png}" alt="동호회 이미지" class="club-image">
+      <h3 class="club-name">축구 동호회</h3>
+      <p class="club-category">운동/스포츠</p>
+      <p class="club-location">서울</p>
+      <p class="club-members">멤버 수: 120명</p>
+    </button>
+    <button class="club-box">
+      <img th:src="@{/sources/picture/food.jpeg}" alt="동호회 이미지" class="club-image">
+      <h3 class="club-name">요리 연구회</h3>
+      <p class="club-category">식사/인맥</p>
+      <p class="club-location">부산</p>
+      <p class="club-members">멤버 수: 80명</p>
+    </button>
+    <button class="club-box">
+      <img th:src="@{/sources/picture/mountain.jpg}" alt="동호회 이미지" class="club-image">
+      <h3 class="club-name">등산 동호회</h3>
+      <p class="club-category">아웃도어</p>
+      <p class="club-location">대구</p>
+      <p class="club-members">멤버 수: 150명</p>
+    </button>
+    <button class="club-box">
+      <img th:src="@{/sources/picture/classic.jpg}" alt="동호회 이미지" class="club-image">
+      <h3 class="club-name">클래식 음악 감상회</h3>
+      <p class="club-category">음악</p>
+      <p class="club-location">인천</p>
+      <p class="club-members">멤버 수: 95명</p>
+    </button>
+  </div>
+</section>
+
+
+<!-- 하단 정보바 -->
+<a th:href="@{/admin/login}">관리자페이지</a>
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/top.js}"></script>
+</body>
+</html>

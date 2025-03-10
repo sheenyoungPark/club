@@ -1,0 +1,64 @@
+package com.spacedong.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+
+import com.spacedong.beans.ClubBean;
+
+@Mapper
+public interface ClubMapper {
+    
+    /**
+     * 모든 동호회 목록을 조회
+     * @return 전체 동호회 목록
+     */
+    @Select("SELECT * FROM club")
+    List<ClubBean> getAllClub();
+    
+    /**
+     * 특정 메인 카테고리에 속한 동호회 목록 조회
+     * @param categoryType 메인 카테고리 타입
+     * @return 해당 메인 카테고리에 속한 동호회 목록
+     */
+    @Select("SELECT * FROM club, category WHERE category_type = #{categoryType} and category.category_name = club.club_category")
+    List<ClubBean> getClubsByCategory(@Param("categoryType") String categoryType);
+    
+    /**
+     * 특정 서브 카테고리에 속한 동호회 목록 조회
+     * @param subCategoryName 서브 카테고리 이름
+     * @return 해당 서브 카테고리에 속한 동호회 목록
+     */
+    @Select("SELECT * FROM club, category WHERE category_Name = #{subCategoryName} and category.category_name = club.club_category")
+    List<ClubBean> getClubsBySubCategory(@Param("subCategoryName") String subCategoryName);
+    
+    @Select("select * from club where club_id = #{club_id}")
+    public ClubBean oneClubInfo(@Param("club_id") int club_id);
+    
+    /**
+     * 동호회명으로 검색
+     * @param keyword 검색 키워드
+     * @return 검색된 동호회 목록
+     */
+    @Select("SELECT * FROM club WHERE club_name LIKE '%' || #{keyword} || '%'")
+    List<ClubBean> searchClubsByName(@Param("keyword") String keyword);
+    
+    /**
+     * 카테고리로 검색
+     * @param keyword 검색 키워드
+     * @return 검색된 동호회 목록
+     */
+    @Select("SELECT * FROM club WHERE club_category LIKE '%' || #{keyword} || '%'")
+    List<ClubBean> searchClubsByCategory(@Param("keyword") String keyword);
+    
+    /**
+     * 상태 업데이트
+     * @param club_id 동호회 ID
+     * @param status 변경할 상태
+     */
+    @Update("UPDATE club SET club_public = #{status} WHERE club_id = #{club_id}")
+    void updateClubStatus(@Param("club_id") int club_id, @Param("status") String status);
+}

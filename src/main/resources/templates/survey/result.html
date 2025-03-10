@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우주인 유형 결과</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" th:href="@{/css/result.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <script th:src="@{/js/top.js}"></script>
+</head>
+<body>
+<div th:replace="~{include/top_search :: top_search}"></div>
+<div class="result-container">
+    <div class="result-header">
+        <h1>우주동 유형 결과</h1>
+        <br>
+        <h2>🚀 우주동 | 성격 유형별 추천 동호회 활동 🌌</h2>
+        <h4>"당신의 성격 유형에 따라 가장 잘 맞는 동호회 활동을 추천해 드려요!"</h4>
+
+        <div class="result-type">
+            당신은 『<span th:text="${topResultType}"></span>』 유형입니다!
+        </div>
+
+        <div class="result-planet" th:text="${resultPlanet}">
+        </div>
+
+        <div class="result-description" th:text="${resultDescription}">
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="resultChart"></canvas>
+    </div>
+
+    <div class="activities-section">
+        <h2>추천 활동 (<span th:text="${resultCategories}"></span>)</h2>
+        <div th:each="activity : ${resultActivities}">
+            <div class="activities-category" th:text="${activity.category}"></div>
+            <ul class="activities-list">
+                <li th:each="example : ${activity.examples}" th:text="${example}"></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="roles-section">
+        <h2>당신의 역할</h2>
+        <ul>
+            <li th:each="role : ${resultRoles}" th:text="${role}"></li>
+        </ul>
+    </div>
+
+    <div class="companion-section">
+        <h2 class="companion-header">최고의 동반자: <span th:text="${resultGoodCompanion}"></span></h2>
+        <p><strong><span th:text="${companionType}"></span> - <span th:text="${companionPlanet}"></span></strong></p>
+        <p th:text="${companionDescription}"></p>
+    </div>
+
+    <a th:href="@{/survey/start}" class="btn-restart">다시 테스트하기</a>
+    <button th:onclick="'location.href=\'' + @{/survey/save(type=${topResultType})} + '\''" class="btn-restart">내 결과 저장</button>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        // 차트 데이터
+        const resultCounts = /*[[${typeCount}]]*/ {};
+
+        // 차트 데이터가 없는 경우에 대한 처리
+        if (Object.keys(resultCounts).length === 0) {
+            // 기본값 설정
+            const defaultTypes = ["탐험가", "교류가", "분석가", "관리자"];
+            const topResultType = /*[[${topResultType}]]*/ "탐험가";
+            defaultTypes.forEach(type => {
+                resultCounts[type] = type === topResultType ? 5 : Math.floor(Math.random() * 3) + 1;
+            });
+        }
+
+        // 차트 그리기
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: Object.keys(resultCounts),
+                datasets: [{
+                    label: '유형 분포',
+                    data: Object.values(resultCounts),
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 162, 235)'
+                }]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 12  // 최대값을 12로 고정
+                    }
+                }
+            }
+        });
+    });
+    /*]]>*/
+</script>
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+</body>
+</html>

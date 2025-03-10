@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Top Menu</title>
+</head>
+<body>
+<!-- fragment 명확히 지정 -->
+<div th:fragment="top_search">
+    <header class="header">
+        <a th:href="@{/}">
+            <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
+        </a>
+        <nav class="nav">
+            <a th:href="@{/category/category}">카테고리</a>
+            <a th:href="@{/community/board}">커뮤니티</a>
+            <a th:href="@{/reserve/main}">예약하기</a>
+            <a th:href="@{/survey/start}">유형검사</a>
+            <div class="right-section">
+                <button id="searchToggle" class="search-toggle" type="button">🔍</button>
+            </div>
+        </nav>
+
+        <!--<div class="right-section">
+            &lt;!&ndash; 로그인 상태에 따른 조건부 버튼 &ndash;&gt;
+            <div th:if="${loginUser != null and loginUser.login == true}">
+                <button type="button" th:onclick="|location.href='@{/user/memberinfo}'|" class="login-btn">내정보</button>
+                <button type="button" th:onclick="|location.href='@{/user/logout}'|" class="login-btn">로그아웃</button>
+            </div>
+            <div th:unless="${loginUser != null and loginUser.login == true}">
+                <button type="button" th:onclick="|location.href='@{/user/login}'|" class="login-btn">로그인</button>
+                <button type="button" th:onclick="|location.href='@{/user/signup}'|" class="login-btn">회원가입</button>
+            </div>
+        </div>-->
+    </header>
+
+    <div id="searchContainer" class="search-container hidden">
+        <div class="search-box">
+            <form th:action="@{/look/search}" class="search-form">
+                <select id="regionDropdown" class="search-dropdown" name="region">
+                    <option selected disabled>지역</option>
+                </select>
+                <input type="text" name="age" class="search-age" placeholder="출생년도(ex 1996)">
+                <input type="text" name="searchtxt" class="search-input" placeholder="검색어를 입력하세요">
+                <button class="search-btn" type="submit">🔍</button>
+            </form>
+        </div>
+
+        <!-- 지역 선택 모달 -->
+        <div id="regionModal" class="region-modal">
+            <div class="region-modal-content">
+                <div class="region-modal-header">
+                    <h3>지역 선택</h3>
+                    <button class="region-modal-close" id="regionModalClose">&times;</button>
+                </div>
+                <div class="region-selection-container">
+                    <div class="city-list" id="cityList">
+                        <!-- 시/도 목록이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                    <div class="district-list" id="districtList">
+                        <!-- 선택된 시/도의 군/구 목록이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+                <div class="region-modal-footer">
+                    <button class="confirm-btn" id="confirmRegion">확인</button>
+                </div>
+            </div>
+        </div>
+        <div class="search-tags" id="searchTagsContainer"></div>
+    </div>
+    <script th:inline="javascript">
+        if (!window.locationsInitialized) {
+            window.locationsFromServer = [[${locations}]];
+            window.locationsInitialized = true;
+
+            // 콘솔에 로그 출력 (필요시 제거)
+            console.log('지역 데이터 초기화 완료:', window.locationsFromServer ? window.locationsFromServer.length : 0);
+        }
+    </script>
+</div>
+</body>
+</html>

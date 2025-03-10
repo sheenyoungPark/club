@@ -1,0 +1,324 @@
+* {
+    user-select: none;/* 드래그 안되게 설정 */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f5f5f5;
+}
+
+.header {
+    background-color: #5d4b8c;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    background-color: #c5e1c5;
+    border-radius: 50%;
+}
+
+.nav {
+    display: flex;
+    gap: 20px;
+    /* 네비게이션 위치를 중앙에 고정 */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.right-section {
+    display: flex;
+    align-items: center;
+    /* 우측 섹션의 최소 너비 지정 */
+    min-width: 100px;
+    justify-content: flex-end;
+}
+
+.login-btn {
+    background-color: white;
+    color: #5d4b8c;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.search-container {
+    width: 100%;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: fixed;
+    top: 70px;
+    z-index: 99;
+}
+
+.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+}
+
+.search-dropdown {
+    padding: 8px;
+    width: 100px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-right: 10px;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-right: 10px;
+}
+
+.search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.search-tags {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+.tag {
+    background-color: #ebebeb;
+    padding: 5px 15px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.slider-nav {
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.slider-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #e0b8a8;
+    border-radius: 50%;
+}
+
+.arrow-left, .arrow-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #e0b8a8;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.arrow-left {
+    left: 20px;
+}
+
+.arrow-right {
+    right: 20px;
+}
+
+.categories {
+    padding: 30px;
+}
+
+.categories h2 {
+    margin-bottom: 30px;
+    font-size: 18px;
+}
+
+.category-icons {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.category {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 18%;
+}
+
+.category-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #f0f0f7;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    border: none;
+    display: flex; /* 아이템을 가운데 배치하려면 flex 사용 */
+    justify-content: center;
+    align-items: center;
+}
+
+.category-icon img {
+    width: 60px; /* 이미지 크기 설정 */
+    height: 60px;
+    border-radius: 50%; /* 이미지도 원형으로 만들기 */
+}
+
+.category-icon:active {
+    transform: scale(0.98); /* 클릭 시 약간 줄어드는 효과 */
+}
+
+.category-name {
+    font-size: 14px;
+    text-align: center;
+}
+
+.search-toggle {
+    display: none;
+    margin-right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    /* 위치 조정으로 겹침 해결 */
+    position: relative;
+}
+
+@media ( max-width : 768px) {
+    .category {
+        width: 30%;
+        margin-bottom: 20px;
+    }
+    /* 모바일에서는 네비게이션 위치 조정 */
+    .nav {
+        position: static;
+        transform: none;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+.recommended-clubs {
+    padding: 30px;
+}
+
+.recommended-clubs h2 {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.club-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.club-box {
+    width: 23%;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border: none;
+}
+
+button:hover {
+    transform: scale(1.05); /* 2.05 대신 1.05 정도가 적당 */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+    transform: scale(0.98); /* 클릭 시 약간 줄어드는 효과 */
+}
+
+.club-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.club-name {
+    font-size: 16px;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.club-category, .club-location, .club-members {
+    font-size: 14px;
+    color: gray;
+}
+
+@media ( max-width : 1024px) {
+    .club-box {
+        width: 48%;
+    }
+}
+
+@media ( max-width : 768px) {
+    .club-box {
+        width: 100%;
+    }
+}
+
+.slider {
+    background-color: #e6d7f9;
+    height: 500px; /* 슬라이더 전체 높이 */
+    width: 100%; /* 가로 폭을 전체로 설정 */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* 넘치는 이미지 숨김 */
+}
+
+.slider-images {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease;
+}
+
+.slider-image {
+    width: 100%;
+    height: 100%; /* 부모 .slider 높이와 동일 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slider-image img {
+    width: 100%; /* 부모 .slider에 맞춰 가로폭 100% */
+    height: auto; /* 비율을 유지하며 자동 조정 */
+    max-height: 100%; /* 부모 요소보다 크지 않게 제한 */
+    object-fit: contain; /* 이미지 비율 유지하며 꽉 차게 */
+}

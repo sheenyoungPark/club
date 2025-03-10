@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>유형 선택</title>
+    <link rel="stylesheet" th:href="@{/css/tiebreaker.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <script th:src="@{/js/top.js}"></script>
+</head>
+<body>
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="container">
+    <h2>우티는 당신의 성향을 파악할 수 없어요!</h2>
+    <p>아래에서 당신의 성향에 가장 맞는 유형을 선택해주세요.</p>
+
+    <form th:action="@{/survey/tiebreakerproc}" method="post">
+        <button th:each="type : ${tieTypes}" type="submit" name="selectedType" th:value="${type}" class="btn" th:text="${type}"></button>
+    </form>
+</div>
+
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+
+</body>
+</html>

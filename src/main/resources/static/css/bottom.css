@@ -1,0 +1,75 @@
+.bottom-info {
+    background-color: #333;
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    width: 100%;
+    margin-top: auto; /* Push to bottom */
+    font-size: 14px;
+    margin-bottom: 0; /* Remove bottom margin */
+}
+
+/* Links in the bottom section */
+.bottom-info a {
+    color: #ddd;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.bottom-info a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Fix for body to ensure no extra space at bottom */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+    margin: 0;
+    padding-bottom: 0; /* Remove bottom padding */
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+    .bottom-info {
+        padding: 20px 15px;
+    }
+}.bottom-info {
+     background-color: #333;
+     color: white;
+     padding: 30px 20px;
+     text-align: center;
+     width: 100%;
+     margin-top: auto; /* Push to bottom */
+     font-size: 14px;
+     margin-bottom: 0; /* Remove bottom margin */
+ }
+
+/* Links in the bottom section */
+.bottom-info a {
+    color: #ddd;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.bottom-info a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Fix for body to ensure no extra space at bottom */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+    margin: 0;
+    padding-bottom: 0; /* Remove bottom padding */
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+    .bottom-info {
+        padding: 20px 15px;
+    }
+}
