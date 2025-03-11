@@ -41,7 +41,7 @@ public class AppContext {
     @Value("${spring.datasource.url}")
     private String url;
 
-    @Value("${spring.datasource.membername}")
+    @Value("${spring.datasource.username}")
     private String membername;
 
     @Value("${spring.datasource.password}")
