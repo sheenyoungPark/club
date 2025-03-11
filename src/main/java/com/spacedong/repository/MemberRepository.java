@@ -38,5 +38,10 @@ public class MemberRepository {
 	public void naverSignUp(MemberBean memeberBean) {
 		memberMapper.naverSignUp(memeberBean);
 	}
+
+	public void savePersonality(int member_personality, String member_id) {
+		memberMapper.savePersonality(member_personality, member_id);
+	}
+
 	
 }

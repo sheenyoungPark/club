@@ -57,7 +57,7 @@
     </div>
 
     <a th:href="@{/survey/start}" class="btn-restart">다시 테스트하기</a>
-    <button th:onclick="'location.href=\'' + @{/survey/save(type=${topResultType})} + '\''" class="btn-restart">내 결과 저장</button>
+    <button th:onclick="'location.href=\'' + @{/survey/save(Type=${topResultType})} + '\''" class="btn-restart">내 결과 저장</button>
 </div>
 
 <script th:inline="javascript">

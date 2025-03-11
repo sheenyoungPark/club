@@ -50,5 +50,9 @@ public class MemberService {
 		}
 		return false;
 	}
+
+	public void savePersonality(int member_personality, String member_id) {
+		memberRepository.savePersonality(member_personality, member_id);
+	}
 	
 }
