@@ -100,10 +100,11 @@ public class BoardService {
         return sortedComments;
     }
 
-    /** 댓글 작성 **/
-    public void writeComment(BoardCommentBean comment) {
-        boardRepository.writeComment(comment);
+    /** ✅ 댓글 작성 */
+    public void writeComment(String boardType, BoardCommentBean comment) {
+        boardRepository.writeComment(boardType, comment);
     }
+
 
     /** ✅ 게시글 작성 기능 추가 **/
     public void writeBoard(String boardType, BoardBean board) {

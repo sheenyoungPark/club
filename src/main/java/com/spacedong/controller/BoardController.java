@@ -66,6 +66,9 @@ public class BoardController {
 								 @RequestParam(value = "boardType", required = false) String boardType,
 								 Model model) {
 
+		System.out.println("board_id 값: " + boardId);
+		System.out.println("boardType 값: " + boardType);
+
 		if ("all".equals(boardType)) {
 			boardType = boardService.findBoardType(boardId);
 			if (boardType == null) {
@@ -94,24 +97,35 @@ public class BoardController {
 	@PostMapping("/comment/write")
 	public String writeComment(@RequestParam("board_id") int boardId,
 							   @RequestParam("comment_text") String commentText,
-							   @RequestParam(value = "parent_comment_id", required = false) Integer parentCommentId,
-							   Model model) {
+							   @RequestParam("comment_writer_id") String writerId,
+							   @RequestParam("boardType") String boardType,
+							   @RequestParam(value = "parent_comment_id", required = false) Integer parentCommentId) {
 
+		System.out.println("board_id: " + boardId);
+		System.out.println("boardType: " + boardType);
+		System.out.println("comment_writer_id: " + writerId);
+		System.out.println("comment_text: " + commentText);
+		System.out.println("parent_comment_id: " + parentCommentId);
+
+		// ✅ 댓글 객체 생성
 		BoardCommentBean comment = new BoardCommentBean();
 		comment.setBoard_id(boardId);
+		comment.setComment_writer_id(writerId);
 		comment.setComment_text(commentText);
 		comment.setParent_comment_id(parentCommentId);
 
-		boardService.writeComment(comment);
-
-		return "redirect:/community/boardDetail?id=" + boardId;
+		// ✅ 유동적인 boardType으로 댓글 저장
+		boardService.writeComment(boardType, comment);
+		System.out.println(boardId);
+		System.out.println(writerId);
+		return "redirect:/community/boardDetail?id=" + boardId + "&boardType=" + boardType;
 	}
 
-	/** ✅ 글쓰기 페이지 이동 */
+	/** ✅ 1. 글쓰기 페이지 이동 (복구된 부분) */
 	@GetMapping("/boardWrite")
 	public String showBoardWritePage(@RequestParam(value = "boardType", required = false) String boardType, Model model) {
 		model.addAttribute("boardType", boardType);
-		return "community/boardWrite";
+		return "community/boardWrite"; // 글쓰기 페이지로 이동
 	}
 
 	/** ✅ 게시글 작성 */

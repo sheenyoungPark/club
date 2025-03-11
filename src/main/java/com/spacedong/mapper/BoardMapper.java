@@ -72,9 +72,10 @@ public interface BoardMapper {
     List<BoardCommentBean> getCommentsByBoardId(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
     /** ✅ 댓글 작성 **/
-    @Insert("INSERT INTO ${boardType}_board_comment (board_id, comment_writer_id, comment_text, parent_comment_id, create_date) "
-            + "VALUES (#{board_id}, #{comment_writer_id}, #{comment_text}, #{parent_comment_id, jdbcType=INTEGER}, CURRENT_TIMESTAMP)")
-    void writeComment(BoardCommentBean comment);
+    @Insert("INSERT INTO ${boardType}_board_comment (comment_id, board_id, comment_writer_id, comment_text, parent_comment_id, create_date) "
+            + "VALUES (comment_id_seq.NEXTVAL, #{comment.board_id}, #{comment.comment_writer_id}, #{comment.comment_text}, #{comment.parent_comment_id, jdbcType=INTEGER}, CURRENT_TIMESTAMP)")
+    void writeComment(@Param("boardType") String boardType, @Param("comment") BoardCommentBean comment);
+
 
     /** ✅ 게시글 작성 **/
     @Insert("INSERT INTO ${boardType}_board (board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, update_date) "

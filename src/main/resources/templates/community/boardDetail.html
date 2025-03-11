@@ -19,34 +19,54 @@
     <!-- 댓글 섹션 -->
     <div class="comment-section">
         <h3>댓글</h3>
-        <form th:action="@{/community/comment/write}" method="post">
-            <input type="hidden" name="board_id" th:value="${post.board_id}">
-            <input type="hidden" name="parent_comment_id" value="">
 
-            <!-- 기본값: 일반 댓글 -->
-            <textarea class="comment-input" name="comment_text" placeholder="댓글을 입력하세요..."></textarea>
-            <button type="submit" class="comment-btn">댓글 등록</button>
-        </form>
+        <!-- ✅ 로그인한 사용자만 댓글 입력 가능 -->
+        <div th:if="${loginMember != null}">
+            <form th:action="@{/community/comment/write}" method="post">
+                <input type="hidden" name="board_id" th:value="${post.board_id}">
+                <input type="hidden" name="boardType" th:value="${boardType}">
+                <input type="hidden" name="comment_writer_id" th:value="${loginMember.member_id}">
+                <input type="hidden" name="parent_comment_id" value=""> <!-- 기본값: 일반 댓글 -->
+
+                <textarea class="comment-input" name="comment_text" placeholder="댓글을 입력하세요..." required></textarea>
+                <button type="submit" class="comment-btn">댓글 등록</button>
+            </form>
+        </div>
+
+        <!-- ✅ 로그인하지 않은 경우 -->
+        <div th:if="${loginMember == null}">
+            <p style="color: red;">댓글을 작성하려면 로그인하세요.</p>
+        </div>
 
         <!-- 댓글 목록 -->
         <ul class="comment-list">
-            <li th:each="comment : ${comments}" th:style="'margin-left:' + (${comment.parent_comment_id} != null ? '20px' : '0px')">
+            <li th:each="comment : ${comments}"
+                th:style="'margin-left:' + (${comment.parent_comment_id != null ? '40' : '0'}) + 'px'">
                 <div class="comment-info">
                     <strong th:text="${comment.comment_writer_id}">작성자</strong> •
-                    <span th:text="${comment.create_date}">작성일</span>
+                    <span th:text="${#temporals.format(comment.create_date, 'yyyy-MM-dd HH:mm')}">작성일</span>
                 </div>
                 <p th:text="${comment.comment_text}">댓글 내용</p>
 
-                <!-- 대댓글 입력 폼 -->
-                <form th:action="@{/community/comment/write}" method="post" style="display: inline;">
-                    <input type="hidden" name="board_id" th:value="${post.board_id}">
-                    <input type="hidden" name="parent_comment_id" th:value="${comment.comment_id}">
-                    <input type="text" name="comment_text" placeholder="답글을 입력하세요..." class="comment-input">
-                    <button type="submit" class="comment-btn">답글</button>
-                </form>
+                <!-- ✅ 부모 댓글(댓글)인 경우만 답글 작성 가능 -->
+                <div th:if="${loginMember != null and comment.parent_comment_id == null}">
+                    <form th:action="@{/community/comment/write}" method="post" style="display: flex; align-items: center;">
+                        <input type="hidden" name="board_id" th:value="${post.board_id}">
+                        <input type="hidden" name="boardType" th:value="${boardType}">
+                        <input type="hidden" name="comment_writer_id" th:value="${loginMember.member_id}">
+                        <input type="hidden" name="parent_comment_id" th:value="${comment.comment_id}">
+
+                        <input type="text" name="comment_text" placeholder="답글을 입력하세요..." class="comment-input" required>
+                        <button type="submit" class="comment-btn">답글</button>
+                    </form>
+                </div>
             </li>
         </ul>
     </div>
+
+
+
+
 
     <a th:href="@{/community/board}" class="back-btn">← 목록으로 돌아가기</a>
 </div>

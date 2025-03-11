@@ -74,10 +74,11 @@ public class BoardRepository {
         return boardMapper.getCommentsByBoardId(boardType, boardId);
     }
 
-    /** 댓글 작성 **/
-    public void writeComment(BoardCommentBean comment) {
-        boardMapper.writeComment(comment);
+    /** ✅ 댓글 저장 */
+    public void writeComment(String boardType, BoardCommentBean comment) {
+        boardMapper.writeComment(boardType, comment);
     }
+
 
     /** ✅ 게시글 작성 메서드 추가 **/
     public void writeBoard(String boardType, BoardBean board) {
