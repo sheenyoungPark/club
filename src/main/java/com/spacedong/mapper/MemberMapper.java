@@ -23,11 +23,11 @@ public interface MemberMapper {
 	MemberBean getLoginMember(MemberBean tempLoginMember);
 	
 
-	@Select("select member_id from member where member_id =#{member_id}")
-	String checkId(String member_id);
+	@Select("SELECT COUNT(*) FROM member WHERE member_id = #{member_id}")
+	int checkId(String member_id);
 
-    @Select("select member_nickname from member where member_nickname =#{member_nickname}")
-    String checkNickname(String member_nickname);
+    @Select("SELECT COUNT(*) FROM member WHERE member_nickname = #{member_nickname}")
+    int checkNickname(String member_nickname);
 	
 //	@Insert("insert into member(member_id, sns_id, member_name, member_email, member_phone, sns_type) values(#{member_id}, #{sns_id}, #{member_name}, #{member_email}, #{member_phone}, 'naver')")
 //	public void naverLogin(MemberBean memberBean);

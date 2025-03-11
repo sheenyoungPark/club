@@ -50,6 +50,32 @@ public class MemberBean {
 	
 	private boolean login;
 
+	private boolean idExist;
+
+	private boolean nickExist;
+
+	public boolean isNickExist() {
+		return nickExist;
+	}
+
+	public void setNickExist(boolean nickExist) {
+		this.nickExist = nickExist;
+	}
+
+	public MemberBean() {
+		idExist = false;
+		nickExist = false;
+		login = false;
+	}
+
+	public boolean isIdExist() {
+		return idExist;
+	}
+
+	public void setIdExist(boolean idExist) {
+		this.idExist = idExist;
+	}
+
 	public boolean isLogin() {
 		return login;
 	}

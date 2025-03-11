@@ -18,10 +18,10 @@ public class MemberRepository {
 	}
 
 	
-	public String checkId(String member_id) {
+	public int checkId(String member_id) {
 		return memberMapper.checkId(member_id);
 	}
-	public String checkNickname(String member_nickname) {
+	public int checkNickname(String member_nickname) {
 		return memberMapper.checkNickname(member_nickname);
 	}
 	

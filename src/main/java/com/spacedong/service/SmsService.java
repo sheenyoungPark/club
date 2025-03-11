@@ -1,37 +1,58 @@
 package com.spacedong.service;
+
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+@Service
 public class SmsService {
+    private static String accessKey;
+    private static String secretKey;
+    private static Region awsRegion = Region.AP_NORTHEAST_1; // 일본 리전(도쿄)
+    private static SnsClient snsClient;
 
-    private static final String ACCESS_KEY = System.getenv("AWS_ACCESS_KEY");
-    private static final String SECRET_KEY = System.getenv("AWS_SECRET_KEY");
-    private static final Region AWS_REGION = Region.AP_NORTHEAST_1; // 일본 리전(도쿄)
+    @Value("${aws.access-key}")
+    public void setAccessKey(String key) {
+        accessKey = key;
+        initializeSnsClient();
+    }
 
-    private static final SnsClient snsClient = SnsClient.builder()
-            .region(AWS_REGION)
-            .credentialsProvider(StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(ACCESS_KEY, SECRET_KEY)))
-            .build();
+    @Value("${aws.secret-key}")
+    public void setSecretKey(String key) {
+        secretKey = key;
+        initializeSnsClient();
+    }
+
+    @Value("${aws.region}")
+    public void setRegion(String region) {
+        awsRegion = Region.of(region);
+        initializeSnsClient();
+    }
+
+    private void initializeSnsClient() {
+        if (accessKey != null && secretKey != null) {
+            snsClient = SnsClient.builder()
+                    .region(awsRegion)
+                    .credentialsProvider(StaticCredentialsProvider.create(
+                            AwsBasicCredentials.create(accessKey, secretKey)))
+                    .build();
+        }
+    }
 
     public static void sendSms(String phoneNumber, String message) {
         try {
-            System.out.println("AWS SNS SMS 요청: " + phoneNumber + " | 메시지: " + message);
-
             PublishRequest request = PublishRequest.builder()
                     .message(message)
                     .phoneNumber(phoneNumber)
                     .build();
-
             PublishResponse result = snsClient.publish(request);
-            System.out.println("AWS SNS 응답: " + result.messageId());
-
+            System.out.println("Message ID: " + result.messageId());
         } catch (Exception e) {
-            System.out.println("AWS SMS 전송 실패! 오류 메시지: " + e.getMessage());
             e.printStackTrace();
         }
     }

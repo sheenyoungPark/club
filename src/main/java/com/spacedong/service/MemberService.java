@@ -29,12 +29,24 @@ public class MemberService {
 
 	// 아이디 중복 확인
 	public boolean checkId(String member_id) {
-		return memberRepository.checkId(member_id) == null;
+		int check_id = memberRepository.checkId(member_id);
+		if(check_id == 1){
+			return false;
+
+		}else {
+			return true;
+		}
 	}
 
 	// 닉네임 중복 확인
 	public boolean checkNickname(String member_nickname) {
-		return memberRepository.checkNickname(member_nickname) == null;
+		int check_nick = memberRepository.checkNickname(member_nickname);
+		if(check_nick == 1){
+			return false;
+
+		}else {
+			return true;
+		}
 	}
 	
 	

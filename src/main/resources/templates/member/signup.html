@@ -3,339 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>회원가입</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Malgun Gothic', sans-serif;
-      background-color: #1a0067;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .signup-container {
-      background-color: white;
-      border-radius: 10px;
-      padding: 40px;
-      width: 450px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 24px;
-      margin-bottom: 30px;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-
-    .required-field::after {
-      content: " *";
-      color: red;
-      font-weight: bold;
-    }
-
-    .input-field {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
-
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .check-button {
-      background-color: #1f0068;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-size: 10px;
-      white-space: nowrap;
-    }
-
-    .verify-button {
-      background-color: #1f0068;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .address-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .address-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .address-input {
-      flex: 1;
-    }
-
-    .hr-line {
-      border-top: 1px solid #eee;
-      margin: 20px 0;
-    }
-
-    .consent-section {
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-
-    .consent-description {
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 15px;
-      line-height: 1.4;
-    }
-
-    .checkbox-item {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-
-    .checkbox-item input {
-      margin-top: 3px;
-      margin-right: 8px;
-    }
-
-    .checkbox-label {
-      font-size: 13px;
-      color: #333;
-    }
-
-    .submit-button {
-      width: 100%;
-      padding: 15px;
-      background-color: white;
-      color: #333;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-
-    .submit-button:hover {
-      background-color: #f8f8f8;
-    }
-
-    /* 에러 메시지 스타일 */
-    .error-message {
-      color: red;
-      font-size: 12px;
-      display: block;
-      margin-top: 5px;
-      margin-left: 2px;
-    }
-
-    .success-message {
-      color: green;
-      font-size: 12px;
-    }
-
-    /* 필수 항목 설명 스타일 */
-    .required-field-notice {
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 20px;
-      text-align: right;
-    }
-
-    .required-field-notice span {
-      color: red;
-      font-weight: bold;
-    }
-  </style>
-  <script
-          src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script
-          src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
-  <script
-          src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
-  <script
-          src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <link th:href="@{/css/signup.css}" rel="stylesheet" /> <!-- CSS 파일 링크 -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
-<script type="text/javascript">
-  function checkMemberId() {
-    let member_id = $("#member_id").val().trim();
-
-    if (member_id.length < 5 || member_id.length > 40) {
-      $("#member_id_error")
-              .removeClass("success-message")
-              .addClass("error-message")
-              .text("아이디는 5~40자 사이로 입력해야 합니다.")
-              .show();
-      return;
-    }
-
-    $.ajax({
-      url: /*[[ @{/member/checkId} ]]*/ + "?member_id=" + encodeURIComponent(member_id),
-      type: "get",
-      dataType: "text",
-      success: function(result) {
-        if (result === "true") {
-          $("#member_id_error")
-                  .removeClass("error-message")
-                  .addClass("success-message")
-                  .text("사용 가능한 아이디입니다.")
-                  .show();
-          $("#idExist").val("true");
-        } else {
-          $("#member_id_error")
-                  .removeClass("success-message")
-                  .addClass("error-message")
-                  .text("사용할 수 없는 아이디입니다.")
-                  .show();
-          $("#idExist").val("false");
-        }
-      },
-      error: function() {
-        $("#member_id_error")
-                .removeClass("success-message")
-                .addClass("error-message")
-                .text("중복확인 요청 중 오류가 발생했습니다.")
-                .show();
-      }
-    });
-  }
-
-  function resetMemberId() {
-    $("#idExist").val("false");
-    $("#member_id_error").text("").hide();
-  }
-
-  // 닉네임 중복확인 함수
-  function checkMemberNickname() {
-    let member_nickname = $("#member_nickname").val().trim();
-
-    if (member_nickname.length === 0) {
-      $("#member_nickname_error").removeClass("success-message")
-              .addClass("error-message").text("닉네임을 입력해주세요.").show();
-      return;
-    }
-
-    $.ajax({
-      url : /*[[ @{/member/checkNickname} ]]*/ + "?member_nickname=" + encodeURIComponent(member_nickname),
-      type : "get",
-      dataType : "text",
-      success : function(result) {
-        if (result === "true") {
-          $("#member_nickname_error")
-                  .removeClass("error-message")
-                  .addClass("success-message")
-                  .text("사용 가능한 닉네임입니다.").show();
-          $("#nickExist").val("true");
-        } else {
-          $("#member_nickname_error")
-                  .removeClass("success-message")
-                  .addClass("error-message")
-                  .text("사용할 수 없는 닉네임입니다.").show();
-          $("#nickExist").val("false");
-        }
-      },
-      error : function() {
-        $("#member_nickname_error")
-                .removeClass("success-message")
-                .addClass("error-message")
-                .text("중복확인 요청 중 오류가 발생했습니다.").show();
-      }
-    });
-  }
-
-
-  function resetMemberNickname() {
-    $("#nickExist").val("false");
-    $("#member_nickname_error").text("").hide();
-  }
-
-  function validateSignup() {
-    // 필수 동의 항목 확인
-    let allRequiredChecked = true;
-
-    $(".consent-section input[type='checkbox']").each(function() {
-      if ($(this).next("label").text().includes("(필수)") && !$(this).prop("checked")) {
-        allRequiredChecked = false;
-      }
-    });
-
-    if (!allRequiredChecked) {
-      alert("필수 약관에 동의해야 회원가입이 가능합니다.");
-      return false;
-    }
-
-    if ($("#idExist").val() !== "true") {
-      alert("아이디 중복확인을 해주세요.");
-      return false;
-    }
-    if ($("#nickExist").val() !== "true") {
-      alert("닉네임 중복확인을 해주세요.");
-      return false;
-    }
-
-    if ($("#member_postcode").val() === "" || $("#member_address").val() === "") {
-      alert("주소 검색을 통해 주소를 입력해주세요.");
-      return false;
-    }
-
-    return true;
-  }
-
-  function resetMemberId() {
-    $("#idExist").val("false");
-    $("#member_id_error").text("").hide();
-  }
-
-  function resetMemberNickname() {
-    $("#nickExist").val("false");
-    $("#member_nickname_error").text("").hide();
-  }
-
-  // 주소 검색 함수
-  function searchAddress() {
-    new daum.Postcode({
-      oncomplete: function(data) {
-        var roadAddr = data.roadAddress;
-        var jibunAddr = data.jibunAddress;
-
-        document.getElementById('member_postcode').value = data.zonecode;
-        document.getElementById('member_address').value = roadAddr || jibunAddr;
-
-        document.getElementById("member_address_detail").focus();
-      }
-    }).open();
-  }
-</script>
-
 <div class="signup-container">
   <h1>회원가입</h1>
 
@@ -343,61 +17,60 @@
     <span>*</span> 표시는 필수 입력 항목입니다.
   </div>
 
-  <form th:action="@{/member/signup_pro}" method="post" th:object="${memberBean}" onsubmit="return validateSignup();" >
+  <form th:action="@{/member/signup_pro}" th:object="${memberBean}" method="post" onsubmit="return validateSignup();">
     <div class="form-group">
-      <form path="member_id" cssClass="required-field">아이디</form>
+      <label for="member_id" class="required-field">아이디</label>
       <div class="input-row">
         <input type="text" id="member_id" th:field="*{member_id}" class="input-field" oninput="resetMemberId()" placeholder="5~40자리" />
         <button type="button" class="check-button" onclick="checkMemberId()">중복확인</button>
       </div>
-      <input type="hidden" id="idExist" name="idExist" value="false" /> <span
-            id="member_id_error" class="error-message"></span>
+      <input type="hidden" id="idExist" name="idExist" value="false" />
+      <span id="member_id_error" class="error-message"></span>
+      <span th:if="${#fields.hasErrors('member_id')}" th:errors="*{member_id}" class="error-message"></span>
     </div>
 
     <div class="form-group">
       <label for="member_pw" class="required-field">비밀번호</label>
       <input type="password" id="member_pw" th:field="*{member_pw}" class="input-field" placeholder="8~16자리" />
-      <span class="error-message" th:if="${#fields.hasErrors('member_pw')}" th:errors="*{member_pw}" />
+      <span th:if="${#fields.hasErrors('member_pw')}" th:errors="*{member_pw}" class="error-message"></span>
     </div>
 
     <div class="form-group">
       <label for="member_pw2" class="required-field">비밀번호 확인</label>
-      <input type="password" id="member_pw2" th:field="*{member_pw2}"
-             class="input-field" placeholder="비밀번호 확인" />
-      <span class="error-message" th:if="${#fields.hasErrors('member_pw2')}" th:errors="*{member_pw2}"></span>
+      <input type="password" id="member_pw2" th:field="*{member_pw2}" class="input-field" placeholder="비밀번호 확인" />
+      <span th:if="${#fields.hasErrors('member_pw2')}" th:errors="*{member_pw2}" class="error-message"></span>
     </div>
 
     <div class="form-group">
       <label for="member_name" class="required-field">이름</label>
-      <input type="text" id="member_name" th:field="*{member_name}"
-             class="input-field" placeholder="2~10자리" />
-      <span class="error-message" th:if="${#fields.hasErrors('member_name')}" th:errors="*{member_name}"></span>
+      <input type="text" id="member_name" th:field="*{member_name}" class="input-field" placeholder="2~10자리" />
+      <span th:if="${#fields.hasErrors('member_name')}" th:errors="*{member_name}" class="error-message"></span>
     </div>
+
     <div class="form-group">
       <label for="member_nickname" class="required-field">닉네임</label>
       <div class="input-row">
-        <input type="text" id="member_nickname" th:field="*{member_nickname}"
-               class="input-field" oninput="resetMemberNickname()"
-               placeholder="최대 8자리" />
+        <input type="text" id="member_nickname" th:field="*{member_nickname}" class="input-field" oninput="resetMemberNickname()" placeholder="최대 8자리" />
         <button type="button" class="check-button" onclick="checkMemberNickname()">중복확인</button>
       </div>
       <input type="hidden" id="nickExist" name="nickExist" value="false" />
       <span id="member_nickname_error" class="error-message"></span>
+      <span th:if="${#fields.hasErrors('member_nickname')}" th:errors="*{member_nickname}" class="error-message"></span>
     </div>
 
     <div class="form-group">
       <label for="member_phone" class="required-field">휴대폰</label>
       <div class="input-row">
-        <input type="text" id="member_phone" th:field="*{member_phone}"
-               class="input-field" placeholder="- 없이 입력" />
+        <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />
         <button type="button" class="check-button" id="sendAuthCode">인증요청</button>
       </div>
-      <span class="error-message" th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}"></span>
+      <span th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}" class="error-message"></span>
       <span id="phoneAuthMessage" class="error-message"></span>
     </div>
 
+    <!-- 인증번호 입력창 (처음에는 숨김) -->
     <div class="form-group" id="authCodeContainer" style="display: none;">
-      <label for="authCode">인증번호 입력</label>
+      <label>인증번호 입력</label>
       <div class="input-row">
         <input type="text" id="authCode" class="input-field" placeholder="인증번호 입력">
         <button type="button" class="check-button" id="verifyAuthCode">확인</button>
@@ -412,19 +85,16 @@
           <input type="text" id="member_postcode" class="input-field" placeholder="우편번호" readonly />
           <button type="button" class="check-button" onclick="searchAddress()">주소검색</button>
         </div>
-        <input type="text" id="member_address" th:field="*{member_address}"
-               class="input-field" placeholder="기본주소" readonly="true" />
-        <input type="text" id="member_address_detail" class="input-field" name="member_address_detail"
-               placeholder="상세주소 입력" />
+        <input type="text" id="member_address" th:field="*{member_address}" class="input-field" placeholder="기본주소" readonly="readonly" />
+        <input type="text" id="member_address_detail" class="input-field" name="member_address_detail" placeholder="상세주소 입력" />
       </div>
-      <span class="error-message" th:if="${#fields.hasErrors('member_address')}" th:errors="*{member_address}"></span>
+      <span th:if="${#fields.hasErrors('member_address')}" th:errors="*{member_address}" class="error-message"></span>
     </div>
 
     <div class="form-group">
       <label for="member_email" class="required-field">이메일</label>
-      <input type="email" id="member_email" th:field="*{member_email}"
-             class="input-field" placeholder="email@ujoodong.com" />
-      <span class="error-message" th:if="${#fields.hasErrors('member_email')}" th:errors="*{member_email}"></span>
+      <input type="email" id="member_email" th:field="*{member_email}" class="input-field" placeholder="email@ujoodong.com" />
+      <span th:if="${#fields.hasErrors('member_email')}" th:errors="*{member_email}" class="error-message"></span>
     </div>
 
     <div class="form-group">
@@ -467,13 +137,170 @@
     <button type="submit" class="submit-button">회원가입 완료</button>
   </form>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-  $(document).ready(function() {
-    // Thymeleaf에서 컨텍스트 경로를 JavaScript 변수로 미리 저장
-    let sendCodeUrl = /*[[ @{/auth/sendCode} ]]*/ '';
-    let verifyCodeUrl = /*[[ @{/auth/verifyCode} ]]*/ '';
 
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  function checkMemberId() {
+    let member_id = $("#member_id").val().trim();
+    console.log(member_id);
+
+    // 아이디 길이 검증
+    if (member_id.length < 5 || member_id.length > 40) {
+      $("#member_id_error")
+              .removeClass("success-message")
+              .addClass("error-message")
+              .text("아이디는 5~40자 사이로 입력해야 합니다.")
+              .show();
+      return;
+    }
+
+    $.ajax({
+      url: /*[[@{/member/checkId}]]*/ '/member/checkId',
+      type: "get",
+      data: {member_id : member_id},
+      dataType: "text",
+      success: function(result) {
+        if (result === "true") {
+          $("#member_id_error")
+                  .removeClass("error-message")
+                  .addClass("success-message")
+                  .text("사용 가능한 아이디입니다.")
+                  .show();
+          $("#idExist").val("true");
+        } else {
+          $("#member_id_error")
+                  .removeClass("success-message")
+                  .addClass("error-message")
+                  .text("사용할 수 없는 아이디입니다.")
+                  .show();
+          $("#idExist").val("false");
+        }
+      },
+      error: function() {
+        $("#member_id_error")
+                .removeClass("success-message")
+                .addClass("error-message")
+                .text("중복확인 요청 중 오류가 발생했습니다.")
+                .show();
+      }
+    });
+  }
+
+  function resetMemberId() {
+    $("#idExist").val("false");
+    $("#member_id_error").text("").hide();
+  }
+
+  // 닉네임 중복확인 함수
+  function checkMemberNickname() {
+    let member_nickname = $("#member_nickname").val().trim();
+
+    if (member_nickname.length == 0) {
+      $("#member_nickname_error").removeClass("success-message")
+              .addClass("error-message").text("닉네임을 입력해주세요.").show();
+      return;
+    }
+
+    $.ajax({
+      url: /*[[@{/member/checkNickname}]]*/ '/member/checkNickname',
+      type: "get",
+      data: {member_nickname : member_nickname},
+      dataType: "text",
+      success: function(result) {
+        if (result === "true") {
+          $("#member_nickname_error")
+                  .removeClass("error-message").addClass("success-message")
+                  .text("사용 가능한 닉네임입니다.").show();
+          $("#nickExist").val("true");
+        } else {
+          $("#member_nickname_error")
+                  .removeClass("success-message").addClass("error-message")
+                  .text("사용할 수 없는 닉네임입니다.").show();
+          $("#nickExist").val("false");
+        }
+      },
+      error: function() {
+        $("#member_nickname_error")
+                .removeClass("success-message")
+                .addClass("error-message")
+                .text("중복확인 요청 중 오류가 발생했습니다.").show();
+      }
+    });
+  }
+
+  function resetMemberNickname() {
+    $("#nickExist").val("false");
+    $("#member_nickname_error").text("").hide();
+  }
+
+  function validateSignup() {
+    // 필수 동의 항목 확인
+    let allRequiredChecked = true;
+
+    $(".consent-section input[type='checkbox']").each(function() {
+      // "(필수)"가 포함된 label이 있는 체크박스 중에서 체크되지 않은 것이 있으면 false
+      if ($(this).next("label").text().includes("(필수)") && !$(this).prop("checked")) {
+        allRequiredChecked = false;
+      }
+    });
+
+    // 필수 항목이 하나라도 체크되지 않으면 경고 후 회원가입 진행 차단
+    if (!allRequiredChecked) {
+      alert("필수 약관에 동의해야 회원가입이 가능합니다.");
+      return false;
+    }
+
+    if ($("#idExist").val() !== "true") {
+      alert("아이디 중복확인을 해주세요.");
+      return false;
+    }
+    if ($("#nickExist").val() !== "true") {
+      alert("닉네임 중복확인을 해주세요.");
+      return false;
+    }
+
+    // 주소 입력 검증
+    if ($("#member_postcode").val() === "" || $("#member_address").val() === "") {
+      alert("주소 검색을 통해 주소를 입력해주세요.");
+      return false;
+    }
+
+    return true; // 모든 조건이 충족되면 회원가입 진행
+  }
+
+  // 주소 검색 함수
+  function searchAddress() {
+    new daum.Postcode({
+      oncomplete: function(data) {
+        // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분
+        var roadAddr = data.roadAddress; // 도로명 주소
+        var jibunAddr = data.jibunAddress; // 지번 주소
+
+        // 우편번호와 주소 정보를 해당 필드에 넣는다.
+        document.getElementById('member_postcode').value = data.zonecode;
+        document.getElementById('member_address').value = roadAddr || jibunAddr;
+
+        // 상세주소 필드로 포커스 이동
+        document.getElementById("member_address_detail").focus();
+      }
+    }).open();
+  }
+
+  $(document).ready(function() {
+    $("#all_consent").change(function() {
+      let isChecked = $(this).prop("checked");
+      $(".consent-section input[type='checkbox']").prop("checked", isChecked);
+    });
+
+    $(".consent-section input[type='checkbox']").not("#all_consent").change(function() {
+      let allChecked = $(".consent-section input[type='checkbox']").not("#all_consent").length ===
+              $(".consent-section input[type='checkbox']:checked").not("#all_consent").length;
+      $("#all_consent").prop("checked", allChecked);
+    });
+  });
+
+  $(document).ready(function() {
+    // 인증 요청 버튼 클릭 시 실행
     $("#sendAuthCode").click(function() {
       let phoneNumber = "+82" + $("#member_phone").val().trim();
 
@@ -482,30 +309,18 @@
         return;
       }
 
-      let sendCodeUrl = /*[[ @{/auth/sendCode} ]]*/ '';
-
-      console.log("인증번호 요청: " + sendCodeUrl + " | phoneNumber: " + phoneNumber);
-
-      $.ajax({
-        url: sendCodeUrl,
-        type: "POST",  // 🔹 반드시 "POST" 요청으로 설정
-        contentType: "application/x-www-form-urlencoded; charset=UTF-8", // Spring에서 인식 가능하게 설정
-        data: { phoneNumber: phoneNumber },
-        success: function(response) {
-          console.log("응답: " + response);
-          alert(response);
-          $("#authCodeContainer").show();
-        },
-        error: function(xhr) {
-          console.log("오류 상태 코드: " + xhr.status);
-          console.log("오류 메시지: " + xhr.responseText);
-          alert("인증번호 요청 중 오류가 발생했습니다. 상태 코드: " + xhr.status);
-        }
+      // 서버에 인증번호 요청
+      $.post(/*[[@{/auth/sendCode}]]*/ '/auth/sendCode', { phoneNumber: phoneNumber }, function(response) {
+        alert(response); // 인증번호 발송 알림
+        $("#authCodeContainer").show(); // 인증번호 입력창 표시
+      }).fail(function() {
+        alert("인증번호 요청 중 오류가 발생했습니다.");
       });
     });
 
+    // 인증번호 확인 버튼 클릭 시 실행
     $("#verifyAuthCode").click(function() {
-      let phoneNumber = "+82" + $("#member_phone").val().trim();
+      let phoneNumber = "+82"+$("#member_phone").val().trim();
       let authCode = $("#authCode").val().trim();
 
       if (authCode.length === 0) {
@@ -514,7 +329,7 @@
       }
 
       // 서버에 인증번호 검증 요청
-      $.post(verifyCodeUrl, { phoneNumber: phoneNumber, authCode: authCode }, function(response) {
+      $.post(/*[[@{/auth/verifyCode}]]*/ '/auth/verifyCode', { phoneNumber: phoneNumber, authCode: authCode }, function(response) {
         if (response) {
           $("#authResult").text("✔ 인증 성공").css({"color": "green", "font-size": "10px"});
           $("#member_phone").prop("readonly", true).css({"color": "gray"});
@@ -526,6 +341,7 @@
       });
     });
   });
+  /*]]>*/
 </script>
 </body>
 </html>
