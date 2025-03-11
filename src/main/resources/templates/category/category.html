@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>카테고리 페이지</title>
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <link rel="stylesheet" th:href="@{/css/category.css}">
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<!-- 카테고리 컨테이너 -->
+<div class="category-container">
+  <!-- 메인 카테고리 -->
+  <div class="main-categories">
+    <h3 class="category-title">카테고리</h3>
+    <ul class="category-list">
+      <li class="category-item" th:classappend="${param.category_type == null || param.category_type == 'all' ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type='all')}">전체보기</a>
+      </li>
+      <li th:each="category : ${categoryList}"
+          class="category-item"
+          th:classappend="${category.category_type == param.category_type ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type=${category.category_type})}"
+           th:text="${category.category_type}"></a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 서브 카테고리 -->
+  <div class="sub-categories">
+    <h3 class="category-title">세부 카테고리</h3>
+    <ul class="sub-category-list">
+      <li class="sub-category-item" th:classappend="${param.sub_category == null || param.sub_category == 'all' ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type=${param.category_type ?: 'all'}, sub_category='all')}">전체보기</a>
+      </li>
+      <li th:if="${list != null}" th:each="subCategory : ${list}"
+          class="sub-category-item"
+          th:classappend="${subCategory.category_name == param.sub_category ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type=${param.category_type ?: 'all'}, sub_category=${subCategory.category_name})}"
+           th:text="${subCategory.category_name}"></a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- 동호회 목록 컨테이너 -->
+<div class="clubs-container">
+  <h3 class="clubs-title">등록된 동호회</h3>
+
+  <div th:if="${clublist == null || clublist.isEmpty()}" class="no-clubs" style="display: block;">
+    등록된 동호회가 없습니다.
+  </div>
+
+  <ul th:if="${clublist != null && !clublist.isEmpty()}" class="clubs-list">
+    <li th:each="club : ${clublist}" class="club-item" th:attr="data-category=${club.club_category}">
+      <a th:href="@{/club/club_info(club_id=${club.club_id})}">
+        <div class="club-name" th:text="${club.club_name}"></div>
+        <div class="club-category" th:text="'카테고리: ' + ${club.club_category}"></div>
+      </a>
+    </li>
+  </ul>
+</div>
+</body>
+</html>

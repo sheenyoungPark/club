@@ -1,7 +1,9 @@
 package com.spacedong.mapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.spacedong.beans.Category;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -45,7 +47,7 @@ public interface ClubMapper {
      */
     @Select("SELECT * FROM club WHERE club_name LIKE '%' || #{keyword} || '%'")
     List<ClubBean> searchClubsByName(@Param("keyword") String keyword);
-    
+
     /**
      * 카테고리로 검색
      * @param keyword 검색 키워드
@@ -61,4 +63,10 @@ public interface ClubMapper {
      */
     @Update("UPDATE club SET club_public = #{status} WHERE club_id = #{club_id}")
     void updateClubStatus(@Param("club_id") int club_id, @Param("status") String status);
+
+    /*
+    * 같은 카테고리 숫자별 카운트
+    * */
+    @Select("SELECT ca.category_name,ca.category_type, COUNT(*) AS category_count FROM club c JOIN category ca ON c.club_category = ca.category_name GROUP BY ca.category_type, ca.category_name ORDER BY category_count DESC")
+    List<Category> countCategory();
 }

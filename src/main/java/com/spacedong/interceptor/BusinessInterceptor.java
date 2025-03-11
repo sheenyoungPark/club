@@ -20,7 +20,6 @@ public class BusinessInterceptor implements HandlerInterceptor {
             throws Exception {
 
         request.setAttribute("loginBusiness", loginBusiness);
-        System.out.println("인터셉터: " + loginBusiness.getBusiness_id());
 
         return true;
     }

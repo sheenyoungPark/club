@@ -104,7 +104,7 @@ public class NaverLoginCallbackController {
             model.addAttribute("memberInfo", memberInfo);
 
         }
-        return "main";
+        return "redirect:/";
 
     }
 
