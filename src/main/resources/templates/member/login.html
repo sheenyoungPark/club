@@ -21,15 +21,15 @@
         <input type="text" th:field="*{member_id}" class="input-field" placeholder="아이디" />
         <input type="password" th:field="*{member_pw}" class="input-field" placeholder="비밀번호" />
 
+        <button type="submit" class="login-button">로그인</button>
+
         <div class="social-login">
             <a th:href="@{/login/naver}" class="naver-login">
-                <img src="https://static.nid.naver.com/oauth/small_g_in.PNG" alt="네이버 로그인"/>
+                <img src="https://static.nid.naver.com/oauth/small_g_in.PNG" alt="네이버 로그인" width="20" height="20"/>
+                네이버 로그인
             </a>
         </div>
-
-        <button type="submit" class="login-button">로그인</button>
     </form>
-
     <form id="business-form" th:action="@{/business/login_pro}" method="post" style="display: none;" th:object="${businessBean}">
         <input type="text" name="busines_id" class="input-field" placeholder="기업 아이디" />
         <input type="password" name="business_pw" class="input-field" placeholder="기업 비밀번호" />
