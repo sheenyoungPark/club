@@ -48,7 +48,7 @@ public class MemberController {
 		if(memberBean.getMember_id().equals("admin")&&memberBean.getMember_pw().equals("admin")) {
 			return "admin/init";
 		}else {
-			if(memberService.getLoginMember(memberBean)) {
+			if(memberService.getLoginMember(memberBean)) {//민승123
 				return "member/login_success";
 			}else {		
 				return "member/login_fail";
