@@ -52,7 +52,7 @@
     <div class="category" th:each="category, iterStat : ${count}" th:if="${iterStat.index < 5}">
       <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category.category_type}, sub_category=${category.category_name})}'|">
         <!-- 기존 이미지 경로를 사용하거나 동적으로 처리할 수 있습니다 -->
-        <img th:src="@{'/sources/picture/' + ${category.category_name} + '.png'}"
+        <img th:src="@{'/sources/picture/' + ${category.category_name} + '.jpg'}"
              th:alt="${category.category_name} + ' 아이콘'"
              onerror="this.src='/sources/picture/default.png'">
       </button>
