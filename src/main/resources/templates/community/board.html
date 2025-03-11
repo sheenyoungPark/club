@@ -24,7 +24,7 @@
   <!-- 글쓰기 버튼 -->
   <div style="display: flex; align-items: center;">
     <!-- 로그인한 사용자만 글쓰기 버튼 표시 -->
-    <a th:if="${loginMember != null or loginBusiness != null}"
+    <a th:if="${loginMember.login == true || loginBusiness.login == true}"
        th:href="@{/community/boardWrite(boardType=${BoardType})}"
        class="write-button"
        style="margin-right: 10px;">글쓰기</a>
@@ -33,7 +33,7 @@
     <div class="board-menu">
       <button>통합 게시판 ▼</button>
       <div class="board-menu-content">
-        <a th:href="@{/community/board(boardType='all')}">통합 게시판</a>
+        <a th:href="@{/community/board}">통합 게시판</a>
         <a th:href="@{/community/board(boardType='member')}">회원 게시판</a>
         <a th:href="@{/community/board(boardType='business')}">판매자 게시판</a>
         <a th:href="@{/community/board(boardType='admin')}">운영자 게시판</a>
@@ -45,8 +45,9 @@
 <!-- 게시판 목록 -->
 <div class="sub-categories">
   <ul class="sub-category-list">
+    <!-- boardType이 비어 있으면 'all', 그렇지 않으면 현재 boardType을 사용 -->
     <li th:each="post : ${boardList}">
-      <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType=${boardType})}">
+      <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType=${boardType != null ? boardType : 'all'})}">
         <span th:text="${post.board_title}"></span>
         <span style="color: red;">[<span th:text="${post.board_like}"></span>]</span>
       </a>
@@ -56,6 +57,7 @@
     </li>
   </ul>
 </div>
+
 
 <!-- 페이지네이션 -->
 <div class="pagination">
