@@ -11,6 +11,6 @@ public class ReserveController {
 	@GetMapping("/main")
 	public String reserve_main() {
 		
-		return "reserve/reserve_main";
+		return "reserve/main";
 	}
 }
