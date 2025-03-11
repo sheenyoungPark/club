@@ -1,7 +1,9 @@
 package com.spacedong.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.spacedong.beans.Category;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -49,5 +51,10 @@ public class ClubRepository {
    // 동호회 상태 업데이트
    public void updateClubStatus(int club_id, String status) {
        clubMapper.updateClubStatus(club_id, status);
+   }
+
+   public List<Category> countCategory(){
+       return clubMapper.countCategory();
+
    }
 }

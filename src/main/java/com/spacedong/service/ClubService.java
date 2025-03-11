@@ -1,7 +1,9 @@
 package com.spacedong.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.spacedong.beans.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,5 +68,9 @@ public class ClubService {
      */
     public void updateClubStatus(int club_id, String status) {
         clubRepository.updateClubStatus(club_id, status);
+    }
+
+    public List<Category> countCategory(){
+        return clubRepository.countCategory();
     }
 }

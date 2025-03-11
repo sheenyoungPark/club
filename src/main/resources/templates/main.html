@@ -48,35 +48,15 @@
 <section class="categories">
   <h2>인기 카테고리</h2>
   <div class="category-icons">
-    <div class="category">
-      <button class="category-icon">
-        <img th:src="@{/sources/picture/soccer.png}" alt="운동/스포츠 아이콘">
+    <!-- count 리스트의 항목들을 최대 5개까지만 순서대로 표시 -->
+    <div class="category" th:each="category, iterStat : ${count}" th:if="${iterStat.index < 5}">
+      <button class="category-icon" th:onclick="'location.href=\'' + @{category/category_info(category_type=${category.category_type}, sub_category=${category.category_name})} + '\''">
+        <!-- 기존 이미지 경로를 사용하거나 동적으로 처리할 수 있습니다 -->
+        <img th:src="@{'/sources/picture/' + ${category.category_name} + '.png'}"
+             th:alt="${category.category_name} + ' 아이콘'"
+             onerror="this.src='/sources/picture/default.png'">
       </button>
-      <span class="category-name">운동/스포츠</span>
-    </div>
-    <div class="category">
-      <button class="category-icon">
-        <img th:src="@{/sources/picture/cook.jpg}" alt="식사/인맥 아이콘">
-      </button>
-      <span class="category-name">식사/인맥</span>
-    </div>
-    <div class="category">
-      <button class="category-icon">
-        <img th:src="@{/sources/picture/read.png}" alt="독서 아이콘">
-      </button>
-      <span class="category-name">독서</span>
-    </div>
-    <div class="category">
-      <button class="category-icon">
-        <img th:src="@{/sources/picture/outdoor.jpg}" alt="아웃도어 아이콘">
-      </button>
-      <span class="category-name">아웃도어</span>
-    </div>
-    <div class="category">
-      <button class="category-icon">
-        <img th:src="@{/sources/picture/music.jpg}" alt="음악 아이콘">
-      </button>
-      <span class="category-name">음악</span>
+      <span class="category-name" th:text="${category.category_name}">카테고리명</span>
     </div>
   </div>
 </section>
