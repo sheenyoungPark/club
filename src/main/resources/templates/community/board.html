@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>커뮤니티 게시판</title>
+  <link rel="stylesheet" th:href="@{/css/board.css}">
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="include/top_search :: top_search"></div>
+
+<!-- 카테고리 상단 -->
+<div class="category-header">
+  <h3 class="category-title">
+    <span th:if="${boardType == 'all'}">통합 게시판</span>
+    <span th:if="${boardType == 'member'}">회원 게시판</span>
+    <span th:if="${boardType == 'business'}">판매자 게시판</span>
+    <span th:if="${boardType == 'admin'}">운영자 게시판</span>
+    <span th:if="${boardType == null}">통합 게시판</span>
+  </h3>
+
+  <!-- 글쓰기 버튼 -->
+  <div style="display: flex; align-items: center;">
+    <!-- 로그인한 사용자만 글쓰기 버튼 표시 -->
+    <a th:if="${loginMember != null or loginBusiness != null}"
+       th:href="@{/community/boardWrite(boardType=${boardType})}"
+       class="write-button"
+       style="margin-right: 10px;">글쓰기</a>
+
+    <!-- 통합 게시판 버튼 -->
+    <div class="board-menu">
+      <button>통합 게시판 ▼</button>
+      <div class="board-menu-content">
+        <a th:href="@{/community/board(boardType='all')}">통합 게시판</a>
+        <a th:href="@{/community/board(boardType='member')}">회원 게시판</a>
+        <a th:href="@{/community/board(boardType='business')}">판매자 게시판</a>
+        <a th:href="@{/community/board(boardType='admin')}">운영자 게시판</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 게시판 목록 -->
+<div class="sub-categories">
+  <ul class="sub-category-list">
+    <li th:each="post : ${boardList}">
+      <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType=${boardType})}">
+        <span th:text="${post.board_title}"></span>
+        <span style="color: red;">[<span th:text="${post.board_like}"></span>]</span>
+      </a>
+      <span style="margin-left: 15px;">작성자: <span th:text="${post.board_writer_id}"></span></span>
+      <span style="margin-left: 15px;">작성일: <span th:text="${post.create_date}"></span></span>
+      <span style="margin-left: 15px;">조회수: <span th:text="${post.board_view}"></span></span>
+    </li>
+  </ul>
+</div>
+
+<!-- 페이지네이션 -->
+<div class="pagination">
+  <a th:if="${currentPage > 1}"
+     th:href="@{/community/board(boardType=${boardType}, page=${currentPage - 1})}">◀</a>
+
+  <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+     th:href="@{/community/board(boardType=${boardType}, page=${i})}"
+     th:classappend="${i == currentPage} ? 'active'">
+    <span th:text="${i}"></span>
+  </a>
+
+  <a th:if="${currentPage < totalPages}"
+     th:href="@{/community/board(boardType=${boardType}, page=${currentPage + 1})}">▶</a>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="include/bottom_info :: bottom_info"></div>
+<script th:src="@{/js/top.js}"></script>
+</body>
+</html>

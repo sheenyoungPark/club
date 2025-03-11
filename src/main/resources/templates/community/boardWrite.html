@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+    <link rel="stylesheet" th:href="@{/css/boardWrite.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+</head>
+<body>
+
+<!-- 상단 메뉴 include -->
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="write-container">
+    <h2 class="write-title">게시글 작성</h2>
+
+    <!-- 글쓰기 폼 -->
+    <form th:action="@{/community/write}" method="post">
+        <input type="hidden" name="boardType" th:value="${boardType}">
+        <input type="hidden" name="board_writer_id" th:value="${loginMember.member_id}">
+
+        <label>제목:</label>
+        <input type="text" name="board_title" class="input-field" placeholder="제목을 입력하세요" required>
+
+        <label>내용:</label>
+        <textarea name="board_text" class="input-field" placeholder="내용을 입력하세요" rows="6" required></textarea>
+
+        <button type="submit" class="write-btn">작성 완료</button>
+    </form>
+
+    <a th:href="@{/community/board}" class="back-btn">← 목록으로 돌아가기</a>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<script th:src="@{/js/top.js}"></script>
+
+</body>
+</html>

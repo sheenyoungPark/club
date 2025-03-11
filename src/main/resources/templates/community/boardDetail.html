@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 상세 페이지</title>
+    <link rel="stylesheet" th:href="@{/css/boardDetail.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="post-container">
+    <h2 class="post-title" th:text="${post.board_title}">게시글 제목</h2>
+
+    <p class="post-content" th:text="${post.board_text}">게시글 내용</p>
+
+    <!-- 댓글 섹션 -->
+    <div class="comment-section">
+        <h3>댓글</h3>
+        <form th:action="@{/community/comment/write}" method="post">
+            <input type="hidden" name="board_id" th:value="${post.board_id}">
+            <input type="hidden" name="parent_comment_id" value="">
+
+            <!-- 기본값: 일반 댓글 -->
+            <textarea class="comment-input" name="comment_text" placeholder="댓글을 입력하세요..."></textarea>
+            <button type="submit" class="comment-btn">댓글 등록</button>
+        </form>
+
+        <!-- 댓글 목록 -->
+        <ul class="comment-list">
+            <li th:each="comment : ${comments}" th:style="'margin-left:' + (${comment.parent_comment_id} != null ? '20px' : '0px')">
+                <div class="comment-info">
+                    <strong th:text="${comment.comment_writer_id}">작성자</strong> •
+                    <span th:text="${comment.create_date}">작성일</span>
+                </div>
+                <p th:text="${comment.comment_text}">댓글 내용</p>
+
+                <!-- 대댓글 입력 폼 -->
+                <form th:action="@{/community/comment/write}" method="post" style="display: inline;">
+                    <input type="hidden" name="board_id" th:value="${post.board_id}">
+                    <input type="hidden" name="parent_comment_id" th:value="${comment.comment_id}">
+                    <input type="text" name="comment_text" placeholder="답글을 입력하세요..." class="comment-input">
+                    <button type="submit" class="comment-btn">답글</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+
+    <a th:href="@{/community/board}" class="back-btn">← 목록으로 돌아가기</a>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<script th:src="@{/js/top.js}"></script>
+</body>
+</html>

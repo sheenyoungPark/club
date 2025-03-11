@@ -1,0 +1,115 @@
+/* 메인 컨테이너 스타일 */
+.sub-categories {
+    flex: 1;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    min-height: 300px;
+}
+
+/* 상단 제목 스타일 */
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #5d4b8c;
+}
+
+.category-title {
+    color: #5d4b8c;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* 통합 게시판 버튼 */
+.board-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.board-menu button {
+    background-color: #5d4b8c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.board-menu-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    min-width: 150px;
+    z-index: 1;
+}
+
+.board-menu-content a {
+    display: block;
+    color: #333;
+    padding: 10px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.board-menu-content a:hover {
+    background-color: #f2f2f2;
+}
+
+/* 버튼에 마우스를 올리면 메뉴 표시 */
+.board-menu:hover .board-menu-content {
+    display: block;
+}
+
+/* 게시글 리스트 */
+.sub-category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sub-category-list li {
+    width: 100%;
+    background-color: #f9f9f9;
+    padding: 15px;
+    text-align: left;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border-left: 5px solid #5d4b8c;
+}
+
+/* 페이지네이션 */
+.pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 2px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+}
+
+.pagination a.active {
+    background-color: #5d4b8c;
+    color: white;
+    font-weight: bold;
+}
+
+.pagination a:hover {
+    background-color: #ddd;
+}
