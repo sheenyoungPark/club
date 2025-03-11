@@ -21,6 +21,9 @@ public class MemberRepository {
 	public String checkId(String member_id) {
 		return memberMapper.checkId(member_id);
 	}
+	public String checkNickname(String member_nickname) {
+		return memberMapper.checkNickname(member_nickname);
+	}
 	
 	public MemberBean getLoginMember(MemberBean tempLoginMember) {
 		return memberMapper.getLoginMember(tempLoginMember);
