@@ -23,7 +23,7 @@ public class CategoryRepository {
       return list;
    }
 
-   public List<Category> categoryInfo(String type) {
+        public List<Category> categoryInfo(String type) {
       List<Category> list = categoryMapper.categoryInfo(type);
       return list;
 

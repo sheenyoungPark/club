@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.spacedong.beans.ClubBean;
 import com.spacedong.service.ClubService;
 
+import java.time.LocalDate;
+
 @Controller
 @RequestMapping("/club")
 public class ClubController {
@@ -22,7 +24,9 @@ public class ClubController {
 	   public String club_info(@RequestParam("club_id")int club_id ,Model model) {
 	      
 	      ClubBean club = clubService.oneClubInfo(club_id);
-	      
+
+
+
 	      model.addAttribute("club", club);
 	      
 	      return "club/club_info";

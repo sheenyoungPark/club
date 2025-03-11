@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>동호회 상세 정보</title>
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/club_info.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="container">
+    <div class="club-detail-container">
+        <div class="club-header">
+            <h1 class="club-title" th:text="${club.club_name}">동호회 이름</h1>
+            <div class="club-category" th:text="${club.club_category}">카테고리</div>
+        </div>
+
+        <div class="club-body">
+            <div class="club-stats">
+                <div class="stat-box">
+                    <div th:text="${#dates.format(club.club_joindate, 'yyyy.MM.dd')}"></div>
+                    <div class="stat-label">개설일</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" th:text="${club.club_point}">100</div>
+                    <div class="stat-label">활동 포인트</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">
+        <span th:with="today=${#dates.createNow()},
+                       joinDate=${club.club_joindate},
+                       diffMillis=${today.time - joinDate.time},
+                       diffDays=${(diffMillis / (1000 * 60 * 60 * 24)+1)}"
+              th:text="${#numbers.formatInteger(diffDays, 0)}">365</span><span>일</span>
+                    </div>
+                    <div class="stat-label">활동 기간</div>
+                </div>
+            </div>
+
+            <div class="club-info-box">
+                <h3 class="club-info-title">동호회 소개</h3>
+                <div class="club-info-content">
+                    <p th:if="${#strings.isEmpty(club.club_info)}">등록된 소개 내용이 없습니다.</p>
+                    <p th:unless="${#strings.isEmpty(club.club_info)}" th:text="${club.club_info}">동호회 소개 내용</p>
+                </div>
+            </div>
+
+            <div class="club-actions">
+                <a th:href="@{/club_join(club_id=${club.club_id})}" class="btn btn-primary">가입 신청하기</a>
+                <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-outline">문의하기</a>
+            </div>
+        </div>
+    </div>
+
+    <a href="javascript:history.back()" class="back-link">← 목록으로 돌아가기</a>
+</div>
+</body>
+</html>
