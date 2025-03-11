@@ -28,8 +28,11 @@ public class BusinessService {
 
         if(temp!=null) {
             loginBusiness.setBusiness_id(temp.getBusines_id());
-            loginBusiness.setBusiness_id(temp.getBusiness_name());
+            loginBusiness.setBusiness_name(temp.getBusiness_name());
 
+
+
+            System.out.println("비지니스 서비스" + loginBusiness.getBusiness_name());
             loginBusiness.setLogin(true);
 
             return true;

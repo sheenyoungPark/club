@@ -19,7 +19,9 @@ public class BusinessRepository {
 
     public BusinessBean getLoginMember(BusinessBean businessBean) {
 
-        System.out.println("리포지토리: " + businessMapper.getLoginMember(businessBean));
+
+
+
         return businessMapper.getLoginMember(businessBean);
     }
 }
