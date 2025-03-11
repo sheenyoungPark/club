@@ -1,6 +1,6 @@
 $(document).ready(function() {
     let selectedChoice;
-    let userAnswers = {}; // 사용자의 답변을 저장하는 객체
+    let memberAnswers = {}; // 사용자의 답변을 저장하는 객체
 
     // 세션에 저장된 이전 답변이 있으면 가져오기
     loadPreviousAnswers();
@@ -17,8 +17,8 @@ $(document).ready(function() {
 
         selectedChoice = $(this).data('choice-key');
 
-        // 현재 선택을 userAnswers에 저장
-        userAnswers[currentQuestionNum] = selectedChoice;
+        // 현재 선택을 memberAnswers에 저장
+        memberAnswers[currentQuestionNum] = selectedChoice;
 
         if (selectedChoice !== undefined) {
             $('#btn-next').prop('disabled', false);
@@ -30,7 +30,7 @@ $(document).ready(function() {
         if (currentQuestionNum > 1) {
             // 현재 선택을 저장
             if (selectedChoice) {
-                userAnswers[currentQuestionNum] = selectedChoice;
+                memberAnswers[currentQuestionNum] = selectedChoice;
             }
 
             // 이전 문제로 이동
@@ -73,8 +73,8 @@ $(document).ready(function() {
 
     // 답변 제출 함수
     function submitAnswer(questionNum, answer) {
-        // 현재 선택을 userAnswers에 저장
-        userAnswers[questionNum] = answer;
+        // 현재 선택을 memberAnswers에 저장
+        memberAnswers[questionNum] = answer;
 
         $.ajax({
             url: root + "survey/submit",
@@ -167,7 +167,7 @@ $(document).ready(function() {
             type: 'GET',
             success: function(response) {
                 if (response.answers) {
-                    userAnswers = response.answers;
+                    memberAnswers = response.answers;
                     markPreviousAnswer();
                 }
             },
@@ -179,8 +179,8 @@ $(document).ready(function() {
 
     // 이전에 선택한 답변 표시하기
     function markPreviousAnswer() {
-        if (userAnswers[currentQuestionNum]) {
-            selectedChoice = userAnswers[currentQuestionNum];
+        if (memberAnswers[currentQuestionNum]) {
+            selectedChoice = memberAnswers[currentQuestionNum];
 
             // 이전에 선택한 항목에 selected 클래스 추가
             $('.choice').each(function() {

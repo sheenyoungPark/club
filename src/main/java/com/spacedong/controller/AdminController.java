@@ -151,9 +151,9 @@ public class AdminController {
     }
     
     // 회원 관리 페이지
-    @GetMapping("/user_management")
-    public String userManagement() {
-        return "admin/user_management";
+    @GetMapping("/member_management")
+    public String memberManagement() {
+        return "admin/member_management";
     }
     
     @GetMapping("/logout")

@@ -79,6 +79,11 @@ body {
     position: relative;
     width: 100%;
 }
+.user-info {
+    margin-right: 10px;
+    font-weight: bold;
+    color: #333;
+}
 
 .search-form {
     display: flex;

@@ -27,7 +27,7 @@ public class BusinessService {
         BusinessBean temp = businessRepository.getLoginMember(businessBean);
 
         if(temp!=null) {
-            loginBusiness.setBusiness_id(loginBusiness.getBusines_id());
+            loginBusiness.setBusiness_id(temp.getBusines_id());
             loginBusiness.setBusiness_id(temp.getBusiness_name());
 
             loginBusiness.setLogin(true);
