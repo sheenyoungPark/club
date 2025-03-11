@@ -17,7 +17,7 @@
         <p>아이디 비밀번호를 확인해주세요</p>
     </div>
 
-    <form id="personal-form" th:action="@{/member/login_pro}" method="post" th:object="${tempLoginUser}">
+    <form id="personal-form" th:action="@{/member/login_pro}" method="post" th:object="${tempLoginMember}">
         <input type="text" th:field="*{member_id}" class="input-field" placeholder="아이디" />
         <input type="password" th:field="*{member_pw}" class="input-field" placeholder="비밀번호" />
 
@@ -37,7 +37,6 @@
         <span class="login-option">비밀번호 찾기</span>
     </div>
 
-    <button type="button" class="signup-button" th:onclick="|location.href='@{/member/signup}'|">회원가입</button>
 
     <div class="social-login">
         <a th:href="@{/login/naver}" class="naver-login">

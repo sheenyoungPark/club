@@ -52,12 +52,12 @@ public class SurveyController {
         Map<String, Object> response = new HashMap<>();
 
         // 사용자 답변 저장
-        Map<Integer, String> userAnswers = (Map<Integer, String>) session.getAttribute("userAnswers");
-        if (userAnswers == null) {
-            userAnswers = new HashMap<>();
+        Map<Integer, String> memberAnswers = (Map<Integer, String>) session.getAttribute("memberAnswers");
+        if (memberAnswers == null) {
+            memberAnswers = new HashMap<>();
         }
-        userAnswers.put(questionNum, answer);
-        session.setAttribute("userAnswers", userAnswers);
+        memberAnswers.put(questionNum, answer);
+        session.setAttribute("memberAnswers", memberAnswers);
 
         // 다음 문제 번호 계산
         int nextQuestionNum = questionNum + 1;
@@ -108,30 +108,30 @@ public class SurveyController {
 
     @GetMapping("/getAnswers")
     @ResponseBody
-    public Map<String, Object> getUserAnswers(HttpSession session) {
+    public Map<String, Object> getMemberAnswers(HttpSession session) {
         Map<String, Object> response = new HashMap<>();
 
-        Map<Integer, String> userAnswers = (Map<Integer, String>) session.getAttribute("userAnswers");
-        if (userAnswers == null) {
-            userAnswers = new HashMap<>();
+        Map<Integer, String> memberAnswers = (Map<Integer, String>) session.getAttribute("memberAnswers");
+        if (memberAnswers == null) {
+            memberAnswers = new HashMap<>();
         }
 
-        response.put("answers", userAnswers);
+        response.put("answers", memberAnswers);
         return response;
     }
 
     @GetMapping("/result")
     public String showResult(Model model, HttpSession session) {
-        Map<Integer, String> userAnswers = (Map<Integer, String>) session.getAttribute("userAnswers");
-        model.addAttribute("userAnswers", userAnswers);
+        Map<Integer, String> memberAnswers = (Map<Integer, String>) session.getAttribute("memberAnswers");
+        model.addAttribute("memberAnswers", memberAnswers);
 
-        if (userAnswers == null || userAnswers.isEmpty()) {
+        if (memberAnswers == null || memberAnswers.isEmpty()) {
             model.addAttribute("message", "응답이 없습니다. 설문을 완료해주세요.");
             return "survey/result";
         }
 
         // 결과 계산 로직
-        Map<String, Integer> typeCount = surveyService.calculateResult(userAnswers);
+        Map<String, Integer> typeCount = surveyService.calculateResult(memberAnswers);
         model.addAttribute("typeCount", typeCount);
 
         // 가장 높은 점수의 유형 찾기
@@ -184,8 +184,8 @@ public class SurveyController {
     @PostMapping("/tiebreakerproc")
     public String submitTieBreaker(@RequestParam("selectedType") String selectedType, Model model, HttpSession session) {
         model.addAttribute("topResultType", selectedType);
-        Map<Integer, String> userAnswers = (Map<Integer, String>) session.getAttribute("userAnswers");
-        Map<String, Integer> typeCount = surveyService.calculateResult(userAnswers);
+        Map<Integer, String> memberAnswers = (Map<Integer, String>) session.getAttribute("memberAnswers");
+        Map<String, Integer> typeCount = surveyService.calculateResult(memberAnswers);
         model.addAttribute("typeCount", typeCount);
 
         // 선택한 유형에 해당하는 SpaceType 객체 찾기

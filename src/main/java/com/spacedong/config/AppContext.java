@@ -17,9 +17,9 @@ import javax.sql.DataSource;
 @Configuration
 public class AppContext {
 
-    @Bean(name="loginUser")
+    @Bean(name="loginMember")
     @SessionScope
-    public MemberBean loginUser(){
+    public MemberBean loginMember(){
         return new MemberBean();
     }
 
@@ -41,8 +41,8 @@ public class AppContext {
     @Value("${spring.datasource.url}")
     private String url;
 
-    @Value("${spring.datasource.username}")
-    private String username;
+    @Value("${spring.datasource.membername}")
+    private String membername;
 
     @Value("${spring.datasource.password}")
     private String password;
@@ -53,7 +53,7 @@ public class AppContext {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(driverClass);
         config.setJdbcUrl(url);
-        config.setUsername(username);
+        config.setUsername(membername);
         config.setPassword(password);
         return new HikariDataSource(config);
     }

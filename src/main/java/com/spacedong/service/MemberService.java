@@ -12,14 +12,14 @@ import com.spacedong.repository.MemberRepository;
 @Service
 public class MemberService {
 	
-	@Resource(name = "loginUser")
-	private MemberBean loginUser;	
+	@Resource(name = "loginMember")
+	private MemberBean loginMember;	
 
 	@Autowired
 	private MemberRepository memberRepository;
 		 
 	@Transactional
-	public void signupUser(MemberBean memberBean) {
+	public void signupMember(MemberBean memberBean) {
 		
 		System.out.println("서비스: " + memberBean.getMember_id());
 		memberRepository.signupMember(memberBean);
@@ -28,9 +28,9 @@ public class MemberService {
 	
 	public void naverLogin(MemberBean memberBean) {
         // DB에서 사용자가 존재하는지 확인 (sns_id로 체크)
-        MemberBean existingUser = memberRepository.getMemberBySnsId(memberBean.getSns_id());
+        MemberBean existingMember = memberRepository.getMemberBySnsId(memberBean.getSns_id());
 
-        if (existingUser != null) {
+        if (existingMember != null) {
             // 사용자 정보가 존재하면, 정보를 업데이트
         	memberRepository.updateMember(memberBean);
         } else {
@@ -39,13 +39,13 @@ public class MemberService {
         }
     }
 	
-	public boolean getLoginUser(MemberBean tempLoginUser) {
-		MemberBean temp = memberRepository.getLoginMember(tempLoginUser);
+	public boolean getLoginMember(MemberBean tempLoginMember) {
+		MemberBean temp = memberRepository.getLoginMember(tempLoginMember);
 		if(temp!=null) {
-			loginUser.setMember_id(temp.getMember_id());
-			loginUser.setMember_name(temp.getMember_name());
-			loginUser.setLogin(true);
-			System.out.println(loginUser.isLogin());
+			loginMember.setMember_id(temp.getMember_id());
+			loginMember.setMember_name(temp.getMember_name());
+			loginMember.setLogin(true);
+			System.out.println(loginMember.isLogin());
 			return true;
 		}
 		return false;
