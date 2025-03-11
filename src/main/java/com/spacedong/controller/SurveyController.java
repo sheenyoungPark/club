@@ -165,6 +165,7 @@ public class SurveyController {
         } else {
             // 동률 시 선택지 제공을 위한 정보 모델에 추가
             model.addAttribute("tieTypes", topTypes);
+            model.addAttribute("tieCount", topTypes.size());
 
             // 각 타입별 정보 제공
             for (String type : topTypes) {
