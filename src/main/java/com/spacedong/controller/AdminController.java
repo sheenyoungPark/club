@@ -152,7 +152,7 @@ public class AdminController {
     
     // 회원 관리 페이지
     @GetMapping("/member_management")
-    public String userManagement() {
+    public String memberManagement() {
         return "admin/member_management";
     }
     
