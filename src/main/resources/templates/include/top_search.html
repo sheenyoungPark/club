@@ -22,12 +22,18 @@
         </nav>
 
         <div class="right-section">
-           <!-- &lt;!&ndash; 로그인 상태에 따른 조건부 버튼 &ndash;&gt;-->
-            <div th:if="${loginUser != null and loginUser.login == true}">
+            <!-- 로그인 상태에 따른 조건부 버튼 -->
+            <div th:if="${loginMember != null && loginMember.login == true}">
+                <span th:text="${loginMember.member_name} + '님 환영합니다'"></span>
                 <button type="button" th:onclick="|location.href='@{/member/memberinfo}'|" class="login-btn">내정보</button>
-                <button type="button" th:onclick="|location.href='@{/memeber/logout}'|" class="login-btn">로그아웃</button>
+                <button type="button" th:onclick="|location.href='@{/member/logout}'|" class="login-btn">로그아웃</button>
             </div>
-            <div th:unless="${loginUser != null and loginUser.login == true}">
+            <div th:if="${loginBusiness != null && loginBusiness.login == true}">
+                <span th:text="${loginBusiness.business_name} + '님 환영합니다'"></span>
+                <button type="button" th:onclick="|location.href='@{/member/memberinfo}'|" class="login-btn">내정보</button>
+                <button type="button" th:onclick="|location.href='@{/member/logout}'|" class="login-btn">로그아웃</button>
+            </div>
+            <div th:unless="${(loginMember != null && loginMember.login == true) || (loginBusiness != null && loginBusiness.login == true)}">
                 <button type="button" th:onclick="|location.href='@{/member/login}'|" class="login-btn">로그인</button>
                 <button type="button" th:onclick="|location.href='@{/member/signup}'|" class="login-btn">회원가입</button>
             </div>

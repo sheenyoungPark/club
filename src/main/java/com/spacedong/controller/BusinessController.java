@@ -61,6 +61,7 @@ public class BusinessController {
     @PostMapping("/login_pro")
     public String login_pro(@ModelAttribute BusinessBean businessBean) {
         if (businessService.getLoginMember(businessBean)) {
+
             return "/business/login_success"; // 로그인 성공 시 리디렉트
         } else {
             return "/member/login_fail"; // 로그인 실패 시, 로그인 페이지로 리디렉트 + 에러 표시
