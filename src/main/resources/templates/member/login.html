@@ -21,6 +21,12 @@
         <input type="text" th:field="*{member_id}" class="input-field" placeholder="아이디" />
         <input type="password" th:field="*{member_pw}" class="input-field" placeholder="비밀번호" />
 
+        <div class="social-login">
+            <a th:href="@{/login/naver}" class="naver-login">
+                <img src="https://static.nid.naver.com/oauth/small_g_in.PNG" alt="네이버 로그인"/>
+            </a>
+        </div>
+
         <button type="submit" class="login-button">로그인</button>
     </form>
 
@@ -38,11 +44,7 @@
     </div>
 
 
-    <div class="social-login">
-        <a th:href="@{/login/naver}" class="naver-login">
-            <img src="https://static.nid.naver.com/oauth/small_g_in.PNG" alt="네이버 로그인"/>
-        </a>
-    </div>
+
 </div>
 
 <script th:src="@{/js/login.js}"></script>

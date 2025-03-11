@@ -49,6 +49,8 @@ public class MemberController {
 			return "admin/init";
 		}else {
 			if(memberService.getLoginMember(memberBean)) {//민승123
+				loginMember.setLogin(true);
+				System.out.println("로그인 성공: " + loginMember.getMember_name() + ", 로그인 상태: " + loginMember.isLogin());
 				return "member/login_success";
 			}else {		
 				return "member/login_fail";
