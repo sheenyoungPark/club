@@ -161,3 +161,9 @@
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     }
 }
+.category-icon {
+    width: 16px;  /* 원하는 크기로 조절 */
+    height: auto;
+    margin-right: 5px;  /* 글씨와 간격 조절 */
+    vertical-align: middle;
+}

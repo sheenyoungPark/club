@@ -18,13 +18,20 @@
     <h3 class="category-title">카테고리</h3>
     <ul class="category-list">
       <li class="category-item" th:classappend="${param.category_type == null || param.category_type == 'all' ? 'active' : ''}">
-        <a th:href="@{/category/category_info(category_type='all')}">전체보기</a>
+        <a th:href="@{/category/category_info(category_type='all')}">
+          <img th:src="@{/sources/picture/전체보기.png}" alt="전체보기 아이콘" class="category-icon">
+          전체보기
+        </a>
       </li>
       <li th:each="category : ${categoryList}"
           class="category-item"
           th:classappend="${category.category_type == param.category_type ? 'active' : ''}">
-        <a th:href="@{/category/category_info(category_type=${category.category_type})}"
-           th:text="${category.category_type}"></a>
+        <a th:href="@{/category/category_info(category_type=${category.category_type})}">
+          <img th:src="@{/sources/picture/{categoryType}.png(categoryType=${category.category_type})}"
+               alt="카테고리 아이콘"
+               class="category-icon">
+          <span th:text="${category.category_type}"></span>
+        </a>
       </li>
     </ul>
   </div>
