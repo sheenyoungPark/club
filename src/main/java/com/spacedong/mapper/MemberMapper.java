@@ -1,10 +1,6 @@
 package com.spacedong.mapper;
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import com.spacedong.beans.MemberBean;
 
@@ -45,4 +41,6 @@ public interface MemberMapper {
     @Update("update member set member_personality=#{member_personality} where member_id = #{member_id}")
     public void savePersonality(@Param("member_personality") int member_personality, @Param("member_id") String member_id);
 
+    @Delete("DELETE FROM member WHERE member_id = #{member_id}")
+    void deleteMember(String member_id);
 }

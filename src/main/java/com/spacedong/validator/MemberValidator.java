@@ -9,7 +9,7 @@ public class MemberValidator implements Validator {
 
 	@Override
 	public boolean supports(Class<?> clazz) {
-		return MemberBean.class.equals(clazz);
+		return MemberBean.class.isAssignableFrom(clazz);
 	}
 
 	@Override
