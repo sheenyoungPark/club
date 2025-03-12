@@ -2,10 +2,215 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>동호회 상세 정보</title>
     <link rel="stylesheet" th:href="@{/css/bottom.css}">
-    <link rel="stylesheet" th:href="@{/css/club_info.css}">
     <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: white;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            font-size: 16px;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .club-detail-container {
+            margin-top: 80px; /* 상단 메뉴를 위한 여백 추가 */
+            background-color: white;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .club-header {
+            background-color: #5d4b8c;
+            color: white;
+            padding: 30px 40px;
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .club-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            margin-bottom: 10px;
+        }
+
+        .club-category {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .club-body {
+            padding: 40px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .club-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            flex: 1;
+            min-width: 180px;
+            background-color: #f8f7fc;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(93, 75, 140, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(93, 75, 140, 0.2);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #5d4b8c;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .club-info-box {
+            margin-bottom: 40px;
+            line-height: 1.8;
+            background-color: #f8f7fc;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .club-info-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #5d4b8c;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e6e0f3;
+        }
+
+        .club-info-content {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .club-actions {
+            margin-top: 40px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 200px;
+        }
+
+        .btn-primary {
+            background-color: #5d4b8c;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #4a3d73;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(93, 75, 140, 0.3);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: #5d4b8c;
+            border: 2px solid #5d4b8c;
+        }
+
+        .btn-outline:hover {
+            background-color: #f1eeff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(93, 75, 140, 0.2);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #5d4b8c;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 10px 0;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .club-header {
+                padding: 25px 20px;
+            }
+
+            .club-body {
+                padding: 25px 20px;
+            }
+
+            .club-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stat-box {
+                min-width: 100%;
+            }
+
+            .club-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .club-title {
+                font-size: 26px;
+            }
+        }
+    </style>
 </head>
 <body>
 <!-- 상단 메뉴 include -->
@@ -21,7 +226,7 @@
         <div class="club-body">
             <div class="club-stats">
                 <div class="stat-box">
-                    <div th:text="${#dates.format(club.club_joindate, 'yyyy.MM.dd')}"></div>
+                    <div class="stat-value" th:text="${#dates.format(club.club_joindate, 'yyyy.MM.dd')}">2023.01.01</div>
                     <div class="stat-label">개설일</div>
                 </div>
                 <div class="stat-box">
@@ -30,11 +235,11 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-value">
-        <span th:with="today=${#dates.createNow()},
-                       joinDate=${club.club_joindate},
-                       diffMillis=${today.time - joinDate.time},
-                       diffDays=${(diffMillis / (1000 * 60 * 60 * 24)+1)}"
-              th:text="${#numbers.formatInteger(diffDays, 0)}">365</span><span>일</span>
+                        <span th:with="today=${#dates.createNow()},
+                                   joinDate=${club.club_joindate},
+                                   diffMillis=${today.time - joinDate.time},
+                                   diffDays=${(diffMillis / (1000 * 60 * 60 * 24)+1)}"
+                              th:text="${#numbers.formatInteger(diffDays, 0)}">365</span><span>일</span>
                     </div>
                     <div class="stat-label">활동 기간</div>
                 </div>
@@ -44,7 +249,7 @@
                 <h3 class="club-info-title">동호회 소개</h3>
                 <div class="club-info-content">
                     <p th:if="${#strings.isEmpty(club.club_info)}">등록된 소개 내용이 없습니다.</p>
-                    <p th:unless="${#strings.isEmpty(club.club_info)}" th:text="${club.club_info}">동호회 소개 내용</p>
+                    <p th:unless="${#strings.isEmpty(club.club_info)}" th:text="${club.club_info}">동호회 소개 내용이 여기에 표시됩니다. 이 동호회는 다양한 활동을 통해 회원들간의 친목을 도모하고 취미를 공유하는 모임입니다. 함께 즐겁게 활동하며 소중한 추억을 만들어보세요!</p>
                 </div>
             </div>
 
@@ -55,7 +260,9 @@
         </div>
     </div>
 
-    <a href="javascript:history.back()" class="back-link">← 목록으로 돌아가기</a>
+    <div style="width: 100%; padding: 0 40px 30px 40px; box-sizing: border-box;">
+        <a href="javascript:history.back()" class="back-link">← 목록으로 돌아가기</a>
+    </div>
 </div>
 </body>
 </html>
