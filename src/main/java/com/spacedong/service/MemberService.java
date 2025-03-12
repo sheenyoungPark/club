@@ -68,6 +68,10 @@ public class MemberService {
 		if(temp!=null) {
 			loginMember.setMember_id(temp.getMember_id());
 			loginMember.setMember_name(temp.getMember_name());
+			loginMember.setMember_email(temp.getMember_email());
+			loginMember.setMember_nickname(temp.getMember_nickname());
+			loginMember.setMember_address(temp.getMember_address());
+			loginMember.setMember_phone(temp.getMember_phone());
 			loginMember.setLogin(true);
 			System.out.println(loginMember.isLogin());
 			return true;
@@ -78,5 +82,34 @@ public class MemberService {
 	public void savePersonality(int member_personality, String member_id) {
 		memberRepository.savePersonality(member_personality, member_id);
 	}
-	
+
+	// 회원 정보 업데이트
+	public void updateMember(MemberBean memberBean) {
+		memberRepository.updateMember(memberBean);
+		loginMember.setMember_name(memberBean.getMember_name());
+	}
+	// 회원 탈퇴 처리
+	public void deleteMember(String member_id) {
+		memberRepository.deleteMember(member_id);
+		loginMember.setLogin(false);
+		loginMember.setMember_id(null);
+		loginMember.setMember_name(null);
+	}
+	public String getMaskedPhone() {
+		String phone = loginMember.getMember_phone();
+
+		if (phone != null && phone.length() == 11) { // 01029920409 같은 형식이면 자동 변환
+			phone = phone.replaceAll("(\\d{3})(\\d{4})(\\d{4})", "$1-$2-$3");
+		}
+
+		if (phone != null && phone.length() == 13) { // 변환된 010-2992-0409 형식이면 마스킹
+			String masked = phone.replaceAll("(\\d{3})-(\\d{4})-(\\d{4})", "$1-****-$3");
+			System.out.println("마스킹된 휴대폰 번호: " + masked);
+			return masked;
+		}
+
+		System.out.println("원래 번호 반환: " + phone);
+		return phone;
+	}
 }
+

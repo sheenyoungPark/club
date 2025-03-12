@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>회원 정보 수정</title>
+  <link rel="stylesheet" th:href="@{/css/editMemberInfo.css}">
+</head>
+<body>
+<div class="container">
+  <h2>회원 정보 수정</h2>
+
+  <form th:action="@{/member/editMemberInfo}" method="post" th:object="${loginMember}">
+    <div class="form-group">
+      <label for="nickname">닉네임</label>
+      <input type="text" id="nickname" name="member_nickname" class="input-field" th:field="*{member_nickname}">
+    </div>
+
+    <div class="form-group">
+      <label for="phone">전화번호</label>
+      <input type="tel" id="phone" name="member_phone" class="input-field" th:field="*{member_phone}">
+    </div>
+
+    <div class="form-group">
+      <label for="address">주소</label>
+      <input type="text" id="address" name="member_address" class="input-field" th:field="*{member_address}">
+    </div>
+
+    <button type="submit" class="button">정보 수정 저장</button>
+    <a th:href="@{/member/memberinfo}" class="button cancel">취소</a>
+  </form>
+</div>
+</body>
+</html>

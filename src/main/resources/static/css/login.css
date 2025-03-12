@@ -101,16 +101,22 @@ body {
     color: #ddd;
 }
 
+.signup-section {
+    text-align: center;
+    margin-top: 20px; /* 네이버 로그인 버튼과 간격을 주기 위해 */
+    margin-bottom: 30px; /* 아이디 찾기 | 비밀번호 찾기와의 간격 */
+}
+
 .signup-button {
     width: 100%;
     padding: 15px;
     background-color: white;
-    color: #333;
-    border: 1px solid #ddd;
+    color: #4a00e0;
+    border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-    margin-top: 20px;
+    margin: 15px 0;
     transition: background-color 0.3s ease;
 }
 

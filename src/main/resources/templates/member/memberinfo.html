@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 정보</title>
+    <link rel="stylesheet" th:href="@{/css/memberinfo.css}">
+</head>
+<body>
+<div class="container">
+    <h2>내 정보</h2>
+
+    <!-- 프로필 섹션 -->
+    <div class="profile-section">
+        <div class="profile-name">이름 : <span th:text="${loginMember.member_name}"></span></div>
+        <div class="profile-nickname">닉네임 : <span th:text="${loginMember.member_nickname}"></span></div>
+        <div class="profile-phone">휴대폰 : <span th:text="${maskedPhone}"></span></div>
+        <div class="profile-email">이메일 : <span th:text="${loginMember.member_email}"></span></div>
+        <div class="profile-address">주소 : <span th:text="${loginMember.member_address}"></span></div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- 정보 수정 페이지 이동 버튼 -->
+    <div class="extra-actions">
+        <a th:href="@{/member/editMemberInfo}" class="button">내 정보 수정</a>
+        <a th:href="@{/member/changePassword}" class="button">비밀번호 변경</a>
+        <a th:href="@{/member/deleteAccount}" class="button danger">회원 탈퇴</a>
+    </div>
+</div>
+</body>
+</html>

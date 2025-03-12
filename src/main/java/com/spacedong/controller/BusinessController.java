@@ -36,16 +36,16 @@ public class BusinessController {
         }
     }
 
-    @GetMapping("/business_signup")
-    public String business_signup(@ModelAttribute BusinessBean businessBean) {
-        return "business/business_signup"; // 템플릿: templates/business/business_signup.html
+    @GetMapping("/signup")
+    public String business_signup(@ModelAttribute(name = "businessBean") BusinessBean businessBean) {
+        return "business/signup"; // 템플릿: templates/business/business_signup.html
     }
 
-    @PostMapping("/business_signup_pro")
+    @PostMapping("/signup_pro")
     public String business_signup_pro(@Valid @ModelAttribute BusinessBean businessBean, BindingResult result) {
 
         if (result.hasErrors()) {
-            return "business/business_signup"; // 회원가입 실패 시, 기존 페이지로 돌아감
+            return "business/signup"; // 회원가입 실패 시, 기존 페이지로 돌아감
         }
 
         businessService.businessJoin(businessBean);

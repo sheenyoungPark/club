@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>기업회원 가입</title>
+    <link th:href="@{/css/businessSignup.css}" rel="stylesheet" />
+</head>
+<body>
+<div class="container">
+    <h1>기업회원 가입</h1>
+
+    <form th:action="@{/business/business_signup_pro}" method="post" th:object="${businessBean}">
+        <div class="form-group">
+            <label for="business_id">아이디 *</label>
+            <input type="text" id="business_id" th:field="*{business_id}" />
+            <p class="error" th:if="${#fields.hasErrors('business_id')}" th:errors="*{business_id}"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="business_pw">비밀번호 *</label>
+            <input type="password" id="business_pw" th:field="*{business_pw}" />
+            <p class="error" th:if="${#fields.hasErrors('business_pw')}" th:errors="*{business_pw}"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="business_pw_confirm">비밀번호 확인 *</label>
+            <input type="password" id="business_pw_confirm" name="business_pw_confirm" required>
+            <span id="pw_match_error" class="error" style="display: none;">비밀번호가 일치하지 않습니다.</span>
+        </div>
+
+        <div class="form-group">
+            <label for="business_name">기업명 *</label>
+            <input type="text" id="business_name" th:field="*{business_name}" />
+            <p class="error" th:if="${#fields.hasErrors('business_name')}" th:errors="*{business_name}"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="business_email">이메일 *</label>
+            <input type="email" id="business_email" th:field="*{business_email}" />
+            <p class="error" th:if="${#fields.hasErrors('business_email')}" th:errors="*{business_email}"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="business_phone">전화번호 *</label>
+            <input type="text" id="business_phone" th:field="*{business_phone}" />
+            <p class="error" th:if="${#fields.hasErrors('business_phone')}" th:errors="*{business_phone}"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="business_address">주소 *</label>
+            <textarea id="business_address" th:field="*{business_address}"></textarea>
+            <p class="error" th:if="${#fields.hasErrors('business_address')}" th:errors="*{business_address}"></p>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="business_public" th:field="*{business_public}" value="Y" />
+            <label for="business_public">기업정보 공개에 동의합니다</label>
+        </div>
+
+        <button type="submit" class="btn-submit">회원가입</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const pwConfirm = document.getElementById('business_pw_confirm');
+        const pwField = document.getElementById('business_pw');
+        const pwMatchError = document.getElementById('pw_match_error');
+
+        // 비밀번호 확인 검증
+        pwConfirm.addEventListener('input', function() {
+            if(this.value !== pwField.value) {
+                pwMatchError.style.display = 'block';
+            } else {
+                pwMatchError.style.display = 'none';
+            }
+        });
+
+        // 폼 제출 시 비밀번호 확인
+        form.addEventListener('submit', function(e) {
+            if(pwConfirm.value !== pwField.value) {
+                e.preventDefault();
+                pwMatchError.style.display = 'block';
+                pwConfirm.focus();
+            }
+        });
+    });
+</script>
+</body>
+</html>

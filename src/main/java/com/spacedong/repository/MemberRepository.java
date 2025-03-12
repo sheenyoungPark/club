@@ -45,6 +45,9 @@ public class MemberRepository {
 	public void savePersonality(int member_personality, String member_id) {
 		memberMapper.savePersonality(member_personality, member_id);
 	}
+	public void deleteMember(String member_id){
+		memberMapper.deleteMember(member_id);
+	}
 
 	
 }
