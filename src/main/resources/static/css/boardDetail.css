@@ -18,6 +18,10 @@
     font-size: 16px;
     line-height: 1.6;
     margin-bottom: 20px;
+    white-space: pre-wrap; /* 줄 바꿈을 유지하면서 자동으로 개행 */
+    word-wrap: break-word; /* 긴 단어가 자동으로 줄 바뀜 */
+    overflow-wrap: break-word; /* 컨테이너를 벗어나지 않도록 자동 줄 바꿈 */
+    max-width: 100%; /* 부모 요소의 크기를 벗어나지 않도록 설정 */
 }
 
 .comment-section {
