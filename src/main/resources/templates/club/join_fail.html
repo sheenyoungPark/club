@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    alert('로그인 후 신청해주세요');
+    location.href = /*[[@{/member/login?fail=true}]]*/ '/member/login';
+    /*]]>*/
+</script>
+
+</body>
+</html>

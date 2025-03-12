@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.spacedong.beans.Category;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import com.spacedong.beans.ClubMemberBean;
+import org.apache.ibatis.annotations.*;
 
 import com.spacedong.beans.ClubBean;
 
@@ -69,4 +67,13 @@ public interface ClubMapper {
     * */
     @Select("SELECT ca.category_name,ca.category_type, COUNT(*) AS category_count FROM club c JOIN category ca ON c.club_category = ca.category_name GROUP BY ca.category_type, ca.category_name ORDER BY category_count DESC")
     List<Category> countCategory();
+
+    //이미 해당 클럽에 가입했는지 확인
+    @Select("select  * from club_member where club_id = #{club_id} and member_id = #{member_id}")
+    ClubMemberBean getClubMember(@Param("club_id") int club_id,@Param("member_id") String member_id);
+
+    //클럽에 멤버 가입
+    @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'normal')")
+    void join_club(@Param("club_id") int club_id,@Param("member_id") String member_id);
+
 }
