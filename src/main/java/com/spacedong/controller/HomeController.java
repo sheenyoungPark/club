@@ -1,6 +1,7 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.Category;
+import com.spacedong.beans.ClubBean;
 import com.spacedong.service.ClubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,13 +21,14 @@ public class HomeController {
     @RequestMapping("/")
     public String home(Model model) {
 
-        List<Category> count = clubService.countCategory();
+        List<Category> categoriesCount = clubService.countCategory();
+        List<ClubBean> clubCount = clubService.countClub();
 
-        for (Category c : count){
-            System.out.println(c.getCategory_name());
+        for (ClubBean c : clubCount){
+            System.out.println("id : " + c.getClub_id() + "name" + c.getClub_name());
         }
-
-        model.addAttribute("count", count);
+        model.addAttribute("categortCount", categoriesCount);
+        model.addAttribute("clubCount", clubCount);
 
 
         return "main";

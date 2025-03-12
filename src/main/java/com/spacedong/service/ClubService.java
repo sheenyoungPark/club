@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.spacedong.beans.Category;
+import com.spacedong.beans.ClubMemberBean;
+import com.spacedong.beans.MemberBean;
+import com.spacedong.mapper.ClubMapper;
+import jakarta.annotation.Resource;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +18,14 @@ import com.spacedong.repository.ClubRepository;
 
 @Service
 public class ClubService {
+
+    @Resource(name = "loginMember")
+    private MemberBean loginMemeber;
     
     @Autowired
     private ClubRepository clubRepository;
-    
+
+
     /**
      * 모든 동호회 목록을 조회
      * @return 전체 동호회 목록
@@ -73,4 +83,35 @@ public class ClubService {
     public List<Category> countCategory(){
         return clubRepository.countCategory();
     }
+
+    public List<ClubBean> countClub(){
+        return clubRepository.countClub();
+    }
+
+    //이미 해당 클럽에 가입했는지 확인
+    public ClubMemberBean getClubMember(@Param("club_id") int club_id, @Param("member_id") String member_id){
+        return clubRepository.getClubMember(club_id, member_id);
+    }
+
+    //클럽에 가입
+    public void join_club(@Param("club_id") int club_id, @Param("member_id") String member_id){
+        clubRepository.join_club(club_id, member_id);
+    }
+
+    //클럽 생성시 역할 회장
+    public void create_join_club(@Param("club_id") int club_id,@Param("member_id") String member_id){
+        clubRepository.create_join_club(club_id, member_id);
+    }
+
+    //클럽 생성
+    public  void create_club(ClubBean clubBean){
+
+        clubRepository.create(clubBean);
+
+    }
+    //클럽 이름으로 클럽 객체 찾기
+    public ClubBean searchClubName(String club_name){
+        return clubRepository.searchClubName(club_name);
+    }
+
 }
