@@ -39,7 +39,7 @@ public interface MemberMapper {
     @Update("update member set member_email = #{member_email}, member_name = #{member_name}, member_phone = #{member_phone}  WHERE sns_id = #{sns_id}")
     public void updateMember(MemberBean memberBean);
     
-    @Insert("insert into member(member_id, sns_id, member_name, member_email, member_phone, sns_type, member_nickname) values(#{member_id}, #{sns_id}, #{member_name}, #{member_email}, #{member_phone}, 'naver','user' || TO_CHAR(member_nickname_seq.NEXTVAL))")
+    @Insert("insert into member(member_id, sns_id, member_name, member_email, member_phone, sns_type, member_nickname, member_personality) values(#{member_id}, #{sns_id}, #{member_name}, #{member_email}, #{member_phone}, 'naver','user' || TO_CHAR(member_nickname_seq.NEXTVAL), 0)")
     public void naverSignUp(MemberBean memberBean);
 
     @Update("update member set member_personality=#{member_personality} where member_id = #{member_id}")

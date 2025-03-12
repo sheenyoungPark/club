@@ -15,5 +15,14 @@ public interface CategoryMapper {
    
    @Select("select * from category where category_type = #{type}")
    public List<Category> categoryInfo(String type);
-   
+
+   @Select("SELECT DISTINCT category_type FROM category")
+   public List<String> getAllCategoryType();
+
+   //겹치는거 제외 카테고리
+   @Select("select distinct * from category")
+   public List<Category> categoryList();
+
+   @Select("select * from where = ${categoty_name}")
+   public Category getCategoryByName(String category_name);
 }

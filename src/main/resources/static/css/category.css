@@ -161,3 +161,37 @@
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     }
 }
+/* 클럽 생성하기 버튼 스타일 */
+.create-club-button {
+    position: absolute;
+    top: 200px;
+    right: 20px;
+    background-color: #5d4b8c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.create-club-button:hover {
+    background-color: #4a3b76;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.create-club-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+.create-club-button i {
+    margin-right: 5px;
+}

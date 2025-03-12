@@ -49,12 +49,12 @@
   <h2>인기 카테고리</h2>
   <div class="category-icons">
     <!-- count 리스트의 항목들을 최대 5개까지만 순서대로 표시 -->
-    <div class="category" th:each="category, iterStat : ${count}" th:if="${iterStat.index < 5}">
+    <div class="category" th:each="category, iterStat : ${categortCount}" th:if="${iterStat.index < 5}">
       <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category.category_type}, sub_category=${category.category_name})}'|">
         <!-- 기존 이미지 경로를 사용하거나 동적으로 처리할 수 있습니다 -->
-        <img th:src="@{'/sources/picture/' + ${category.category_name} + '.jpg'}"
+        <!--<img th:src="@{'/sources/picture/' + ${category.category_name} + '.jpg'}"
              th:alt="${category.category_name} + ' 아이콘'"
-             onerror="this.src='/sources/picture/default.png'">
+             onerror="this.src='/sources/picture/default.png'">-->
       </button>
       <span class="category-name" th:text="${category.category_name}">카테고리명</span>
     </div>
@@ -62,35 +62,16 @@
 </section>
 
 <section class="recommended-clubs" id="recommended-clubs">
-  <h2>추천 동호회</h2>
+  <h2>인기 동호회</h2>
   <div class="club-container">
-    <button class="club-box" th:onclick="'handleClubClick(\'축구 동호회\')'">
-      <img th:src="@{/sources/picture/soccer.png}" alt="동호회 이미지" class="club-image">
-      <h3 class="club-name">축구 동호회</h3>
-      <p class="club-category">운동/스포츠</p>
-      <p class="club-location">서울</p>
-      <p class="club-members">멤버 수: 120명</p>
-    </button>
-    <button class="club-box">
-      <img th:src="@{/sources/picture/food.jpeg}" alt="동호회 이미지" class="club-image">
-      <h3 class="club-name">요리 연구회</h3>
-      <p class="club-category">식사/인맥</p>
-      <p class="club-location">부산</p>
-      <p class="club-members">멤버 수: 80명</p>
-    </button>
-    <button class="club-box">
-      <img th:src="@{/sources/picture/mountain.jpg}" alt="동호회 이미지" class="club-image">
-      <h3 class="club-name">등산 동호회</h3>
-      <p class="club-category">아웃도어</p>
-      <p class="club-location">대구</p>
-      <p class="club-members">멤버 수: 150명</p>
-    </button>
-    <button class="club-box">
-      <img th:src="@{/sources/picture/classic.jpg}" alt="동호회 이미지" class="club-image">
-      <h3 class="club-name">클래식 음악 감상회</h3>
-      <p class="club-category">음악</p>
-      <p class="club-location">인천</p>
-      <p class="club-members">멤버 수: 95명</p>
+    <!-- popularClubs 리스트의 항목들을 최대 4개까지만 순서대로 표시 -->
+    <button class="club-box" th:each="club, iterStat : ${clubCount}" th:if="${iterStat.index < 4}"
+            th:onclick="|location.href='@{/club/club_info(club_id=${club.club_id})}'|">
+      <!-- 이미지 제거 -->
+      <div class="image-placeholder" style="width: 100%; height: 150px;"></div>
+
+      <!-- 동호회 이름 추가 -->
+      <h3 class="club-name" th:text="${club.club_name}">동호회명</h3>
     </button>
   </div>
 </section>

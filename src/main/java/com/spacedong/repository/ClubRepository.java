@@ -57,6 +57,9 @@ public class ClubRepository {
    public List<Category> countCategory(){
        return clubMapper.countCategory();
    }
+   public List<ClubBean> countClub(){
+       return clubMapper.countClub();
+   }
 
    //이미 해당 클럽에 가입했는지 확인
    public ClubMemberBean getClubMember(@Param("club_id") int club_id, @Param("member_id") String member_id){
@@ -68,5 +71,19 @@ public class ClubRepository {
        clubMapper.join_club(club_id, member_id);
    }
 
+   //클럽 생성시 역할 회장
+   public void create_join_club(@Param("club_id") int club_id,@Param("member_id") String member_id){
+       clubMapper.create_join_club(club_id, member_id);
+   }
+   
+   //클럽 생성
+   public  void create(ClubBean clubBean){
+       clubMapper.create(clubBean);
+   }
+
+    //클럽 이름으로 클럽 객체 찾기
+    public ClubBean searchClubName(String club_name){
+       return clubMapper.searchClubName(club_name);
+    }
 
 }

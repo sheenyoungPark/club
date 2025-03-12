@@ -26,7 +26,20 @@ public class CategoryService {
       return list;
 
    }
-   
+
+   public List<String> getAllCategoryType(){
+      return categoryRepository.getAllCategoryType();
+   }
+
+   //겹치는거 제외 카테고리
+   public List<Category> categoryList(){
+      return categoryRepository.categoryList();
+   }
+
+   //소분류로 대분류 찾기
+   public Category getCategoryByName(String category_name){
+      return categoryRepository.getCategoryByName(category_name);
+   }
    
    
 }

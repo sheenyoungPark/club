@@ -5,13 +5,15 @@ import java.util.List;
 
 import com.spacedong.beans.Category;
 import com.spacedong.beans.ClubMemberBean;
+import com.spacedong.repository.ClubRepository;
 import org.apache.ibatis.annotations.*;
 
 import com.spacedong.beans.ClubBean;
 
 @Mapper
 public interface ClubMapper {
-    
+
+
     /**
      * 모든 동호회 목록을 조회
      * @return 전체 동호회 목록
@@ -34,7 +36,8 @@ public interface ClubMapper {
      */
     @Select("SELECT * FROM club, category WHERE category_Name = #{subCategoryName} and category.category_name = club.club_category")
     List<ClubBean> getClubsBySubCategory(@Param("subCategoryName") String subCategoryName);
-    
+
+    //club_id 별로 조회
     @Select("select * from club where club_id = #{club_id}")
     public ClubBean oneClubInfo(@Param("club_id") int club_id);
     
@@ -45,6 +48,7 @@ public interface ClubMapper {
      */
     @Select("SELECT * FROM club WHERE club_name LIKE '%' || #{keyword} || '%'")
     List<ClubBean> searchClubsByName(@Param("keyword") String keyword);
+
 
     /**
      * 카테고리로 검색
@@ -68,6 +72,10 @@ public interface ClubMapper {
     @Select("SELECT ca.category_name,ca.category_type, COUNT(*) AS category_count FROM club c JOIN category ca ON c.club_category = ca.category_name GROUP BY ca.category_type, ca.category_name ORDER BY category_count DESC")
     List<Category> countCategory();
 
+    //클럽별 인원수 순서
+    @Select("select cm.club_id, c.club_name , count(*) as club_count from club_member cm join club c on c.club_id = cm.club_id group by cm.club_id, c.club_name order by cm.club_id")
+    List<ClubBean> countClub();
+
     //이미 해당 클럽에 가입했는지 확인
     @Select("select  * from club_member where club_id = #{club_id} and member_id = #{member_id}")
     ClubMemberBean getClubMember(@Param("club_id") int club_id,@Param("member_id") String member_id);
@@ -75,5 +83,22 @@ public interface ClubMapper {
     //클럽에 멤버 가입
     @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'normal')")
     void join_club(@Param("club_id") int club_id,@Param("member_id") String member_id);
+
+    //클럽 생성시 역할 회장
+    @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'master')")
+    void create_join_club(@Param("club_id") int club_id,@Param("member_id") String member_id);
+
+    //클럽 생성
+    @Insert("INSERT INTO club (club_id, club_name, club_info, club_joindate, club_point, club_category, club_public) \n" +
+            "VALUES (club_id_seq.nextval, #{club_name}, #{club_info}, SYSDATE, 0, #{club_category}, 'WAIT')")
+    void create(ClubBean clubBean);
+
+    //동호회 명으로 클럽 객체 찾기
+    @Select("select * from club where club_name = #{club_name}")
+    ClubBean searchClubName(String club_name);
+
+
+
+
 
 }

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>클럽 생성하기</title>
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+  <link rel="stylesheet" th:href="@{/css/create.css}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="create-club-container">
+  <form th:action="@{/club/create_pro}" method="post" th:object="${clubBean}" class="create-club-form">
+    <h2 class="form-title">새 동호회 생성하기</h2>
+
+    <div class="form-group">
+      <label for="club_name" class="form-label">동호회 이름 *</label>
+      <input type="text" id="club_name" name="club_name" th:field="*{club_name}" class="form-input" required minlength="2" maxlength="40">
+      <small class="error-message" th:if="${#fields.hasErrors('club_name')}" th:errors="*{club_name}"></small>
+    </div>
+
+    <div class="form-group">
+      <label for="club_info" class="form-label">동호회 소개</label>
+      <textarea id="club_info" name="club_info" th:field="*{club_info}" class="form-textarea" placeholder="동호회에 대한 설명을 입력해주세요."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">카테고리 선택 *</label>
+      <div class="category-selection">
+        <div class="category-column">
+          <label for="category_type" class="form-label">대분류</label>
+          <select id="category_type" name="category_type" class="form-select" onchange="getSubCategories()">
+            <option value="">대분류 선택</option>
+            <option th:each="type : ${categoryType}" th:value="${type}" th:text="${type}"></option>
+          </select>
+          <div id="main-category-loading" class="loading">불러오는 중...</div>
+        </div>
+
+        <div class="category-column">
+          <label for="club_category" class="form-label">소분류</label>
+          <select id="club_category" name="club_category" th:field="*{club_category}" class="form-select" required>
+            <option value="">소분류 선택</option>
+            <option th:each="category : ${subCategoryList}" th:value="${category.category_name}" th:text="${category.getCategory_name()}"></option>
+          </select>
+          <div id="sub-category-loading" class="loading">불러오는 중...</div>
+          <small class="error-message" th:if="${#fields.hasErrors('club_category')}" th:errors="*{club_category}"></small>
+        </div>
+      </div>
+    </div>
+
+    <input type="hidden" name="club_public" value="WAIT">
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">동호회 생성하기</button>
+      <a th:href="@{/category/category_info}" class="btn btn-secondary">취소</a>
+    </div>
+  </form>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="include/bottom_info :: bottom_info"></div>
+
+<script th:src="@{/js/top.js}"></script>
+<script>
+  function getSubCategories() {
+    const categoryType = document.getElementById("category_type").value;
+    const subCategorySelect = document.getElementById("club_category");
+    const loadingIndicator = document.getElementById("sub-category-loading");
+
+    if (!categoryType) {
+      // 대분류가 선택되지 않았을 경우 소분류 초기화
+      while (subCategorySelect.options.length > 1) {
+        subCategorySelect.remove(1);
+      }
+      return;
+    }
+
+    // 로딩 표시 보이기
+    loadingIndicator.style.display = "block";
+
+    // AJAX 요청
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", "/club/get_sub_categories?category_type=" + encodeURIComponent(categoryType), true);
+
+    xhr.onload = function() {
+      // 로딩 표시 숨기기
+      loadingIndicator.style.display = "none";
+
+      if (xhr.status === 200) {
+        const categories = JSON.parse(xhr.responseText);
+
+        // 기존 옵션 초기화 (첫 번째 옵션 제외)
+        while (subCategorySelect.options.length > 1) {
+          subCategorySelect.remove(1);
+        }
+
+        // 새 옵션 추가
+        categories.forEach(function(category) {
+          const option = document.createElement("option");
+          option.value = category.category_name;
+          option.text = category.category_name;
+          subCategorySelect.add(option);
+        });
+      } else {
+        console.error("카테고리 가져오기 실패: " + xhr.status);
+      }
+    };
+
+    xhr.onerror = function() {
+      // 로딩 표시 숨기기
+      loadingIndicator.style.display = "none";
+      console.error("카테고리 가져오기 오류 발생");
+    };
+
+    xhr.send();
+  }
+</script>
+</body>
+</html>
