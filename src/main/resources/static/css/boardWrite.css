@@ -52,3 +52,36 @@
 .back-btn:hover {
     background-color: #4a3b72;
 }
+
+.preview-container {
+    display: flex;
+    flex-wrap: wrap; /* 여러 개 이미지 정렬 */
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.img-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.preview-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}

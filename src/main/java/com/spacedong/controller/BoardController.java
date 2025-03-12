@@ -7,8 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/community")
@@ -86,9 +90,13 @@ public class BoardController {
 		boardService.incrementViewCount(boardType, boardId);
 
 		List<BoardCommentBean> comments = boardService.getCommentHierarchy(boardType, boardId);
+
+		List<String> images = boardService.getBoardImages(boardType, boardId);
+
 		model.addAttribute("comments", comments);
 		model.addAttribute("post", post);
 		model.addAttribute("boardType", boardType);
+		model.addAttribute("images", images);
 
 		return "community/boardDetail";
 	}
@@ -101,14 +109,9 @@ public class BoardController {
 							   @RequestParam("boardType") String boardType,
 							   @RequestParam(value = "parent_comment_id", required = false) Integer parentCommentId) {
 
-		System.out.println("board_id: " + boardId);
-		System.out.println("boardType: " + boardType);
-		System.out.println("comment_writer_id: " + writerId);
-		System.out.println("comment_text: " + commentText);
-		System.out.println("parent_comment_id: " + parentCommentId);
-
 		// ✅ 댓글 객체 생성
 		BoardCommentBean comment = new BoardCommentBean();
+
 		comment.setBoard_id(boardId);
 		comment.setComment_writer_id(writerId);
 		comment.setComment_text(commentText);
@@ -128,19 +131,64 @@ public class BoardController {
 		return "community/boardWrite"; // 글쓰기 페이지로 이동
 	}
 
-	/** ✅ 게시글 작성 */
 	@PostMapping("/write")
 	public String writeBoard(@RequestParam("boardType") String boardType,
 							 @RequestParam("board_title") String title,
 							 @RequestParam("board_text") String text,
-							 @RequestParam("board_writer_id") String writerId) {
+							 @RequestParam("board_writer_id") String writerId,
+							 @RequestParam(value = "images", required = false) List<MultipartFile> images) {
 
+		// 1️⃣ 게시글 정보 저장
 		BoardBean board = new BoardBean();
 		board.setBoard_title(title);
 		board.setBoard_text(text);
 		board.setBoard_writer_id(writerId);
 
-		boardService.writeBoard(boardType, board);
+		int boardId = boardService.writeBoard(boardType, board);
+		System.out.println("📌 저장된 게시글 ID: " + boardId);
+
+		// 2️⃣ 이미지 저장 (이미지가 있을 때만 실행)
+		String uploadDir = "C:/upload/image/" + boardType + "BoardImg/"; // ✅ 저장 경로 변경
+		File dir = new File(uploadDir);
+		if (!dir.exists()) {
+			boolean created = dir.mkdirs();
+			if (created) {
+				System.out.println("📌 디렉토리 생성 완료: " + uploadDir);
+			} else {
+				System.out.println("🚨 디렉토리 생성 실패!");
+			}
+		}
+
+		if (images != null && !images.isEmpty()) {
+			for (MultipartFile image : images) {
+				if (!image.isEmpty()) {
+					try {
+						String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+						File destFile = new File(uploadDir + fileName);
+						image.transferTo(destFile);
+
+						System.out.println("📌 이미지 저장 완료: " + destFile.getAbsolutePath());
+
+						// 3️⃣ DB에 이미지 정보 저장
+						boardService.saveBoardImage(boardType, boardId, fileName);
+					} catch (IOException e) {
+						System.out.println("🚨 이미지 저장 실패: " + e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}
+		} else {
+			System.out.println("📌 업로드된 이미지 없음.");
+		}
+
 		return "redirect:/community/board?boardType=" + boardType;
 	}
+
+
+
+
+
+
+
+
 }

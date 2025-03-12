@@ -106,8 +106,23 @@ public class BoardService {
     }
 
 
-    /** ✅ 게시글 작성 기능 추가 **/
-    public void writeBoard(String boardType, BoardBean board) {
-        boardRepository.writeBoard(boardType, board);
+    /** ✅ 게시글 작성 + ID 반환 */
+    public int writeBoard(String boardType, BoardBean board) {
+        System.out.println("📌 서비스: 게시글 저장 (boardType: " + boardType + ")");
+        return boardRepository.writeBoard(boardType, board);
     }
+
+    /** ✅ 게시글에 이미지 저장 */
+    public void saveBoardImage(String boardType, int boardId, String fileName) {
+        System.out.println("📌 DB에 이미지 저장: " + fileName + " (boardId: " + boardId + ")");
+        boardRepository.saveBoardImage(boardType, boardId, fileName);
+    }
+
+
+
+    /** ✅ 특정 게시글의 이미지 목록 가져오기 */
+    public List<String> getBoardImages(String boardType, int boardId) { // ✅ boardType 추가
+        return boardRepository.getBoardImages(boardType, boardId);
+    }
+
 }

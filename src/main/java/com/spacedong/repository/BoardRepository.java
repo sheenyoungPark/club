@@ -80,8 +80,23 @@ public class BoardRepository {
     }
 
 
-    /** ✅ 게시글 작성 메서드 추가 **/
-    public void writeBoard(String boardType, BoardBean board) {
+    /** ✅ 게시글 작성 후 ID 반환 */
+    public int writeBoard(String boardType, BoardBean board) {
         boardMapper.writeBoard(boardType, board.getBoard_title(), board.getBoard_text(), board.getBoard_writer_id());
+        System.out.println("📌 Repository: 마지막 게시글 ID 조회");
+        return boardMapper.getLastInsertedBoardId(boardType);
     }
+
+    /** ✅ 게시글 이미지 저장 */
+    public void saveBoardImage(String boardType, int boardId, String fileName) {
+        System.out.println("📌 Repository: " + boardType + "_board_image 테이블에 저장");
+        boardMapper.saveBoardImage(boardType, boardId, fileName);
+    }
+
+
+    /** ✅ 특정 게시글의 이미지 목록 가져오기 **/
+    public List<String> getBoardImages(String boardType, int boardId) {
+        return boardMapper.getBoardImages(boardType, boardId);
+    }
+
 }

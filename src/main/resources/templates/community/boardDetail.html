@@ -14,6 +14,15 @@
 <div class="post-container">
     <h2 class="post-title" th:text="${post.board_title}">게시글 제목</h2>
 
+    <!-- ✅ 이미지 표시 영역 -->
+    <div class="image-container" th:if="${images != null and not #lists.isEmpty(images)}">
+        <h3>📸 첨부된 사진</h3>
+        <div class="image-list">
+            <img th:each="img : ${images}" th:src="@{/image/{boardType}BoardImg/{img}(boardType=${boardType}, img=${img})}"
+                 class="post-image" alt="첨부 이미지">
+        </div>
+    </div>
+
     <p class="post-content" th:text="${post.board_text}">게시글 내용</p>
 
     <!-- 댓글 섹션 -->

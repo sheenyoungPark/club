@@ -84,4 +84,18 @@ public interface BoardMapper {
                     @Param("board_title") String board_title,
                     @Param("board_text") String board_text,
                     @Param("board_writer_id") String board_writer_id);
+
+    /** ✅ 마지막으로 추가된 게시글의 ID 가져오기 */
+    @Select("SELECT board_id FROM ${boardType}_board ORDER BY create_date DESC FETCH FIRST 1 ROWS ONLY")
+    int getLastInsertedBoardId(@Param("boardType") String boardType);
+
+    /** ✅ 게시글 이미지 저장 */
+    @Insert("INSERT INTO ${boardType}_board_image (board_id, img) VALUES (#{boardId}, #{fileName})")
+    void saveBoardImage(@Param("boardType") String boardType, @Param("boardId") int boardId, @Param("fileName") String fileName);
+
+    /** ✅ 특정 게시글의 이미지 목록 가져오기 **/
+    @Select("SELECT img FROM ${boardType}_board_image WHERE board_id = #{boardId}")
+    List<String> getBoardImages(@Param("boardType") String boardType, @Param("boardId") int boardId);
+
+
 }

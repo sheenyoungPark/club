@@ -16,7 +16,7 @@
     <h2 class="write-title">게시글 작성</h2>
 
     <!-- 글쓰기 폼 -->
-    <form th:action="@{/community/write}" method="post">
+    <form th:action="@{/community/write}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="boardType" th:value="${boardType}">
         <input type="hidden" name="board_writer_id" th:value="${loginMember.member_id}">
 
@@ -25,6 +25,14 @@
 
         <label>내용:</label>
         <textarea name="board_text" class="input-field" placeholder="내용을 입력하세요" rows="6" required></textarea>
+
+        <!-- ✅ 사진 업로드 -->
+        <label>사진 업로드:</label>
+        <input type="file" id="imageUpload" name="images" accept="image/*" multiple class="input-file">
+        <p id="fileWarning" style="color: red; display: none;">※ 5MB 이하의 이미지만 업로드 가능합니다.</p>
+
+        <!-- ✅ 실시간 이미지 미리보기 -->
+        <div id="imagePreviewContainer" class="preview-container"></div>
 
         <button type="submit" class="write-btn">작성 완료</button>
     </form>
@@ -35,6 +43,46 @@
 <!-- 하단 정보바 -->
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
 <script th:src="@{/js/top.js}"></script>
+<!-- ✅ 이미지 미리보기 및 삭제 기능 추가 -->
+<script th:inline="javascript">
+    document.getElementById('imageUpload').addEventListener('change', function(event) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const fileWarning = document.getElementById('fileWarning');
+        previewContainer.innerHTML = ''; // 기존 미리보기 초기화
 
+        Array.from(event.target.files).forEach(file => {
+            // ✅ 파일 크기 체크 (5MB 제한)
+            if (file.size > 5 * 1024 * 1024) { // 5MB 이상이면 경고
+                fileWarning.style.display = "block";
+                return;
+            } else {
+                fileWarning.style.display = "none"; // 정상 파일이면 경고 숨김
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.classList.add('img-wrapper');
+
+                const imgElement = document.createElement('img');
+                imgElement.src = e.target.result;
+                imgElement.classList.add('preview-image');
+
+                // ✅ 삭제 버튼 추가
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerText = '✖';
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.onclick = function() {
+                    imgWrapper.remove(); // 이미지 삭제
+                };
+
+                imgWrapper.appendChild(imgElement);
+                imgWrapper.appendChild(deleteBtn);
+                previewContainer.appendChild(imgWrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
 </body>
 </html>

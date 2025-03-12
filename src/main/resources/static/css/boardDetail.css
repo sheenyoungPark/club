@@ -74,3 +74,21 @@
 .back-btn:hover {
     background-color: #4a3b72;
 }
+.image-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.image-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.post-image {
+    width: 200px;
+    height: auto;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
