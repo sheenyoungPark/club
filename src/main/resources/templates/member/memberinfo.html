@@ -12,10 +12,20 @@
 
     <!-- 프로필 섹션 -->
     <div class="profile-section">
-        <!-- ✅ 기본 프로필 이미지 추가 -->
+        <!-- ✅ 프로필 이미지 표시 (기본 or 사용자 설정) -->
         <div class="profile-image">
-            <img th:src="@{/sources/picture/기본이미지.png}" alt="기본 프로필 이미지">
+            <img th:src="${loginMember.member_profile != null and loginMember.member_profile != ''}
+                        ? @{/image/profile/{img}(img=${loginMember.member_profile})}
+                        : @{/sources/picture/기본이미지.png}"
+                 id="profilePreview" alt="프로필 이미지">
         </div>
+
+        <!-- ✅ 프로필 이미지 변경 -->
+        <form th:action="@{/member/updateProfile}" method="post" enctype="multipart/form-data">
+            <input type="file" id="profileUpload" name="profileImage" accept="image/*" class="input-file">
+            <button type="submit" class="button">프로필 변경</button>
+        </form>
+
         <div class="profile-name">이름 : <span th:text="${loginMember.member_name}"></span></div>
         <div class="profile-nickname">닉네임 : <span th:text="${loginMember.member_nickname}"></span></div>
         <div class="profile-phone">휴대폰 : <span th:text="${maskedPhone}"></span></div>
@@ -32,5 +42,21 @@
         <a th:href="@{/member/deleteAccount}" class="button danger">회원 탈퇴</a>
     </div>
 </div>
+
+<script>
+    document.getElementById('profileUpload').addEventListener('change', function(event) {
+        const preview = document.getElementById('profilePreview');
+        const file = event.target.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+
 </body>
 </html>

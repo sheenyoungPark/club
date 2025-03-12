@@ -88,10 +88,6 @@ public class NaverLoginCallbackController {
                 memberBean.setMember_name(name);
                 memberBean.setMember_phone(modile);
 
-                loginMember.setMember_id(memberBean.getMember_id());
-                loginMember.setMember_email(memberBean.getMember_email());
-                loginMember.setMember_name(memberBean.getMember_name());
-                loginMember.setMember_phone(memberBean.getMember_phone());
                 loginMember.setLogin(true);
 
                 // 5. DB 저장 (이미 존재하면 업데이트)

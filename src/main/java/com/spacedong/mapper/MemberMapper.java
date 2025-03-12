@@ -43,4 +43,8 @@ public interface MemberMapper {
 
     @Delete("DELETE FROM member WHERE member_id = #{member_id}")
     void deleteMember(String member_id);
+
+    /** ✅ 프로필 이미지 업데이트 */
+    @Update("UPDATE member SET member_profile = #{fileName} WHERE member_id = #{memberId}")
+    void updateMemberProfile(@Param("memberId") String memberId, @Param("fileName") String fileName);
 }

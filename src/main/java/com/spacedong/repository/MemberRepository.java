@@ -49,5 +49,9 @@ public class MemberRepository {
 		memberMapper.deleteMember(member_id);
 	}
 
+	/** ✅ 프로필 이미지 업데이트 */
+	public void updateMemberProfile(String memberId, String fileName) {
+		memberMapper.updateMemberProfile(memberId, fileName);
+	}
 	
 }

@@ -54,13 +54,22 @@ public class MemberService {
         // DB에서 사용자가 존재하는지 확인 (sns_id로 체크)
         MemberBean existingMember = memberRepository.getMemberBySnsId(memberBean.getSns_id());
 
-        if (existingMember != null) {
-            // 사용자 정보가 존재하면, 정보를 업데이트
-        	memberRepository.updateMember(memberBean);
-        } else {
-            // 사용자가 존재하지 않으면, 신규 사용자로 등록
-        	memberRepository.naverSignUp(memberBean);
-        }
+		if (existingMember != null) {
+			// 사용자 정보가 존재하면, 정보를 업데이트
+			loginMember.setMember_id(existingMember.getMember_id());
+			loginMember.setMember_name(existingMember.getMember_name());
+			loginMember.setMember_phone(existingMember.getMember_phone());
+			loginMember.setMember_email(existingMember.getMember_email());
+			loginMember.setMember_nickname(existingMember.getMember_nickname());
+			loginMember.setMember_address(existingMember.getMember_address());
+			loginMember.setMember_joindate(existingMember.getMember_joindate());
+			loginMember.setMember_profile(existingMember.getMember_profile());
+			loginMember.setMember_personality(existingMember.getMember_personality());
+			loginMember.setMember_point(existingMember.getMember_point());
+		} else {
+			// 사용자가 존재하지 않으면, 신규 사용자로 등록
+			memberRepository.naverSignUp(memberBean);
+		}
     }
 	
 	public boolean getLoginMember(MemberBean tempLoginMember) {
@@ -72,8 +81,13 @@ public class MemberService {
 			loginMember.setMember_nickname(temp.getMember_nickname());
 			loginMember.setMember_address(temp.getMember_address());
 			loginMember.setMember_phone(temp.getMember_phone());
+			loginMember.setMember_personality(temp.getMember_personality());
+			loginMember.setMember_profile(temp.getMember_profile());
+			loginMember.setMember_point(temp.getMember_point());
 			loginMember.setLogin(true);
 			System.out.println(loginMember.isLogin());
+			System.out.println(loginMember.getMember_nickname());
+			System.out.println(loginMember.getMember_profile());
 			return true;
 		}
 		return false;
@@ -111,5 +125,10 @@ public class MemberService {
 		System.out.println("원래 번호 반환: " + phone);
 		return phone;
 	}
+	/** ✅ 회원 프로필 업데이트 */
+	public void updateMemberProfile(String memberId, String fileName) {
+		memberRepository.updateMemberProfile(memberId, fileName);
+	}
+
 }
 
