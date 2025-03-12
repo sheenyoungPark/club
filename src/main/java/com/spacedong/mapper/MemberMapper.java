@@ -42,5 +42,7 @@ public interface MemberMapper {
     @Insert("insert into member(member_id, sns_id, member_name, member_email, member_phone, sns_type) values(#{member_id}, #{sns_id}, #{member_name}, #{member_email}, #{member_phone}, 'naver')")
     public void naverSignUp(MemberBean memberBean);
 
+    @Update("update member set member_personality=#{member_personality} where member_id = #{member_id}")
+    public void savePersonality(@Param("member_personality") int member_personality, @Param("member_id") String member_id);
 
 }

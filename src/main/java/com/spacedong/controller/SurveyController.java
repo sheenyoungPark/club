@@ -3,6 +3,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.spacedong.beans.MemberBean;
+import com.spacedong.service.MemberService;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,12 @@ public class SurveyController {
 
     @Autowired
     private SurveyService surveyService;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Resource(name="loginMember")
+    private MemberBean loginMember;
 
     @GetMapping("/start")
     public String startSurvey(Model model, HttpSession session) {
@@ -165,6 +174,7 @@ public class SurveyController {
         } else {
             // 동률 시 선택지 제공을 위한 정보 모델에 추가
             model.addAttribute("tieTypes", topTypes);
+            model.addAttribute("tieCount", topTypes.size());
 
             // 각 타입별 정보 제공
             for (String type : topTypes) {
@@ -211,5 +221,32 @@ public class SurveyController {
         }
 
         return "survey/result";  // 최종 결과 페이지
+    }
+
+    @GetMapping("/save")
+    public String saveSurvey(@RequestParam("Type") String Type, Model model, HttpSession session) {
+        int member_personality=0;
+        System.out.println(Type);
+        if(Type.equals("탐험가")){
+            member_personality = 1;
+        }else if(Type.equals("교류가")){
+            member_personality = 2;
+        }else if(Type.equals("분석가")){
+            member_personality = 3;
+        }else if(Type.equals("관리자")){
+            member_personality = 4;
+        }
+
+        if(loginMember.isLogin()==true){
+            memberService.savePersonality(member_personality, loginMember.getMember_id());
+            model.addAttribute("check", true);
+            return "survey/save_success";
+        }else{
+            session.setAttribute("member_personality", member_personality);
+            return "member/login";
+
+        }
+
+
     }
 }

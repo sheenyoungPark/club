@@ -12,7 +12,7 @@
 <div th:replace="~{include/top_search :: top_search}"></div>
 
 <div class="container">
-    <h2>우티는 당신의 성향을 파악할 수 없어요!</h2>
+    <h2 th:text="'우티가 파악한 당신의 성향은 ' + ${tieCount} + '개에요!!!'">우티가 파악한 당신의 성향</h2>
     <p>아래에서 당신의 성향에 가장 맞는 유형을 선택해주세요.</p>
 
     <form th:action="@{/survey/tiebreakerproc}" method="post">
@@ -21,7 +21,6 @@
 </div>
 
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
-
 
 </body>
 </html>
