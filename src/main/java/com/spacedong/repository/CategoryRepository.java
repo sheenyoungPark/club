@@ -44,5 +44,10 @@ public class CategoryRepository {
       return categoryMapper.getCategoryByName(category_name);
    }
 
+   //대분류별 인원 많은순
+   public List<Category> categoryTypeCount(){
+      return categoryMapper.categoryTypeCount();
+   }
+
 
 }

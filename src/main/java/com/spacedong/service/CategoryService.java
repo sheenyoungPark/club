@@ -40,6 +40,11 @@ public class CategoryService {
    public Category getCategoryByName(String category_name){
       return categoryRepository.getCategoryByName(category_name);
    }
+
+   //대분류별 인원 많은순
+   public List<Category> categoryTypeCount(){
+      return categoryRepository.categoryTypeCount();
+   }
    
    
 }

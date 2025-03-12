@@ -25,4 +25,9 @@ public interface CategoryMapper {
 
    @Select("select * from where = ${categoty_name}")
    public Category getCategoryByName(String category_name);
+
+   //대분류별 인원 많은순
+   @Select("SELECT c.category_type,  COUNT(cm.member_id) AS member_count FROM  category c JOIN club cl ON c.category_name = cl.club_category JOIN club_member cm ON cl.club_id = cm.club_id GROUP BY c.category_type ORDER BY member_count DESC")
+   public List<Category> categoryTypeCount();
+
 }
