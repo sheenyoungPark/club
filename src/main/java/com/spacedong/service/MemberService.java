@@ -17,13 +17,37 @@ public class MemberService {
 
 	@Autowired
 	private MemberRepository memberRepository;
+
+
 		 
 	@Transactional
 	public void signupMember(MemberBean memberBean) {
 		
 		System.out.println("서비스: " + memberBean.getMember_id());
 		memberRepository.signupMember(memberBean);
-	}	
+	}
+
+	// 아이디 중복 확인
+	public boolean checkId(String member_id) {
+		int check_id = memberRepository.checkId(member_id);
+		if(check_id == 1){
+			return false;
+
+		}else {
+			return true;
+		}
+	}
+
+	// 닉네임 중복 확인
+	public boolean checkNickname(String member_nickname) {
+		int check_nick = memberRepository.checkNickname(member_nickname);
+		if(check_nick == 1){
+			return false;
+
+		}else {
+			return true;
+		}
+	}
 	
 	
 	public void naverLogin(MemberBean memberBean) {

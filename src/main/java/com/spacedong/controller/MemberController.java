@@ -56,7 +56,8 @@ public class MemberController {
 				return "member/login_fail";
 			}
 			
-			
+
+
 		}
 		
 	}
@@ -69,7 +70,7 @@ public class MemberController {
 	
 	
 	@GetMapping("signup")
-	public String signup(@ModelAttribute MemberBean memberBean) {
+	public String signup(@ModelAttribute(name = "memberBean") MemberBean memberBean) {
 		return "member/signup";
 	}
 	
@@ -85,6 +86,7 @@ public class MemberController {
 		return "member/signup_success";
 		
 	}
+
 	
 	
 }
