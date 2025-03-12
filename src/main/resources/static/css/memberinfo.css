@@ -53,7 +53,12 @@ h2:after {
     align-items: center;
     gap: 10px;
 }
-
+.profile-image img {
+    width: 100px; /* 원하는 크기로 조정 */
+    height: auto;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
 .profile-name {
     font-size: 22px;
     font-weight: 600;

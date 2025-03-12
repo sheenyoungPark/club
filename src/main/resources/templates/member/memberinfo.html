@@ -12,6 +12,10 @@
 
     <!-- 프로필 섹션 -->
     <div class="profile-section">
+        <!-- ✅ 기본 프로필 이미지 추가 -->
+        <div class="profile-image">
+            <img th:src="@{/sources/picture/기본이미지.png}" alt="기본 프로필 이미지">
+        </div>
         <div class="profile-name">이름 : <span th:text="${loginMember.member_name}"></span></div>
         <div class="profile-nickname">닉네임 : <span th:text="${loginMember.member_nickname}"></span></div>
         <div class="profile-phone">휴대폰 : <span th:text="${maskedPhone}"></span></div>
