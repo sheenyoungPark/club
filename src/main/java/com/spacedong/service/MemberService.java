@@ -80,6 +80,9 @@ public class MemberService {
 			loginMember.setMember_profile(existingMember.getMember_profile());
 			loginMember.setMember_personality(existingMember.getMember_personality());
 			loginMember.setMember_point(existingMember.getMember_point());
+
+			memberRepository.updateMember(memberBean);
+
 		} else {
 			// 사용자가 존재하지 않으면, 신규 사용자로 등록
 			memberRepository.naverSignUp(memberBean);
