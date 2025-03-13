@@ -25,6 +25,8 @@ public class ClubBean {
 
     private String club_category;
 
+	private Date club_agemin;
+
 	private String club_profile;
     
     @Size(max = 20)
@@ -70,6 +72,13 @@ public class ClubBean {
 		this.club_point = club_point;
 	}
 
+	public Date getClub_agemin() {
+		return club_agemin;
+	}
+
+	public void setClub_agemin(Date club_agemin) {
+		this.club_agemin = club_agemin;
+	}
 	public String getClub_category() {
 		return club_category;
 	}

@@ -19,7 +19,11 @@ public class MemberBean {
 	@NotBlank(message = "비밀번호를 입력하세요.")
     @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
 	private String member_pw;
-	
+
+	private String member_gender;
+
+	private Date member_birthdate;
+
 	@NotBlank(message = "비밀번호를 확인하세요")
 	private String member_pw2;
 
@@ -187,6 +191,21 @@ public class MemberBean {
 	public void setMember_point(int member_point) {
 		this.member_point = member_point;
 	}
-	
-	
+
+
+    public String getMember_gender() {
+        return member_gender;
+    }
+
+    public void setMember_gender(String member_gender) {
+        this.member_gender = member_gender;
+    }
+
+    public Date getMember_birthdate() {
+        return member_birthdate;
+    }
+
+    public void setMember_birthdate(Date member_birthdate) {
+        this.member_birthdate = member_birthdate;
+    }
 }
