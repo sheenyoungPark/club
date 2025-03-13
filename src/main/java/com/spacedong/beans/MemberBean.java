@@ -4,24 +4,20 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Date;
 
-@Getter
-@Setter
 public class MemberBean {
 
 	@NotBlank
 	@Pattern(regexp = "^[^\\s]+$")
 	@Size(min = 5, max = 40)
 	private String member_id;
-	
+
 	private String sns_id;
 
 	@NotBlank(message = "비밀번호를 입력하세요.")
-    @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
+	@Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
 	private String member_pw;
 
 	private String member_gender;
@@ -53,9 +49,12 @@ public class MemberBean {
 	private String member_nickname;
 
 	private int member_personality;
-	
+
+	// SNS 타입 필드 추가
+	private String sns_type;
+
 	private int member_point = 0;
-	
+
 	private boolean login;
 
 	private boolean idExist;
@@ -132,6 +131,24 @@ public class MemberBean {
 		this.member_name = member_name;
 	}
 
+	// 성별 getter, setter 추가
+	public String getMember_gender() {
+		return member_gender;
+	}
+
+	public void setMember_gender(String member_gender) {
+		this.member_gender = member_gender;
+	}
+
+	// 생년월일 getter, setter 추가
+	public Date getMember_birthdate() {
+		return member_birthdate;
+	}
+
+	public void setMember_birthdate(Date member_birthdate) {
+		this.member_birthdate = member_birthdate;
+	}
+
 	public String getMember_email() {
 		return member_email;
 	}
@@ -188,6 +205,15 @@ public class MemberBean {
 		this.member_personality = member_personality;
 	}
 
+	// SNS 타입 getter, setter 추가
+	public String getSns_type() {
+		return sns_type;
+	}
+
+	public void setSns_type(String sns_type) {
+		this.sns_type = sns_type;
+	}
+
 	public int getMember_point() {
 		return member_point;
 	}
@@ -195,21 +221,6 @@ public class MemberBean {
 	public void setMember_point(int member_point) {
 		this.member_point = member_point;
 	}
-
-
-    public String getMember_gender() {
-        return member_gender;
-    }
-
-    public void setMember_gender(String member_gender) {
-        this.member_gender = member_gender;
-    }
-
-    public Date getMember_birthdate() {
-        return member_birthdate;
-    }
-
-    public void setMember_birthdate(Date member_birthdate) {
-        this.member_birthdate = member_birthdate;
-    }
+	
+	
 }

@@ -7,12 +7,10 @@ import com.spacedong.beans.MemberBean;
 @Mapper
 public interface MemberMapper {
 
-    @Insert("INSERT INTO member (member_id, member_pw, member_name, member_email, "
-            + "member_phone, member_address, member_joindate, member_nickname, "
-            + "member_personality, member_point, member_gender, member_birthdate) "
-            + "VALUES (#{member_id}, #{member_pw}, #{member_name}, #{member_email}, "
-            + "#{member_phone}, #{member_address}, sysdate, #{member_nickname}, "
-            + "NVL(#{member_personality}, 0), NVL(#{member_point}, 0), #{member_gender},#{member_birthdate})")
+    @Insert("INSERT INTO member (member_id, member_pw, member_name, member_email, member_phone, member_address, member_joindate," +
+            " member_nickname, member_personality, member_point, member_gender, member_birthdate) " +
+            "VALUES (#{member_id}, #{member_pw}, #{member_name}, #{member_email}, #{member_phone}, #{member_address}, sysdate," +
+            " #{member_nickname}, NVL(#{member_personality}, 0), NVL(#{member_point}, 0), #{member_gender}, #{member_birthdate})")
     void signupMember(MemberBean memberBean);
 
     @Select("select * from member where member_id = #{member_id} and member_pw = #{member_pw} ")
@@ -37,7 +35,7 @@ public interface MemberMapper {
 
     @Update("update member set member_email = #{member_email}, member_name = #{member_name}, member_phone = #{member_phone}  WHERE sns_id = #{sns_id}")
     public void updateMember(MemberBean memberBean);
-    
+
     @Insert("insert into member(sns_id, member_id, member_name, member_email, member_phone, sns_type, member_nickname, member_personality, member_gender, member_birthdate) values(#{member_id}, #{sns_id}, #{member_name}, #{member_email}, #{member_phone}, 'naver','user' || TO_CHAR(member_nickname_seq.NEXTVAL), 0, #{member_gender}, #{member_birthdate})")
     public void naverSignUp(MemberBean memberBean);
 

@@ -109,6 +109,8 @@ public class MemberService {
 			loginMember.setMember_id(temp.getMember_id());
 			loginMember.setMember_name(temp.getMember_name());
 			loginMember.setMember_email(temp.getMember_email());
+			loginMember.setMember_gender(temp.getMember_gender());
+			loginMember.setMember_birthdate(temp.getMember_birthdate());
 			loginMember.setMember_nickname(temp.getMember_nickname());
 			loginMember.setMember_address(temp.getMember_address());
 			loginMember.setMember_phone(temp.getMember_phone());

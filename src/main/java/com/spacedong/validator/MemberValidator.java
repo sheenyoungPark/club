@@ -4,6 +4,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import com.spacedong.beans.MemberBean;
+import java.util.Date;  // Date 클래스 import 추가
 
 public class MemberValidator implements Validator {
 
@@ -40,6 +41,24 @@ public class MemberValidator implements Validator {
 		// 닉네임 중복확인 체크
 		if (!memberBean.isNickExist()) {
 			errors.rejectValue("member_nickname", null, "중복확인 버튼을 눌러주세요.");
+		}
+
+		// 성별 검증 - 메소드 안으로 이동
+		if (memberBean.getMember_gender() == null || memberBean.getMember_gender().isEmpty()) {
+			errors.rejectValue("member_gender", "error.member_gender", "성별을 선택해주세요.");
+		}
+
+		// 생년월일 검증 - 메소드 안으로 이동
+		if (memberBean.getMember_birthdate() == null) {
+			errors.rejectValue("member_birthdate", "error.member_birthdate", "생년월일을 입력해주세요.");
+		} else {
+			// 현재 날짜
+			Date currentDate = new Date();
+
+			// 생년월일이 미래 날짜인지 확인
+			if (memberBean.getMember_birthdate().after(currentDate)) {
+				errors.rejectValue("member_birthdate", "error.member_birthdate.future", "생년월일은 현재 날짜보다 이전이어야 합니다.");
+			}
 		}
 	}
 }
