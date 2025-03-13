@@ -62,6 +62,7 @@
       <label for="member_phone" class="required-field">휴대폰</label>
       <div class="input-row">
         <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />
+        <input type="hidden" id="isPhoneVerified" name="isPhoneVerified" value="false" />
         <button type="button" class="check-button" id="sendAuthCode">인증요청</button>
       </div>
       <span th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}" class="error-message"></span>
@@ -259,6 +260,11 @@
       return false;
     }
 
+    if ($("#isPhoneVerified").val() !== "true") {
+      alert("휴대폰 인증을 완료해야 합니다.");
+      return false;
+    }
+
     // 주소 입력 검증
     if ($("#member_postcode").val() === "" || $("#member_address").val() === "") {
       alert("주소 검색을 통해 주소를 입력해주세요.");
@@ -302,6 +308,7 @@
   $(document).ready(function() {
     // 인증 요청 버튼 클릭 시 실행
     $("#sendAuthCode").click(function() {
+      console.log("인증 요청 버튼이 클릭되었습니다!"); // 추가
       let phoneNumber = "+82" + $("#member_phone").val().trim();
 
       if (phoneNumber.length === 0) {
@@ -309,11 +316,12 @@
         return;
       }
 
-      // 서버에 인증번호 요청
-      $.post(/*[[@{/auth/sendCode}]]*/ '/auth/sendCode', { phoneNumber: phoneNumber }, function(response) {
-        alert(response); // 인증번호 발송 알림
-        $("#authCodeContainer").show(); // 인증번호 입력창 표시
+      $.post("/auth/sendCode", { phoneNumber: phoneNumber }, function(response) {
+        console.log("서버 응답:", response); // 추가
+        alert(response);
+        $("#authCodeContainer").show();
       }).fail(function() {
+        console.log("서버 요청 실패"); // 추가
         alert("인증번호 요청 중 오류가 발생했습니다.");
       });
     });
@@ -329,12 +337,14 @@
       }
 
       // 서버에 인증번호 검증 요청
-      $.post(/*[[@{/auth/verifyCode}]]*/ '/auth/verifyCode', { phoneNumber: phoneNumber, authCode: authCode }, function(response) {
+      $.post("/auth/verifyCode", { phoneNumber: phoneNumber, authCode: authCode }, function(response) {
         if (response) {
           $("#authResult").text("✔ 인증 성공").css({"color": "green", "font-size": "10px"});
           $("#member_phone").prop("readonly", true).css({"color": "gray"});
+          $("#isPhoneVerified").val("true"); // ✅ 인증 완료 처리
         } else {
           $("#authResult").text("❌ 인증 실패").css({"color": "red", "font-size": "10px"});
+          $("#isPhoneVerified").val("false"); // 인증 실패 시 다시 false 설정
         }
       }).fail(function() {
         alert("인증번호 확인 중 오류가 발생했습니다.");

@@ -11,18 +11,15 @@ import com.spacedong.repository.MemberRepository;
 
 @Service
 public class MemberService {
-	
+
 	@Resource(name = "loginMember")
-	private MemberBean loginMember;	
+	private MemberBean loginMember;
 
 	@Autowired
 	private MemberRepository memberRepository;
 
-
-		 
 	@Transactional
 	public void signupMember(MemberBean memberBean) {
-		
 		System.out.println("서비스: " + memberBean.getMember_id());
 		memberRepository.signupMember(memberBean);
 	}
@@ -30,39 +27,56 @@ public class MemberService {
 	// 아이디 중복 확인
 	public boolean checkId(String member_id) {
 		int check_id = memberRepository.checkId(member_id);
-		if(check_id == 1){
-			return false;
-
-		}else {
-			return true;
+		if(check_id == 1) {
+			return false;  // 중복 있음, 사용 불가
+		} else {
+			return true;   // 중복 없음, 사용 가능
 		}
 	}
 
-	// 닉네임 중복 확인
+	// 닉네임 중복 확인 - 기존 버전 (회원가입용)
 	public boolean checkNickname(String member_nickname) {
 		int check_nick = memberRepository.checkNickname(member_nickname);
-		if(check_nick == 1){
-			return false;
-
-		}else {
-			return true;
+		if(check_nick == 1) {
+			return false;  // 중복 있음, 사용 불가
+		} else {
+			return true;   // 중복 없음, 사용 가능
 		}
 	}
-	
-	
-	public void naverLogin(MemberBean memberBean) {
-        // DB에서 사용자가 존재하는지 확인 (sns_id로 체크)
-        MemberBean existingMember = memberRepository.getMemberBySnsId(memberBean.getSns_id());
 
-        if (existingMember != null) {
-            // 사용자 정보가 존재하면, 정보를 업데이트
-        	memberRepository.updateMember(memberBean);
-        } else {
-            // 사용자가 존재하지 않으면, 신규 사용자로 등록
-        	memberRepository.naverSignUp(memberBean);
-        }
-    }
-	
+	// 닉네임 중복 확인 - 오버로드 버전 (회원정보 수정용)
+	// String 타입으로 변경됨 (Long -> String)
+	public boolean checkNickname(String member_nickname, String current_id) {
+		// 현재 사용자의 닉네임인 경우 처리
+		if (current_id != null && !current_id.isEmpty()) {
+			MemberBean currentMember = memberRepository.getMemberById(current_id);
+			if (currentMember != null && currentMember.getMember_nickname().equals(member_nickname)) {
+				return true;  // 본인 닉네임은 사용 가능
+			}
+		}
+
+		// 다른 사용자의 닉네임 중복 체크
+		int check_nick = memberRepository.checkNickname(member_nickname);
+		if(check_nick == 1) {
+			return false;  // 중복 있음, 사용 불가
+		} else {
+			return true;   // 중복 없음, 사용 가능
+		}
+	}
+
+	public void naverLogin(MemberBean memberBean) {
+		// DB에서 사용자가 존재하는지 확인 (sns_id로 체크)
+		MemberBean existingMember = memberRepository.getMemberBySnsId(memberBean.getSns_id());
+
+		if (existingMember != null) {
+			// 사용자 정보가 존재하면, 정보를 업데이트
+			memberRepository.updateMember(memberBean);
+		} else {
+			// 사용자가 존재하지 않으면, 신규 사용자로 등록
+			memberRepository.naverSignUp(memberBean);
+		}
+	}
+
 	public boolean getLoginMember(MemberBean tempLoginMember) {
 		MemberBean temp = memberRepository.getLoginMember(tempLoginMember);
 		if(temp!=null) {
@@ -88,6 +102,42 @@ public class MemberService {
 		memberRepository.updateMember(memberBean);
 		loginMember.setMember_name(memberBean.getMember_name());
 	}
+
+
+	public void editMember(MemberBean memberBean) {
+		try {
+			// 로그 추가
+			System.out.println("editMember 호출됨 - ID: " + memberBean.getMember_id());
+			System.out.println("업데이트할 닉네임: " + memberBean.getMember_nickname());
+			System.out.println("업데이트할 전화번호: " + memberBean.getMember_phone());
+			System.out.println("업데이트할 주소: " + memberBean.getMember_address());
+
+			// DB 업데이트
+			memberRepository.editMember(memberBean);
+
+			// 세션 정보 업데이트
+			loginMember.setMember_nickname(memberBean.getMember_nickname());
+			loginMember.setMember_address(memberBean.getMember_address());
+			loginMember.setMember_phone(memberBean.getMember_phone());
+
+			System.out.println("세션 업데이트 완료 - 닉네임: " + loginMember.getMember_nickname());
+		} catch (Exception e) {
+			System.out.println("editMember 메소드 오류: " + e.getMessage());
+			e.printStackTrace();
+			throw e; // 상위로 예외 전파
+		}
+	}
+
+	public boolean checkPassword(String member_id, String currentPassword) {
+		String storedPassword = memberRepository.getPasswordById(member_id);
+		return storedPassword != null && storedPassword.equals(currentPassword);
+	}
+
+	@Transactional
+	public void updatePassword(String member_id, String newPassword) {
+		memberRepository.updatePassword(member_id, newPassword);
+	}
+
 	// 회원 탈퇴 처리
 	public void deleteMember(String member_id) {
 		memberRepository.deleteMember(member_id);
@@ -95,6 +145,7 @@ public class MemberService {
 		loginMember.setMember_id(null);
 		loginMember.setMember_name(null);
 	}
+
 	public String getMaskedPhone() {
 		String phone = loginMember.getMember_phone();
 
@@ -112,4 +163,3 @@ public class MemberService {
 		return phone;
 	}
 }
-

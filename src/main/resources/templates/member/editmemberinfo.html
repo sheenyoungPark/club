@@ -9,25 +9,138 @@
 <div class="container">
   <h2>회원 정보 수정</h2>
 
-  <form th:action="@{/member/editMemberInfo}" method="post" th:object="${loginMember}">
+  <!-- 메시지 표시 -->
+  <div th:if="${message}" class="message" th:text="${message}"></div>
+  <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+  <form th:action="@{/member/editmemberinfo_pro}" method="post" id="memberEditForm">
+    <!-- hidden 필드 -->
+    <input type="hidden" name="member_id" th:value="${loginMember.member_id}" />
+    <input type="hidden" id="isNicknameChecked" name="isNicknameChecked" value="false">
+    <input type="hidden" id="originalNickname" th:value="${loginMember.member_nickname}">
+
     <div class="form-group">
       <label for="nickname">닉네임</label>
-      <input type="text" id="nickname" name="member_nickname" class="input-field" th:field="*{member_nickname}">
+      <div class="input-row">
+        <input type="text" id="nickname" name="member_nickname" class="input-field"
+               th:value="${loginMember.member_nickname}" onchange="resetNicknameCheck()">
+        <button type="button" class="check-button" onclick="checkNickname()">중복확인</button>
+      </div>
+      <span id="nicknameError" class="error-message"></span>
     </div>
-
     <div class="form-group">
       <label for="phone">전화번호</label>
-      <input type="tel" id="phone" name="member_phone" class="input-field" th:field="*{member_phone}">
+      <input type="tel" id="phone" name="member_phone" class="input-field"
+             th:value="${loginMember.member_phone}">
     </div>
-
     <div class="form-group">
       <label for="address">주소</label>
-      <input type="text" id="address" name="member_address" class="input-field" th:field="*{member_address}">
+      <input type="text" id="address" name="member_address" class="input-field"
+             th:value="${loginMember.member_address}">
     </div>
-
-    <button type="submit" class="button">정보 수정 저장</button>
+    <button type="button" onclick="validateAndSubmit()" class="button">정보 수정 저장</button>
     <a th:href="@{/member/memberinfo}" class="button cancel">취소</a>
   </form>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  // 페이지 로드 시 원래 닉네임인 경우 중복체크 완료로 설정
+  document.addEventListener('DOMContentLoaded', function() {
+    const nickname = document.getElementById("nickname").value;
+    const originalNickname = document.getElementById("originalNickname").value;
+
+    if (nickname === originalNickname) {
+      document.getElementById("isNicknameChecked").value = "true";
+    }
+
+    // 디버깅용 로그
+    console.log("초기 닉네임: " + nickname);
+    console.log("원래 닉네임: " + originalNickname);
+    console.log("중복체크 상태: " + document.getElementById("isNicknameChecked").value);
+    console.log("member_id: " + /*[[${loginMember.member_id}]]*/);
+  });
+
+  // 닉네임 변경 시 중복체크 상태 초기화
+  function resetNicknameCheck() {
+    const nickname = document.getElementById("nickname").value.trim();
+    const originalNickname = document.getElementById("originalNickname").value;
+
+    if (nickname === originalNickname) {
+      document.getElementById("isNicknameChecked").value = "true";
+      document.getElementById("nicknameError").textContent = "";
+    } else {
+      document.getElementById("isNicknameChecked").value = "false";
+      document.getElementById("nicknameError").textContent = "닉네임이 변경되었습니다. 중복확인이 필요합니다.";
+      document.getElementById("nicknameError").style.color = "orange";
+    }
+
+    // 디버깅 로그
+    console.log("닉네임 변경됨: " + nickname);
+    console.log("중복체크 상태: " + document.getElementById("isNicknameChecked").value);
+  }
+
+  function checkNickname() {
+    let nickname = document.getElementById("nickname").value.trim();
+    let member_id = /*[[${loginMember.member_id}]]*/;
+
+    if (nickname.length === 0) {
+      document.getElementById("nicknameError").textContent = "닉네임을 입력하세요.";
+      document.getElementById("nicknameError").style.color = "red";
+      return;
+    }
+
+    console.log("중복체크 요청 - 닉네임: " + nickname + ", ID: " + member_id);
+
+    $.ajax({
+      url: /*[[@{/member/checkNickname}]]*/ "/member/checkNickname",
+      type: "get",
+      data: {
+        member_nickname: nickname,
+        current_id: member_id
+      },
+      success: function(result) {
+        // ... 이하 동일
+      },
+      error: function(xhr, status, error) {
+        // ... 이하 동일
+      }
+    });
+  }
+
+  function validateAndSubmit() {
+    const nickname = document.getElementById("nickname").value.trim();
+    const originalNickname = document.getElementById("originalNickname").value;
+    const isNicknameChecked = document.getElementById("isNicknameChecked").value;
+
+    console.log("폼 제출 검증 - 닉네임: " + nickname);
+    console.log("원래 닉네임: " + originalNickname);
+    console.log("중복체크 완료 여부: " + isNicknameChecked);
+
+    // 닉네임이 변경되었고 중복확인을 하지 않은 경우
+    if (nickname !== originalNickname && isNicknameChecked === "false") {
+      document.getElementById("nicknameError").textContent = "닉네임 중복확인이 필요합니다.";
+      document.getElementById("nicknameError").style.color = "red";
+      return;
+    }
+
+    // 닉네임 중복확인 결과가 사용 불가능인 경우
+    if (document.getElementById("nicknameError").textContent === "이미 사용 중인 닉네임입니다.") {
+      return;
+    }
+
+    console.log("폼 제출 준비 완료");
+
+    // 폼 데이터 직접 확인
+    const formData = new FormData(document.getElementById("memberEditForm"));
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+
+    // 폼 제출
+    document.getElementById("memberEditForm").submit();
+  }
+  /*]]>*/
+</script>
 </body>
 </html>
