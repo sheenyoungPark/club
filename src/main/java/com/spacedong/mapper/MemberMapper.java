@@ -7,12 +7,10 @@ import com.spacedong.beans.MemberBean;
 @Mapper
 public interface MemberMapper {
 
-    @Insert("INSERT INTO member (member_id, member_pw, member_name, member_email, "
-            + "member_phone, member_address, member_joindate, member_nickname, "
-            + "member_personality, member_point) "
-            + "VALUES (#{member_id}, #{member_pw}, #{member_name}, #{member_email}, "
-            + "#{member_phone}, #{member_address}, sysdate, #{member_nickname}, "
-            + "NVL(#{member_personality}, 0), NVL(#{member_point}, 0))")
+    @Insert("INSERT INTO member (member_id, member_pw, member_name, member_email, member_phone, member_address, member_joindate," +
+            " member_nickname, member_personality, member_point, member_gender, member_birthdate) " +
+            "VALUES (#{member_id}, #{member_pw}, #{member_name}, #{member_email}, #{member_phone}, #{member_address}, sysdate," +
+            " #{member_nickname}, NVL(#{member_personality}, 0), NVL(#{member_point}, 0), #{member_gender}, #{member_birthdate})")
     void signupMember(MemberBean memberBean);
 
     @Select("select * from member where member_id = #{member_id} and member_pw = #{member_pw}")

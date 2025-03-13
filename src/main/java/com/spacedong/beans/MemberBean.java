@@ -13,19 +13,25 @@ public class MemberBean {
 	@Pattern(regexp = "^[^\\s]+$")
 	@Size(min = 5, max = 40)
 	private String member_id;
-	
+
 	private String sns_id;
 
 	@NotBlank(message = "비밀번호를 입력하세요.")
-    @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
+	@Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
 	private String member_pw;
-	
+
 	@NotBlank(message = "비밀번호를 확인하세요")
 	private String member_pw2;
 
 	@NotBlank
 	@Size(min = 2, max = 10)
 	private String member_name;
+
+	// 성별 필드 추가
+	private String member_gender;
+
+	// 생년월일 필드 추가
+	private Date member_birthdate;
 
 	@Email
 	private String member_email;
@@ -45,9 +51,12 @@ public class MemberBean {
 	private String member_nickname;
 
 	private int member_personality;
-	
+
+	// SNS 타입 필드 추가
+	private String sns_type;
+
 	private int member_point = 0;
-	
+
 	private boolean login;
 
 	private boolean idExist;
@@ -124,6 +133,24 @@ public class MemberBean {
 		this.member_name = member_name;
 	}
 
+	// 성별 getter, setter 추가
+	public String getMember_gender() {
+		return member_gender;
+	}
+
+	public void setMember_gender(String member_gender) {
+		this.member_gender = member_gender;
+	}
+
+	// 생년월일 getter, setter 추가
+	public Date getMember_birthdate() {
+		return member_birthdate;
+	}
+
+	public void setMember_birthdate(Date member_birthdate) {
+		this.member_birthdate = member_birthdate;
+	}
+
 	public String getMember_email() {
 		return member_email;
 	}
@@ -180,6 +207,15 @@ public class MemberBean {
 		this.member_personality = member_personality;
 	}
 
+	// SNS 타입 getter, setter 추가
+	public String getSns_type() {
+		return sns_type;
+	}
+
+	public void setSns_type(String sns_type) {
+		this.sns_type = sns_type;
+	}
+
 	public int getMember_point() {
 		return member_point;
 	}
@@ -187,6 +223,4 @@ public class MemberBean {
 	public void setMember_point(int member_point) {
 		this.member_point = member_point;
 	}
-	
-	
 }
