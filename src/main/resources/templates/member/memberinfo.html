@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>내 정보</title>
     <link rel="stylesheet" th:href="@{/css/memberinfo.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
 </head>
 <body>
+<div th:insert="~{include/top_search :: top_search}"></div>
 <div class="container">
     <h2>내 정보</h2>
 
@@ -37,8 +40,8 @@
 
     <!-- 정보 수정 페이지 이동 버튼 -->
     <div class="extra-actions">
-        <a th:href="@{/member/editMemberInfo}" class="button">내 정보 수정</a>
-        <a th:href="@{/member/changePassword}" class="button">비밀번호 변경</a>
+        <!-- 기존 두 버튼을 하나로 통합 -->
+        <a th:href="@{/member/edit}" class="button">회원정보 관리</a>
         <a th:href="@{/member/deleteAccount}" class="button danger">회원 탈퇴</a>
     </div>
 </div>
@@ -58,5 +61,6 @@
     });
 </script>
 
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
 </body>
 </html>

@@ -10,8 +10,12 @@ public class AuthController {
     @PostMapping(value = "/sendCode", produces = "text/plain;charset=UTF-8")
     @ResponseBody
     public String sendAuthCode(@RequestParam String phoneNumber) {
-        SmsAuthService.sendAuthCode(phoneNumber);
-        return "인증번호가 발송되었습니다.";
+        try {
+            SmsAuthService.sendAuthCode(phoneNumber);
+            return "인증번호가 발송되었습니다.";
+        } catch (Exception e) {
+            return "인증번호 발송에 실패했습니다: " + e.getMessage();    
+        }
     }
 
     // 인증번호 검증 API

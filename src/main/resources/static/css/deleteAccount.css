@@ -1,0 +1,132 @@
+/* deleteAccount.css */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    padding: 40px;
+    margin: 20px;
+}
+
+h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.error-message {
+    background-color: #ffeaea;
+    border-left: 4px solid #e74c3c;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.error-message p {
+    color: #e74c3c;
+    margin: 0;
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #444;
+}
+
+.input-field {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    outline: none;
+}
+
+.input-field:focus {
+    border-color: #5d4b8c;
+    box-shadow: 0 0 0 2px rgba(93, 75, 140, 0.2);
+}
+
+.button {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s;
+    text-decoration: none;
+    margin-bottom: 15px;
+}
+
+.button.danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.button.danger:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+}
+
+.button.cancel {
+    background-color: #f5f5f5;
+    color: #555;
+    border: 1px solid #ddd;
+}
+
+.button.cancel:hover {
+    background-color: #eee;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 30px 20px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+}

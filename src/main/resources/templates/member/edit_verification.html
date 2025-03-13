@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원정보 수정 인증</title>
+    <link rel="stylesheet" th:href="@{/css/editMemberInfo.css}">
+</head>
+<body>
+<div class="container">
+    <h2>회원정보 수정 인증</h2>
+
+    <!-- 에러 메시지 표시 -->
+    <div th:if="${error}" class="error-message">
+        <p th:text="${error}"></p>
+    </div>
+
+    <p class="verification-message">
+        회원정보 보호를 위해 비밀번호를 한 번 더 입력해주세요.
+    </p>
+
+    <form th:action="@{/member/verify_password}" method="post">
+        <div class="form-group">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" name="password" class="input-field" required>
+        </div>
+
+        <button type="submit" class="button">인증하기</button>
+        <a th:href="@{/member/memberinfo}" class="button cancel">취소</a>
+    </form>
+</div>
+</body>
+</html>

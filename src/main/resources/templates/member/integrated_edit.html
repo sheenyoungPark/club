@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 정보 수정</title>
+    <link rel="stylesheet" th:href="@{/css/editMemberInfo.css}">
+    <!-- Daum 우편번호 서비스 스크립트 -->
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>회원 정보 수정</h2>
+
+    <!-- 메시지 표시 -->
+    <div th:if="${message}" class="message" th:text="${message}"></div>
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <form th:action="@{/member/integrated_update}" method="post" id="memberEditForm">
+        <!-- hidden 필드 -->
+        <input type="hidden" name="member_id" th:value="${loginMember.member_id}" />
+        <input type="hidden" id="isNicknameChecked" name="isNicknameChecked" value="true">
+        <input type="hidden" id="originalNickname" th:value="${loginMember.member_nickname}">
+
+        <!-- 기본 정보 섹션 -->
+        <div class="section">
+            <h3>기본 정보</h3>
+
+            <div class="form-group">
+                <label for="nickname">닉네임</label>
+                <div class="input-row">
+                    <input type="text" id="nickname" name="member_nickname" class="input-field"
+                           th:value="${loginMember.member_nickname}" onchange="resetNicknameCheck()">
+                    <button type="button" class="check-button" onclick="checkNickname()">중복확인</button>
+                </div>
+                <span id="nicknameError" class="error-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">전화번호</label>
+                <input type="tel" id="phone" name="member_phone" class="input-field"
+                       th:value="${loginMember.member_phone}">
+            </div>
+
+            <div class="form-group">
+                <label for="address">주소</label>
+                <div class="address-container">
+                    <div class="input-row">
+                        <input type="text" id="member_postcode" class="input-field" placeholder="우편번호" readonly />
+                        <button type="button" class="check-button" onclick="searchAddress()">주소검색</button>
+                    </div>
+                    <input type="text" id="address" name="member_address" class="input-field"
+                           th:value="${loginMember.member_address}" placeholder="기본주소" readonly="readonly" />
+                    <input type="text" id="member_address_detail" class="input-field" name="member_address_detail"
+                           placeholder="상세주소 입력" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" name="member_email" class="input-field"
+                       th:value="${loginMember.member_email}">
+            </div>
+        </div>
+
+        <!-- 비밀번호 변경 섹션 -->
+        <div class="section password-section">
+            <h3>비밀번호 변경 <span class="optional">(선택사항)</span></h3>
+
+            <div class="form-group">
+                <label for="newPassword">새 비밀번호</label>
+                <input type="password" id="newPassword" name="newPassword" class="input-field">
+                <span class="hint">8~16자리로 입력해주세요.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">새 비밀번호 확인</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="input-field">
+                <span id="passwordError" class="error-message"></span>
+            </div>
+        </div>
+
+        <button type="button" onclick="validateAndSubmit()" class="button">정보 수정 저장</button>
+        <a th:href="@{/member/memberinfo}" class="button cancel">취소</a>
+    </form>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 페이지 로드 시 원래 닉네임인 경우 중복체크 완료로 설정
+    document.addEventListener('DOMContentLoaded', function() {
+        const nickname = document.getElementById("nickname").value;
+        const originalNickname = document.getElementById("originalNickname").value;
+
+        if (nickname === originalNickname) {
+            document.getElementById("isNicknameChecked").value = "true";
+        }
+    });
+
+    // 닉네임 변경 시 중복체크 상태 초기화
+    function resetNicknameCheck() {
+        const nickname = document.getElementById("nickname").value.trim();
+        const originalNickname = document.getElementById("originalNickname").value;
+
+        if (nickname === originalNickname) {
+            document.getElementById("isNicknameChecked").value = "true";
+            document.getElementById("nicknameError").textContent = "";
+        } else {
+            document.getElementById("isNicknameChecked").value = "false";
+            document.getElementById("nicknameError").textContent = "닉네임이 변경되었습니다. 중복확인이 필요합니다.";
+            document.getElementById("nicknameError").style.color = "orange";
+        }
+    }
+
+    function checkNickname() {
+        let nickname = document.getElementById("nickname").value.trim();
+        let member_id = [[${loginMember.member_id}]];
+
+        if (nickname.length === 0) {
+            document.getElementById("nicknameError").textContent = "닉네임을 입력하세요.";
+            document.getElementById("nicknameError").style.color = "red";
+            return;
+        }
+
+        $.ajax({
+            url: [[@{/member/checkNickname}]],
+        type: "get",
+            data: {
+            member_nickname: nickname,
+                current_id: member_id
+        },
+        success: function(result) {
+            if (result === true) {
+                document.getElementById("nicknameError").textContent = "사용 가능한 닉네임입니다.";
+                document.getElementById("nicknameError").style.color = "green";
+                document.getElementById("isNicknameChecked").value = "true";
+            } else {
+                document.getElementById("nicknameError").textContent = "이미 사용 중인 닉네임입니다.";
+                document.getElementById("nicknameError").style.color = "red";
+                document.getElementById("isNicknameChecked").value = "false";
+            }
+        },
+        error: function(xhr, status, error) {
+            document.getElementById("nicknameError").textContent = "중복 확인 중 오류 발생.";
+            document.getElementById("nicknameError").style.color = "red";
+            document.getElementById("isNicknameChecked").value = "false";
+        }
+    });
+    }
+
+    function validateAndSubmit() {
+        const nickname = document.getElementById("nickname").value.trim();
+        const originalNickname = document.getElementById("originalNickname").value;
+        const isNicknameChecked = document.getElementById("isNicknameChecked").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        // 닉네임 검증
+        if (nickname !== originalNickname && isNicknameChecked === "false") {
+            document.getElementById("nicknameError").textContent = "닉네임 중복확인이 필요합니다.";
+            document.getElementById("nicknameError").style.color = "red";
+            return;
+        }
+
+        // 닉네임 중복확인 결과가 사용 불가능인 경우
+        if (document.getElementById("nicknameError").textContent === "이미 사용 중인 닉네임입니다.") {
+            return;
+        }
+
+        // 비밀번호 변경 검증 (입력된 경우에만)
+        if (newPassword.length > 0) {
+            // 비밀번호 길이 검사
+            if (newPassword.length < 8 || newPassword.length > 16) {
+                document.getElementById("passwordError").textContent = "비밀번호는 8~16자리로 입력해야 합니다.";
+                document.getElementById("passwordError").style.color = "red";
+                return;
+            }
+
+            // 비밀번호 일치 여부 검사
+            if (newPassword !== confirmPassword) {
+                document.getElementById("passwordError").textContent = "비밀번호가 일치하지 않습니다.";
+                document.getElementById("passwordError").style.color = "red";
+                return;
+            }
+
+            document.getElementById("passwordError").textContent = "";
+        }
+
+        // 폼 제출
+        document.getElementById("memberEditForm").submit();
+    }
+
+    function searchAddress() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드
+                var roadAddr = data.roadAddress; // 도로명 주소
+                var jibunAddr = data.jibunAddress; // 지번 주소
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById('member_postcode').value = data.zonecode;
+                document.getElementById('address').value = roadAddr || jibunAddr;
+
+                // 상세주소 필드로 포커스 이동
+                document.getElementById("member_address_detail").focus();
+            }
+        }).open();
+    }
+
+    // 페이지 로드 시 주소를 분리해서 표시
+    document.addEventListener('DOMContentLoaded', function() {
+        // 기존 이벤트 리스너 코드는 그대로 유지...
+
+        // 기존 주소가 있다면 처리
+        const fullAddress = document.getElementById("address").value;
+        if (fullAddress) {
+            // 여기서는 기존 주소를 그대로 표시합니다.
+            // 만약 주소를 우편번호, 기본주소, 상세주소로 분리해서 저장했다면
+            // 각 필드에 맞게 표시하는 로직을 추가하세요.
+        }
+    });
+
+    // 폼 제출 전 주소 정보 합치기
+    function validateAndSubmit() {
+        // 기존 검증 코드는 그대로 유지...
+
+        // 주소 정보 합치기
+        const postcode = document.getElementById("member_postcode").value;
+        const baseAddress = document.getElementById("address").value;
+        const detailAddress = document.getElementById("member_address_detail").value;
+
+        // 주소 입력 여부 확인 (선택적)
+        if (baseAddress) {
+            let fullAddress = baseAddress;
+            if (detailAddress) {
+                fullAddress += " " + detailAddress;
+            }
+            document.getElementById("address").value = fullAddress;
+        }
+
+        // 폼 제출
+        document.getElementById("memberEditForm").submit();
+    }
+    /*]]>*/
+
+
+</script>
+</body>
+</html>
