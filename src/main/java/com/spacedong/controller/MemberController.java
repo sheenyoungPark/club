@@ -68,10 +68,10 @@ public class MemberController {
 			return "member/signup";
 		}
 
-		if (memberBean.getMember_phone() == null || memberBean.getMember_phone().trim().isEmpty()) {
-			result.rejectValue("member_phone", "error.member_phone", "휴대폰 번호를 입력해주세요.");
-			return "member/signup";
-		}
+//		if (memberBean.getMember_phone() == null || memberBean.getMember_phone().trim().isEmpty()) {
+//			result.rejectValue("member_phone", "error.member_phone", "휴대폰 번호를 입력해주세요.");
+//			return "member/signup";
+//		}
 		memberService.signupMember(memberBean);
 		return "member/signup_success";
 	}

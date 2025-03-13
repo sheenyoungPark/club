@@ -57,17 +57,22 @@
       <span id="member_nickname_error" class="error-message"></span>
       <span th:if="${#fields.hasErrors('member_nickname')}" th:errors="*{member_nickname}" class="error-message"></span>
     </div>
-
     <div class="form-group">
       <label for="member_phone" class="required-field">휴대폰</label>
-      <div class="input-row">
-        <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />
-        <input type="hidden" id="isPhoneVerified" name="isPhoneVerified" value="false" />
-        <button type="button" class="check-button" id="sendAuthCode">인증요청</button>
-      </div>
+      <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />
       <span th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}" class="error-message"></span>
-      <span id="phoneAuthMessage" class="error-message"></span>
     </div>
+
+<!--    <div class="form-group">-->
+<!--      <label for="member_phone" class="required-field">휴대폰</label>-->
+<!--      <div class="input-row">-->
+<!--        <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />-->
+<!--        <input type="hidden" id="isPhoneVerified" name="isPhoneVerified" value="false" />-->
+<!--        <button type="button" class="check-button" id="sendAuthCode">인증요청</button>-->
+<!--      </div>-->
+<!--      <span th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}" class="error-message"></span>-->
+<!--      <span id="phoneAuthMessage" class="error-message"></span>-->
+<!--    </div>-->
 
     <!-- 인증번호 입력창 (처음에는 숨김) -->
     <div class="form-group" id="authCodeContainer" style="display: none;">
@@ -260,10 +265,10 @@
       return false;
     }
 
-    if ($("#isPhoneVerified").val() !== "true") {
-      alert("휴대폰 인증을 완료해야 합니다.");
-      return false;
-    }
+    // if ($("#isPhoneVerified").val() !== "true") {
+    //   alert("휴대폰 인증을 완료해야 합니다.");
+    //   return false;
+    // }
 
     // 주소 입력 검증
     if ($("#member_postcode").val() === "" || $("#member_address").val() === "") {
