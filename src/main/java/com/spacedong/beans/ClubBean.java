@@ -32,6 +32,16 @@ public class ClubBean {
     @Size(max = 20)
     private String club_public;  // 공개 여부 (Y/N)
 
+	private String club_region;
+
+	public String getClub_region() {
+		return club_region;
+	}
+
+	public void setClub_region(String club_region) {
+		this.club_region = club_region;
+	}
+
 	public int getClub_id() {
 		return club_id;
 	}
