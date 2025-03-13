@@ -68,9 +68,25 @@
 
   <ul th:if="${clublist != null && !clublist.isEmpty()}" class="clubs-list">
     <li th:each="club : ${clublist}" class="club-item" th:attr="data-category=${club.club_category}">
-      <a th:href="@{/club/club_info(club_id=${club.club_id})}">
-        <div class="club-name" th:text="${club.club_name}"></div>
-        <div class="club-category" th:text="'카테고리: ' + ${club.club_category}"></div>
+      <a th:href="@{/club/club_info(club_id=${club.club_id})}" class="club-link">
+
+        <!-- ✅ 프로필 이미지 추가 -->
+        <div class="club-profile-box">
+          <img th:if="${club.club_profile != null}"
+               th:src="@{/image/clubprofile/{img}(img=${club.club_profile})}"
+               alt="클럽 대표 이미지"
+               class="club-profile-image">
+
+          <img th:unless="${club.club_profile != null}"
+               th:src="@{/sources/picture/기본이미지.png}"
+               alt="기본 이미지"
+               class="club-profile-image">
+        </div>
+        <!-- ✅ 클럽 정보 (한 줄 정렬) -->
+        <div class="club-info">
+          <div class="club-name" th:text="${club.club_name}"></div>
+          <div class="club-category" th:text="'카테고리: ' + ${club.club_category}"></div>
+        </div>
       </a>
     </li>
   </ul>

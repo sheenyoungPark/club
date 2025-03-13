@@ -88,16 +88,15 @@ public interface ClubMapper {
     @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'master')")
     void create_join_club(@Param("club_id") int club_id,@Param("member_id") String member_id);
 
-    //클럽 생성
-    @Insert("INSERT INTO club (club_id, club_name, club_info, club_joindate, club_point, club_category, club_public) \n" +
-            "VALUES (club_id_seq.nextval, #{club_name}, #{club_info}, SYSDATE, 0, #{club_category}, 'WAIT')")
+    // 클럽 생성 (프로필 이미지 추가됨)
+    @Insert("INSERT INTO club (club_id, club_name, club_info, club_joindate, club_point, club_category, club_profile, club_public) \n" +
+            "VALUES (club_id_seq.nextval, #{club_name}, #{club_info}, SYSDATE, 0, #{club_category}, #{club_profile, jdbcType=VARCHAR}, 'WAIT')")
     void create(ClubBean clubBean);
+
 
     //동호회 명으로 클럽 객체 찾기
     @Select("select * from club where club_name = #{club_name}")
     ClubBean searchClubName(String club_name);
-
-
 
 
 

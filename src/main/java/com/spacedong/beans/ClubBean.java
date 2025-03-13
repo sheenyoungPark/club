@@ -24,6 +24,8 @@ public class ClubBean {
     private int club_point;
 
     private String club_category;
+
+	private String club_profile;
     
     @Size(max = 20)
     private String club_public;  // 공개 여부 (Y/N)
@@ -84,5 +86,11 @@ public class ClubBean {
 		this.club_public = club_public;
 	}
 
-    
+	public String getClub_profile() {
+		return club_profile;
+	}
+
+	public void setClub_profile(String club_profile) {
+		this.club_profile = club_profile;
+	}
 }

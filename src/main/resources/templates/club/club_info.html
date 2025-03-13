@@ -18,8 +18,15 @@
 <div class="container">
     <div class="club-detail-container">
         <div class="club-image-container">
-            <!-- 실제 이미지 필드가 없으므로 항상 기본 메시지 표시 -->
-            <div class="no-image-text">등록된 이미지가 없습니다</div>
+            <img th:if="${club.club_profile != null}"
+                 th:src="@{/image/clubprofile/{img}(img=${club.club_profile})}"
+                 alt="클럽 대표 이미지"
+                 class="club-profile-image">
+
+            <img th:unless="${club.club_profile != null}"
+                 th:src="@{/sources/picture/기본이미지.png}"
+                 alt="기본 이미지"
+                 class="club-profile-image">
         </div>
 
         <div class="club-header">

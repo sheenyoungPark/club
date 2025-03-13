@@ -67,9 +67,20 @@
     <!-- popularClubs 리스트의 항목들을 최대 4개까지만 순서대로 표시 -->
     <button class="club-box" th:each="club, iterStat : ${clubCount}" th:if="${iterStat.index < 4}"
             th:onclick="|location.href='@{/club/club_info(club_id=${club.club_id})}'|">
-      <!-- 이미지 제거 -->
-      <div class="image-placeholder" style="width: 100%; height: 150px;"></div>
+      <!-- ✅ 클럽 이미지 추가 -->
+      <div class="club-image-container">
+        <img th:if="${club.club_profile != null}"
+             th:src="@{/image/clubprofile/{img}(img=${club.club_profile})}"
+             alt="클럽 대표 이미지"
+             class="club-profile-image">
 
+        <img th:unless="${club.club_profile != null}"
+             th:src="@{/sources/picture/기본이미지.png}"
+             alt="기본 이미지"
+             class="club-profile-image">
+      </div>
+
+      <!-- ✅ 동호회 이름 -->
       <!-- 동호회 이름 추가 -->
       <h3 class="club-name" th:text="${club.club_name}">동호회명</h3>
     </button>

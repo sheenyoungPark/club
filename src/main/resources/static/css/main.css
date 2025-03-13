@@ -243,7 +243,7 @@ body {
 
 .club-box {
     width: 23%;
-    background: white;
+    background: rgba(170, 150, 198, 0.92);
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -322,3 +322,23 @@ button:active {
     max-height: 100%; /* 부모 요소보다 크지 않게 제한 */
     object-fit: contain; /* 이미지 비율 유지하며 꽉 차게 */
 }
+/* 클럽 이미지 컨테이너 */
+.club-image-container {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 10px;
+    background-color: #ffffff; /* 기본 배경 */
+}
+
+/* 클럽 대표 이미지 스타일 */
+.club-profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 이미지를 영역에 꽉 채우되 비율 유지 */
+    border-radius: 10px;
+}
+
