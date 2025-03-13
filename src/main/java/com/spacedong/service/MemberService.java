@@ -68,6 +68,7 @@ public class MemberService {
 		// DB에서 사용자가 존재하는지 확인 (sns_id로 체크)
 		MemberBean existingMember = memberRepository.getMemberBySnsId(memberBean.getSns_id());
 
+
 		if (existingMember != null) {
 			// 사용자 정보가 존재하면, 정보를 업데이트
 			loginMember.setMember_id(existingMember.getMember_id());
@@ -80,12 +81,25 @@ public class MemberService {
 			loginMember.setMember_profile(existingMember.getMember_profile());
 			loginMember.setMember_personality(existingMember.getMember_personality());
 			loginMember.setMember_point(existingMember.getMember_point());
-
+			loginMember.setMember_birthdate(existingMember.getMember_birthdate());
+			loginMember.setMember_gender(existingMember.getMember_gender());
 			memberRepository.updateMember(memberBean);
-
 		} else {
 			// 사용자가 존재하지 않으면, 신규 사용자로 등록
 			memberRepository.naverSignUp(memberBean);
+			MemberBean member = memberRepository.getMemberBySnsId(memberBean.getSns_id());
+			loginMember.setMember_id(member.getMember_id());
+			loginMember.setMember_name(member.getMember_name());
+			loginMember.setMember_phone(member.getMember_phone());
+			loginMember.setMember_email(member.getMember_email());
+			loginMember.setMember_nickname(member.getMember_nickname());
+			loginMember.setMember_address(member.getMember_address());
+			loginMember.setMember_joindate(member.getMember_joindate());
+			loginMember.setMember_profile(member.getMember_profile());
+			loginMember.setMember_personality(member.getMember_personality());
+			loginMember.setMember_point(member.getMember_point());
+			loginMember.setMember_birthdate(member.getMember_birthdate());
+			loginMember.setMember_gender(member.getMember_gender());
 		}
     }
 	
@@ -101,6 +115,9 @@ public class MemberService {
 			loginMember.setMember_personality(temp.getMember_personality());
 			loginMember.setMember_profile(temp.getMember_profile());
 			loginMember.setMember_point(temp.getMember_point());
+
+
+
 			loginMember.setLogin(true);
 			System.out.println(loginMember.isLogin());
 			System.out.println(loginMember.getMember_nickname());

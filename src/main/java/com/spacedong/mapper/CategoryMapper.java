@@ -23,7 +23,7 @@ public interface CategoryMapper {
    @Select("select distinct * from category")
    public List<Category> categoryList();
 
-   @Select("select * from where = ${categoty_name}")
+   @Select("select * from category where category_name = #{category_name}")
    public Category getCategoryByName(String category_name);
 
    //대분류별 인원 많은순

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Map;
 
 @Controller
@@ -78,6 +81,24 @@ public class NaverLoginCallbackController {
                 String email = (String) responseData.get("email");
                 String name = (String) responseData.get("name");
                 String modile = (String) responseData.get("mobile");
+                String gender = (String) responseData.get("gender");
+                String birthyear = (String) responseData.get("birthyear");
+                String birthday = (String) responseData.get("birthday");
+
+                String birth = birthyear + "-" + birthday;
+
+                String dateStr = birth;
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate localDate = LocalDate.parse(dateStr, formatter);
+
+
+                Date date = java.sql.Date.valueOf(localDate);
+
+
+                System.out.println(gender);
+                System.out.println(birthyear);
+                System.out.println(birthday);
+                System.out.println(birth);
 
                 // 4. 사용자 정보를 MemberBean에 저장
 
@@ -87,6 +108,11 @@ public class NaverLoginCallbackController {
                 memberBean.setMember_email(email);
                 memberBean.setMember_name(name);
                 memberBean.setMember_phone(modile);
+                memberBean.setMember_birthdate(date);
+                memberBean.setMember_gender(gender);
+
+
+
 
                 loginMember.setLogin(true);
 
