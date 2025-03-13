@@ -48,6 +48,33 @@ h2:after {
     transform: translateX(-50%);
 }
 
+h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+}
+
+.password-section {
+    background-color: #f9f9ff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e8e8f0;
+}
+
+.optional {
+    font-size: 14px;
+    color: #888;
+    font-weight: normal;
+}
+
 .form-group {
     margin-bottom: 25px;
 }
@@ -99,21 +126,49 @@ label {
 .check-button:hover {
     background-color: #4a3d73;
 }
-.message {
-    display: block;
-    color: #2ecc71;
-    font-size: 14px;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: rgba(46, 204, 113, 0.1);
-    border-radius: 6px;
-    border-left: 4px solid #2ecc71;
+
+/* 주소 관련 스타일 - 미디어 쿼리 밖으로 이동 */
+.address-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.address-row {
+    display: flex;
+    gap: 10px;
+}
+
+.address-row .input-field {
+    width: 150px;
+}
+
+.address-row .check-button {
+    flex-shrink: 0;
 }
 
 .error-message {
     display: block;
     color: #e74c3c;
     font-size: 14px;
+    margin-top: 5px;
+}
+
+.message {
+    display: block;
+    color: #2ecc71;
+    font-size: 14px;
+    margin: 10px 0 20px;
+    padding: 10px;
+    background-color: rgba(46, 204, 113, 0.1);
+    border-radius: 6px;
+    border-left: 4px solid #2ecc71;
+}
+
+.hint {
+    display: block;
+    color: #777;
+    font-size: 12px;
     margin-top: 5px;
 }
 
@@ -151,6 +206,12 @@ label {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+.verification-message {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #666;
+}
+
 @media (max-width: 600px) {
     .container {
         padding: 30px 20px;
@@ -160,13 +221,12 @@ label {
         font-size: 24px;
     }
 
+    h3 {
+        font-size: 18px;
+    }
+
     .input-row {
         flex-direction: column;
         gap: 10px;
-    }
-
-    .check-button {
-        width: 100%;
-        padding: 12px;
     }
 }

@@ -86,104 +86,6 @@ public class MemberController {
 		return "member/memberinfo";
 	}
 
-	// 회원정보 수정 페이지 표시 - 수정됨
-	@GetMapping("/editmemberinfo")
-	public String editMemberInfo(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-		// 로그인 여부 확인 (isLogin() 메서드 사용)
-		if (loginMember == null || !loginMember.isLogin()) {
-			System.out.println("로그인 상태 확인: 로그인되지 않음");
-			redirectAttributes.addFlashAttribute("message", "로그인이 필요한 서비스입니다.");
-			return "redirect:/member/login";
-		}
-
-		System.out.println("로그인 상태 확인: 로그인됨 (ID: " + loginMember.getMember_id() + ")");
-		model.addAttribute("loginMember", loginMember);
-		return "member/editmemberinfo";
-	}
-
-	// 회원정보 수정 처리 - 수정됨
-	@PostMapping("/editmemberinfo_pro")
-	public String updateMemberInfo(@ModelAttribute MemberBean memberBean,
-								   HttpSession session,
-								   RedirectAttributes redirectAttributes) {
-		try {
-			// 로그인 여부 확인
-			if (loginMember == null || !loginMember.isLogin()) {
-				System.out.println("회원정보 수정 처리: 로그인 상태 아님");
-				redirectAttributes.addFlashAttribute("message", "로그인이 필요한 서비스입니다.");
-				return "redirect:/member/login";
-			}
-
-			System.out.println("회원정보 수정 요청 - ID: " + memberBean.getMember_id());
-			System.out.println("변경된 닉네임: " + memberBean.getMember_nickname());
-			System.out.println("변경된 전화번호: " + memberBean.getMember_phone());
-			System.out.println("변경된 주소: " + memberBean.getMember_address());
-
-			// ID 설정이 안 되어 있을 경우 세션의 값으로 설정
-			if (memberBean.getMember_id() == null || memberBean.getMember_id().isEmpty()) {
-				memberBean.setMember_id(loginMember.getMember_id());
-				System.out.println("ID가 없어서 세션에서 가져옴: " + memberBean.getMember_id());
-			}
-
-			// 회원정보 업데이트
-			memberService.editMember(memberBean);
-
-			System.out.println("회원정보 업데이트 완료");
-			System.out.println("현재 세션의 닉네임: " + loginMember.getMember_nickname());
-
-			redirectAttributes.addFlashAttribute("message", "회원정보가 성공적으로 수정되었습니다.");
-			return "redirect:/member/editmemberinfo_success";
-		} catch (Exception e) {
-			System.out.println("회원정보 수정 중 오류 발생: " + e.getMessage());
-			e.printStackTrace();
-			redirectAttributes.addFlashAttribute("error", "회원정보 수정 중 오류가 발생했습니다: " + e.getMessage());
-			return "redirect:/member/editmemberinfo";
-		}
-	}
-
-	@GetMapping("/changePassword")
-	public String changePasswordPage(Model model) {
-		if (!loginMember.isLogin()) {
-			return "redirect:/member/login";
-		}
-		model.addAttribute("loginMember", new MemberBean());
-		return "member/changePassword";
-	}
-
-	@PostMapping("/changePassword_pro")
-	public String changePassword(@RequestParam("currentPassword") String currentPassword,
-								 @RequestParam("newPassword") String newPassword,
-								 @RequestParam("confirmPassword") String confirmPassword,
-								 Model model) {
-		if (!loginMember.isLogin()) {
-			return "redirect:/member/login";
-		}
-
-		// 현재 비밀번호 검증
-		boolean isCorrectPassword = memberService.checkPassword(loginMember.getMember_id(), currentPassword);
-		if (!isCorrectPassword) {
-			model.addAttribute("error", "현재 비밀번호가 일치하지 않습니다.");
-			return "member/changePassword";
-		}
-
-		// 비밀번호 길이 검사
-		if (newPassword.length() < 8 || newPassword.length() > 16) {
-			model.addAttribute("error", "비밀번호는 8~16자리여야 합니다.");
-			return "member/changePassword";
-		}
-
-		// 새 비밀번호 확인 검사
-		if (!newPassword.equals(confirmPassword)) {
-			model.addAttribute("error", "새 비밀번호가 일치하지 않습니다.");
-			return "member/changePassword";
-		}
-
-		// 비밀번호 업데이트
-		memberService.updatePassword(loginMember.getMember_id(), newPassword);
-		return "redirect:/member/changePassword_success";
-	}
-
-
 
 	@GetMapping("/deleteAccount")
 	public String deleteAccountPage(Model model) {
@@ -217,18 +119,106 @@ public class MemberController {
 		// 성공 페이지로 이동 (알림창 표시)
 		return "member/deleteAccount_success";
 	}
-	@GetMapping("/changePassword_success")
-	public String changePasswordSuccess() {
-		return "member/changePassword_success";
-	}
-
-	@GetMapping("/editmemberinfo_success")
-	public String editMemberInfoSuccess() {
-		return "member/editmemberinfo_success";
-	}
 
 	@GetMapping("/deleteAccount_success")
 	public String deleteAccountSuccess() {
 		return "member/deleteAccount_success";
+	}
+	@GetMapping("/edit")
+	public String editInfoVerification(Model model) {
+		if (!loginMember.isLogin()) {
+			return "redirect:/member/login";
+		}
+		return "member/edit_verification";
+	}
+
+	// 비밀번호 확인 처리
+	@PostMapping("/verify_password")
+	public String verifyPassword(@RequestParam("password") String password,
+								 Model model,
+								 RedirectAttributes redirectAttributes) {
+		if (!loginMember.isLogin()) {
+			return "redirect:/member/login";
+		}
+
+		// 비밀번호 검증
+		boolean isCorrectPassword = memberService.checkPassword(loginMember.getMember_id(), password);
+		if (!isCorrectPassword) {
+			model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+			return "member/edit_verification";
+		}
+
+		// 비밀번호 확인 성공 - 통합 정보 수정 페이지로 이동
+		return "redirect:/member/integrated_edit";
+	}
+
+	// 통합 정보 수정 페이지
+	@GetMapping("/integrated_edit")
+	public String integratedEdit(Model model, HttpSession session) {
+		if (!loginMember.isLogin()) {
+			return "redirect:/member/login";
+		}
+
+		model.addAttribute("loginMember", loginMember);
+		return "member/integrated_edit";
+	}
+
+	// 통합 정보 수정 처리
+	@PostMapping("/integrated_update")
+	public String integratedUpdate(
+			@ModelAttribute MemberBean memberBean,
+			@RequestParam(value = "newPassword", required = false) String newPassword,
+			@RequestParam(value = "confirmPassword", required = false) String confirmPassword,
+			RedirectAttributes redirectAttributes) {
+
+		try {
+			if (!loginMember.isLogin()) {
+				redirectAttributes.addFlashAttribute("message", "로그인이 필요한 서비스입니다.");
+				return "redirect:/member/login";
+			}
+
+			// 요청 정보 로깅
+			System.out.println("정보 수정 요청 - ID: " + memberBean.getMember_id());
+			System.out.println("변경된 닉네임: " + memberBean.getMember_nickname());
+			System.out.println("변경된 전화번호: " + memberBean.getMember_phone());
+			System.out.println("변경된 주소: " + memberBean.getMember_address());
+			System.out.println("변경된 이메일: " + memberBean.getMember_email());
+
+			// ID 설정
+			if (memberBean.getMember_id() == null || memberBean.getMember_id().isEmpty()) {
+				memberBean.setMember_id(loginMember.getMember_id());
+			}
+
+			// 비밀번호 변경 처리 (입력된 경우에만)
+			if (newPassword != null && !newPassword.isEmpty()) {
+				// 비밀번호 유효성 검사
+				if (newPassword.length() < 8 || newPassword.length() > 16) {
+					redirectAttributes.addFlashAttribute("error", "비밀번호는 8~16자리여야 합니다.");
+					return "redirect:/member/integrated_edit";
+				}
+
+				// 비밀번호 일치 확인
+				if (!newPassword.equals(confirmPassword)) {
+					redirectAttributes.addFlashAttribute("error", "새 비밀번호가 일치하지 않습니다.");
+					return "redirect:/member/integrated_edit";
+				}
+
+				// 비밀번호 업데이트
+				memberService.updatePassword(loginMember.getMember_id(), newPassword);
+				System.out.println("비밀번호 변경 완료");
+			}
+
+			// 회원정보 업데이트
+			memberService.editMember(memberBean);
+			System.out.println("회원정보 업데이트 완료");
+
+			redirectAttributes.addFlashAttribute("message", "회원정보가 성공적으로 수정되었습니다.");
+			return "redirect:/member/memberinfo";
+		} catch (Exception e) {
+			System.out.println("회원정보 수정 중 오류 발생: " + e.getMessage());
+			e.printStackTrace();
+			redirectAttributes.addFlashAttribute("error", "회원정보 수정 중 오류가 발생했습니다: " + e.getMessage());
+			return "redirect:/member/integrated_edit";
+		}
 	}
 }

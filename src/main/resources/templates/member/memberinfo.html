@@ -26,8 +26,8 @@
 
     <!-- 정보 수정 페이지 이동 버튼 -->
     <div class="extra-actions">
-        <a th:href="@{/member/editmemberinfo}" class="button">내 정보 수정</a>
-        <a th:href="@{/member/changePassword}" class="button">비밀번호 변경</a>
+        <!-- 기존 두 버튼을 하나로 통합 -->
+        <a th:href="@{/member/edit}" class="button">회원정보 관리</a>
         <a th:href="@{/member/deleteAccount}" class="button danger">회원 탈퇴</a>
     </div>
 </div>
