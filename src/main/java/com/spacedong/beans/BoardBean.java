@@ -1,6 +1,7 @@
 package com.spacedong.beans;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 public class BoardBean {
 
@@ -60,6 +61,16 @@ public class BoardBean {
 	}
 	public void setUpdate_date(LocalDateTime update_date) {
 		this.update_date = update_date;
+	}
+	public int getId() {
+		return board_id;
+	}
+
+	public String getTitle() {
+		return board_title;
+	}
+	public LocalDateTime getCreatedAt() {
+		return create_date;
 	}
 	
 

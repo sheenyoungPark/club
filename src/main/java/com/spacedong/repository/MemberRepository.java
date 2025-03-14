@@ -1,10 +1,14 @@
 package com.spacedong.repository;
 
+import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.ClubBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.spacedong.beans.MemberBean;
 import com.spacedong.mapper.MemberMapper;
+
+import java.util.List;
 
 @Repository
 public class MemberRepository {
@@ -71,6 +75,13 @@ public class MemberRepository {
 	/** ✅ 프로필 이미지 업데이트 */
 	public void updateMemberProfile(String memberId, String fileName) {
 		memberMapper.updateMemberProfile(memberId, fileName);
+	}
+	public List<ClubBean> getJoinedClubs(String memberId) {
+		return memberMapper.getJoinedClubs(memberId);
+	}
+
+	public List<BoardBean> getUserPosts(String memberId) {
+		return memberMapper.getUserPosts(memberId);
 	}
 
 }

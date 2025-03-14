@@ -1,5 +1,7 @@
 package com.spacedong.service;
 
+import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.ClubBean;
 import jakarta.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.spacedong.beans.MemberBean;
 import com.spacedong.repository.MemberRepository;
+
+import java.util.List;
 
 @Service
 public class MemberService {
@@ -107,6 +111,7 @@ public class MemberService {
 		MemberBean temp = memberRepository.getLoginMember(tempLoginMember);
 		if(temp!=null) {
 			loginMember.setMember_id(temp.getMember_id());
+			loginMember.setMember_pw(temp.getMember_pw());
 			loginMember.setMember_name(temp.getMember_name());
 			loginMember.setMember_email(temp.getMember_email());
 			loginMember.setMember_gender(temp.getMember_gender());
@@ -201,6 +206,14 @@ public class MemberService {
 	/** ✅ 회원 프로필 업데이트 */
 	public void updateMemberProfile(String memberId, String fileName) {
 		memberRepository.updateMemberProfile(memberId, fileName);
+	}
+
+	public List<ClubBean> getJoinedClubs(String memberId) {
+		return memberRepository.getJoinedClubs(memberId);
+	}
+
+	public List<BoardBean> getUserPosts(String memberId) {
+		return memberRepository.getUserPosts(memberId);
 	}
 
 }

@@ -10,12 +10,13 @@
 </head>
 <body>
 <div th:insert="~{include/top_search :: top_search}"></div>
-<div class="container">
-    <h2>내 정보</h2>
 
-    <!-- 프로필 섹션 -->
+<div class="mypage-container">
+    <!-- 프로필 섹션 (좌측) -->
     <div class="profile-section">
-        <!-- ✅ 프로필 이미지 표시 (기본 or 사용자 설정) -->
+        <h2>내 정보</h2>
+
+        <!-- 프로필 이미지 표시 (기본 or 사용자 설정) -->
         <div class="profile-image">
             <img th:src="${loginMember.member_profile != null and loginMember.member_profile != ''}
                         ? @{/image/profile/{img}(img=${loginMember.member_profile})}
@@ -23,7 +24,7 @@
                  id="profilePreview" alt="프로필 이미지">
         </div>
 
-        <!-- ✅ 프로필 이미지 변경 -->
+        <!-- 프로필 이미지 변경 -->
         <form th:action="@{/member/updateProfile}" method="post" enctype="multipart/form-data">
             <input type="file" id="profileUpload" name="profileImage" accept="image/*" class="input-file">
             <button type="submit" class="button">프로필 변경</button>
@@ -31,29 +32,53 @@
 
         <div class="profile-name">이름 : <span th:text="${loginMember.member_name}"></span></div>
         <div class="profile-nickname">닉네임 : <span th:text="${loginMember.member_nickname}"></span></div>
-        <!-- 성별 추가 -->
         <div class="profile-gender">성별 : <span th:text="${loginMember.member_gender}"></span></div>
-        <!-- 생년월일 추가 -->
-        <div class="profile-birthdate">생년월일 : <span th:if="${loginMember.member_birthdate != null}"
-                                                    th:text="${#dates.format(loginMember.member_birthdate, 'yyyy년 MM월 dd일')}"></span>
-                                                <span th:unless="${loginMember.member_birthdate != null}">정보 없음</span>
+        <div class="profile-birthdate">
+            생년월일 :
+            <span th:if="${loginMember.member_birthdate != null}"
+                  th:text="${#dates.format(loginMember.member_birthdate, 'yyyy년 MM월 dd일')}"></span>
+            <span th:unless="${loginMember.member_birthdate != null}">정보 없음</span>
         </div>
         <div class="profile-phone">휴대폰 : <span th:text="${maskedPhone}"></span></div>
         <div class="profile-email">이메일 : <span th:text="${loginMember.member_email}"></span></div>
         <div class="profile-address">주소 : <span th:text="${loginMember.member_address}"></span></div>
+
+        <div class="extra-actions">
+            <a th:href="@{/member/edit}" class="button">회원정보 관리</a>
+            <a th:href="@{/member/deleteAccount}" class="button danger">회원 탈퇴</a>
+        </div>
     </div>
 
-    <div class="section-divider"></div>
+    <!-- 활동 섹션 (우측) -->
+    <div class="activity-section">
+        <div class="activity-tabs">
+            <button class="tab active" onclick="showTab('clubs')">내가 가입한 클럽</button>
+            <button class="tab" onclick="showTab('posts')">내가 작성한 게시글</button>
+        </div>
 
-    <!-- 정보 수정 페이지 이동 버튼 -->
-    <div class="extra-actions">
-        <!-- 기존 두 버튼을 하나로 통합 -->
-        <a th:href="@{/member/edit}" class="button">회원정보 관리</a>
-        <a th:href="@{/member/deleteAccount}" class="button danger">회원 탈퇴</a>
+        <div id="clubs-content" class="activity-content">
+            <ul class="club-list">
+                <li th:each="club : ${joinedClubs}">
+                    <a th:href="@{/club/club_info(club_id=${club.club_id})}" th:text="${club.club_name}"></a>
+                </li>
+                <li th:if="${#lists.isEmpty(joinedClubs)}">가입한 클럽이 없습니다.</li>
+            </ul>
+        </div>
+
+        <div id="posts-content" class="activity-content" style="display:none;">
+            <ul class="post-list">
+                <li th:each="post : ${userPosts}">
+                    <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}" th:text="${post.board_title}"></a>
+                    <span th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
+                </li>
+                <li th:if="${#lists.isEmpty(userPosts)}">작성한 게시글이 없습니다.</li>
+            </ul>
+        </div>
     </div>
 </div>
 
 <script>
+    // 프로필 이미지 미리보기 스크립트
     document.getElementById('profileUpload').addEventListener('change', function(event) {
         const preview = document.getElementById('profilePreview');
         const file = event.target.files[0];
@@ -66,6 +91,18 @@
             reader.readAsDataURL(file);
         }
     });
+
+    // 탭 전환 스크립트
+    function showTab(tabName) {
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.activity-content');
+
+        tabs.forEach(tab => tab.classList.remove('active'));
+        contents.forEach(content => content.style.display = 'none');
+
+        document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+        document.getElementById(`${tabName}-content`).style.display = 'block';
+    }
 </script>
 
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
