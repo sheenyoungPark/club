@@ -44,8 +44,7 @@
         <div class="search-box">
             <form th:action="@{/search/search}" class="search-form">
                 <select id="regionDropdown" class="search-dropdown" name="region">
-                    <option selected disabled>지역</option>
-                </select>
+                    <option selected disabled value="">지역</option>
                 </select>
                 <input type="text" name="age" class="search-age" placeholder="나이(만)">
                 <input type="text" name="searchtxt" class="search-input" placeholder="검색어를 입력하세요">
