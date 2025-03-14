@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+
     // 검색 토글 버튼 이벤트
     if (searchToggle && searchContainer) {
         searchToggle.addEventListener('click', function(e) {
