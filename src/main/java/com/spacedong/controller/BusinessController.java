@@ -8,6 +8,8 @@ import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,8 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/business")
 public class BusinessController {
-
-
+    private static final Logger logger = LoggerFactory.getLogger(BusinessController.class);
 
     @Autowired
     private BusinessService businessService;
@@ -37,19 +38,24 @@ public class BusinessController {
     }
 
     @GetMapping("/signup")
-    public String business_signup(@ModelAttribute(name = "businessBean") BusinessBean businessBean) {
-        return "business/signup"; // 템플릿: templates/business/business_signup.html
+    public String signup(@ModelAttribute("businessBean") BusinessBean businessBean) {
+        return "business/signup";
     }
 
-    @PostMapping("/signup_pro")
+    @PostMapping("/business_signup_pro")
     public String business_signup_pro(@Valid @ModelAttribute BusinessBean businessBean, BindingResult result) {
-
         if (result.hasErrors()) {
-            return "business/signup"; // 회원가입 실패 시, 기존 페이지로 돌아감
+            return "business/signup";
         }
 
+        // 사업자 번호 하이픈(-) 제거
+        String cleanBusinessNumber = businessBean.getBusiness_number().replaceAll("-", "");
+        businessBean.setBusiness_number(cleanBusinessNumber);
+
+        // 사업자 번호 검증은 프론트엔드에서 처리
+        // 사업자 번호가 정상적이면 회원가입 진행
         businessService.businessJoin(businessBean);
-        return "business/signup_success"; // 템플릿: templates/business/signup_success.html
+        return "business/signup_success";
     }
 
     @GetMapping("/login")
@@ -61,7 +67,6 @@ public class BusinessController {
     @PostMapping("/login_pro")
     public String login_pro(@ModelAttribute BusinessBean businessBean) {
         if (businessService.getLoginMember(businessBean)) {
-
             return "/business/login_success"; // 로그인 성공 시 리디렉트
         } else {
             return "/member/login_fail"; // 로그인 실패 시, 로그인 페이지로 리디렉트 + 에러 표시

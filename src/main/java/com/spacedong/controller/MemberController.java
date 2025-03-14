@@ -83,6 +83,10 @@ public class MemberController {
 		memberService.signupMember(memberBean);
 		return "member/signup_success";
 	}
+	@GetMapping("signup_choice")
+	public String signup_choice(){
+		return "member/signup_choice";
+	}
 
 	@GetMapping("/memberinfo")
 	public String getMemberInfo(Model model) {

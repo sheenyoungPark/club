@@ -40,6 +40,10 @@ public class BusinessBean {
 	
 	private String business_public;
 
+	@Getter
+	@Setter
+    private String business_number;
+
 	private  boolean login;
 
 	public String getBusines_id() {
@@ -105,7 +109,6 @@ public class BusinessBean {
 	public void setBusiness_public(String business_public) {
 		this.business_public = business_public;
 	}
-	
-	
-	
+
+
 }

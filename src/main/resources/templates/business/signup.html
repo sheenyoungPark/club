@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>기업회원 가입</title>
     <link th:href="@{/css/businessSignup.css}" rel="stylesheet" />
 </head>
@@ -11,44 +12,46 @@
 
     <form th:action="@{/business/business_signup_pro}" method="post" th:object="${businessBean}">
         <div class="form-group">
-            <label for="business_id">아이디 *</label>
-            <input type="text" id="business_id" th:field="*{business_id}" />
+            <label for="business_id">아이디</label>
+            <input type="text" id="business_id" th:field="*{business_id}" placeholder="아이디를 입력하세요" />
             <p class="error" th:if="${#fields.hasErrors('business_id')}" th:errors="*{business_id}"></p>
         </div>
 
         <div class="form-group">
-            <label for="business_pw">비밀번호 *</label>
-            <input type="password" id="business_pw" th:field="*{business_pw}" />
+            <label for="business_pw">비밀번호</label>
+            <input type="password" id="business_pw" th:field="*{business_pw}" placeholder="비밀번호를 입력하세요" />
             <p class="error" th:if="${#fields.hasErrors('business_pw')}" th:errors="*{business_pw}"></p>
         </div>
 
         <div class="form-group">
-            <label for="business_pw_confirm">비밀번호 확인 *</label>
-            <input type="password" id="business_pw_confirm" name="business_pw_confirm" required>
-            <span id="pw_match_error" class="error" style="display: none;">비밀번호가 일치하지 않습니다.</span>
-        </div>
-
-        <div class="form-group">
-            <label for="business_name">기업명 *</label>
-            <input type="text" id="business_name" th:field="*{business_name}" />
+            <label for="business_name">기업명</label>
+            <input type="text" id="business_name" th:field="*{business_name}" placeholder="기업명을 입력하세요" />
             <p class="error" th:if="${#fields.hasErrors('business_name')}" th:errors="*{business_name}"></p>
         </div>
 
         <div class="form-group">
-            <label for="business_email">이메일 *</label>
-            <input type="email" id="business_email" th:field="*{business_email}" />
+            <label for="business_number">사업자 번호</label>
+            <input type="text" id="business_number" th:field="*{business_number}" placeholder="사업자 번호를 입력하세요 (예: 123-45-67890)" />
+            <button type="button" onclick="validateBusinessNumber()">사업자 번호 조회</button>
+            <p id="business_status" class="success"></p>
+            <p id="business_error" class="error"></p>
+        </div>
+
+        <div class="form-group">
+            <label for="business_email">이메일</label>
+            <input type="email" id="business_email" th:field="*{business_email}" placeholder="이메일을 입력하세요" />
             <p class="error" th:if="${#fields.hasErrors('business_email')}" th:errors="*{business_email}"></p>
         </div>
 
         <div class="form-group">
-            <label for="business_phone">전화번호 *</label>
-            <input type="text" id="business_phone" th:field="*{business_phone}" />
+            <label for="business_phone">전화번호</label>
+            <input type="text" id="business_phone" th:field="*{business_phone}" placeholder="'-' 없이 숫자만 입력하세요" />
             <p class="error" th:if="${#fields.hasErrors('business_phone')}" th:errors="*{business_phone}"></p>
         </div>
 
         <div class="form-group">
-            <label for="business_address">주소 *</label>
-            <textarea id="business_address" th:field="*{business_address}"></textarea>
+            <label for="business_address">주소</label>
+            <textarea id="business_address" th:field="*{business_address}" placeholder="상세 주소를 입력하세요"></textarea>
             <p class="error" th:if="${#fields.hasErrors('business_address')}" th:errors="*{business_address}"></p>
         </div>
 
@@ -59,31 +62,145 @@
 
         <button type="submit" class="btn-submit">회원가입</button>
     </form>
+
+    <div class="terms-section">
+        <p>가입 시 <a href="#" target="_blank">이용약관</a>과 <a href="#" target="_blank">개인정보처리방침</a>에 동의하게 됩니다.</p>
+    </div>
 </div>
 
 <script>
+    function validateBusinessNumber() {
+        const bizNo = document.getElementById("business_number").value.replace(/-/g, '');
+        const statusElement = document.getElementById("business_status");
+        const errorElement = document.getElementById("business_error");
+
+        // 기존 메시지 초기화
+        statusElement.innerText = "";
+        errorElement.innerText = "";
+
+        if (!bizNo || bizNo.length !== 10 || isNaN(bizNo)) {
+            errorElement.innerText = "올바른 사업자 번호(10자리)를 입력하세요.";
+            return;
+        }
+
+        // 검증 중 상태 표시
+        statusElement.innerText = "조회 중...";
+        statusElement.style.color = "blue";
+
+        // API 요청 데이터 형식
+        const requestData = {
+            "b_no": [bizNo]
+        };
+
+        // 국세청 API 직접 호출
+        fetch("https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=6NKq2WIHA8CRaISXCRiaTkU%2B8yQZvtJog1T312EdMMj1D8CQdNKf%2FaX2QQmIqNuVU92a5FMeCFHbnXyYdk40Nw%3D%3D", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("API 응답:", data);
+
+                if (data.status_code === "OK" && data.data && data.data.length > 0) {
+                    const businessInfo = data.data[0];
+
+                    // 명세에 따라 b_stt_cd 필드로 확인
+                    const businessStatus = businessInfo.b_stt_cd;
+
+                    if (businessStatus === "01") {
+                        statusElement.innerText = "✅ 정상 사업자입니다.";
+                        statusElement.style.color = "green";
+
+                        if (businessInfo.b_stt) {
+                            statusElement.innerText += ` (${businessInfo.b_stt})`;
+                        }
+
+                        errorElement.innerText = "";
+                    }
+                    else if (businessStatus === "02") {
+                        errorElement.innerText = "❌ 휴업 중인 사업자입니다.";
+                        statusElement.innerText = "";
+                    }
+                    else if (businessStatus === "03") {
+                        errorElement.innerText = "❌ 폐업된 사업자입니다.";
+                        statusElement.innerText = "";
+                    }
+                    else {
+                        errorElement.innerText = `❌ 사업자 상태: ${businessInfo.b_stt || businessStatus}`;
+                        statusElement.innerText = "";
+                    }
+                } else {
+                    errorElement.innerText = "❌ 유효하지 않은 사업자 번호입니다.";
+                    statusElement.innerText = "";
+                }
+            })
+            .catch(error => {
+                console.error("API 호출 에러:", error);
+                errorElement.innerText = "❌ 조회 중 오류가 발생했습니다.";
+                statusElement.innerText = "";
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.querySelector('form');
         const pwConfirm = document.getElementById('business_pw_confirm');
         const pwField = document.getElementById('business_pw');
         const pwMatchError = document.getElementById('pw_match_error');
+        const submitBtn = document.querySelector('.btn-submit');
 
-        // 비밀번호 확인 검증
-        pwConfirm.addEventListener('input', function() {
-            if(this.value !== pwField.value) {
-                pwMatchError.style.display = 'block';
-            } else {
-                pwMatchError.style.display = 'none';
-            }
-        });
+        // 비밀번호 확인 필드가 존재하는 경우에만 이벤트 리스너 추가
+        if (pwConfirm && pwMatchError) {
+            // 비밀번호 확인 검증
+            pwConfirm.addEventListener('input', function() {
+                if(this.value !== pwField.value) {
+                    pwMatchError.style.display = 'block';
+                } else {
+                    pwMatchError.style.display = 'none';
+                }
+            });
 
-        // 폼 제출 시 비밀번호 확인
+            // 비밀번호 필드 변경 시에도 확인
+            pwField.addEventListener('input', function() {
+                if(pwConfirm.value && pwConfirm.value !== pwField.value) {
+                    pwMatchError.style.display = 'block';
+                } else if(pwConfirm.value && pwConfirm.value === pwField.value) {
+                    pwMatchError.style.display = 'none';
+                }
+            });
+        }
+
+        // 폼 제출 시 사업자 번호 유효성 검증
         form.addEventListener('submit', function(e) {
-            if(pwConfirm.value !== pwField.value) {
+            // 사업자 번호가 유효한지 확인
+            const statusElement = document.getElementById("business_status");
+
+            // 정상 사업자로 확인되지 않은 경우 제출 차단
+            if (!statusElement.innerText.includes("정상 사업자")) {
+                e.preventDefault();
+                alert("유효한 사업자 번호를 입력하고 '사업자 번호 조회' 버튼을 클릭하여 확인해주세요.");
+                return false;
+            }
+
+            // 비밀번호 확인 (기존 로직)
+            if(pwConfirm && pwMatchError && pwConfirm.value !== pwField.value) {
                 e.preventDefault();
                 pwMatchError.style.display = 'block';
                 pwConfirm.focus();
+                return false;
             }
+
+            // 폼 제출 시 버튼 상태 변경
+            submitBtn.textContent = '처리 중...';
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
         });
     });
 </script>
