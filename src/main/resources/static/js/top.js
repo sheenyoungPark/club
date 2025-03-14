@@ -121,9 +121,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // 페이지 로드 시 저장된 검색어 표시
     displaySearchHistory();
 
-    // 폼 제출 시 검색어 저장
+    // 폼 제출 시 중복 region 매개변수 제거
     if (searchForm) {
         searchForm.addEventListener('submit', (e) => {
+            // 먼저 기존 이벤트 실행 중지
+            e.preventDefault();
+
+            // 검색어 저장 로직
             const searchInput = document.querySelector('input[name="searchtxt"]');
             if (searchInput) {
                 const searchTerm = searchInput.value.trim();
@@ -131,6 +135,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     addSearchTerm(searchTerm);
                 }
             }
+
+            // 폼 데이터 수집
+            const formData = new FormData(searchForm);
+
+            // URL 쿼리 문자열 생성
+            const params = new URLSearchParams();
+
+            // 중복 없이 폼 데이터 추가
+            // region은 한 번만 추가되도록 함
+            let regionAdded = false;
+
+            for (const [key, value] of formData.entries()) {
+                // region 매개변수인 경우 중복 검사
+                if (key === 'region') {
+                    if (!regionAdded) {
+                        params.append(key, value);
+                        regionAdded = true;
+                    }
+                } else {
+                    // 다른 매개변수는 그대로 추가
+                    params.append(key, value);
+                }
+            }
+
+            // region 매개변수가 없으면 빈 값으로 추가
+            if (!regionAdded) {
+                params.append('region', '');
+            }
+
+            // 새 URL 생성 및 이동
+            const url = `${searchForm.action}?${params.toString()}`;
+            window.location.href = url;
         });
     }
 
@@ -157,6 +193,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 지역 데이터 초기화
     let regionData = initializeRegionData();
+
+    // 지역 드롭다운 초기값 설정
+    if (regionDropdown) {
+        // 페이지 로드 시 select 요소 내의 첫 번째 option에 value="" 설정
+        const firstOption = regionDropdown.querySelector('option');
+        if (firstOption) {
+            firstOption.value = '';
+        }
+    }
 
     // 시/도 목록 렌더링 함수
     function renderCityList() {
