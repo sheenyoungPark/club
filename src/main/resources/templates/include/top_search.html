@@ -42,11 +42,12 @@
 
     <div id="searchContainer" class="search-container hidden">
         <div class="search-box">
-            <form th:action="@{/look/search}" class="search-form">
+            <form th:action="@{/search/search}" class="search-form">
                 <select id="regionDropdown" class="search-dropdown" name="region">
                     <option selected disabled>지역</option>
                 </select>
-                <input type="text" name="age" class="search-age" placeholder="출생년도(ex 1996)">
+                </select>
+                <input type="text" name="age" class="search-age" placeholder="나이(만)">
                 <input type="text" name="searchtxt" class="search-input" placeholder="검색어를 입력하세요">
                 <button class="search-btn" type="submit">🔍</button>
             </form>

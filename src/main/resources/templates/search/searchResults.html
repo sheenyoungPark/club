@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 결과</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .club-container {
+            width: 80%;
+            margin: auto;
+        }
+        .club-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .club-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .club-info {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<h2>검색 결과</h2>
+
+<div class="club-container">
+    <p th:if="${searchedClubs.isEmpty()}">검색 결과가 없습니다.</p>
+
+    <div th:each="club : ${searchedClubs}" class="club-card">
+        <h3 class="club-title" th:text="${club.club_name}">클럽 이름</h3>
+        <p class="club-info" th:text="${club.club_info}">클럽 정보</p>
+        <p>지역: <span th:text="${club.club_region}">지역</span></p>
+        <p>가입 가능 연령: <span th:text="${club.club_agemin}">연령</span>세 이상</p>
+    </div>
+</div>
+
+</body>
+</html>

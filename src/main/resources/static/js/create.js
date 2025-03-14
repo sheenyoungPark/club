@@ -159,7 +159,7 @@ function updateRegionValue() {
     }
 
     // 시/도와 구/군 모두 선택된 경우
-    regionInput.value = state + " " + district;
+    regionInput.value = state + district;
 }
 
 // 대분류 선택 시 소분류 가져오기 함수

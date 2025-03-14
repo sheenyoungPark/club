@@ -90,7 +90,7 @@ public interface ClubMapper {
 
     // 클럽 생성 (프로필 이미지 추가됨)
     @Insert("INSERT INTO club (club_id, club_name, club_info, club_joindate, club_point, club_category, club_profile, club_public, club_agemin, club_region) " +
-            "VALUES (club_id_seq.nextval, #{club_name}, #{club_info}, SYSDATE, 0, #{club_category}, #{club_profile, jdbcType=VARCHAR}, 'WAIT', #{club_agemin}, #{club_region})")
+            "VALUES (club_id_seq.nextval, #{club_name}, #{club_info}, SYSDATE, 0, #{club_category}, #{club_profile, jdbcType=VARCHAR}, 'PASS', #{club_agemin}, #{club_region})")
     void create(ClubBean clubBean);
 
 

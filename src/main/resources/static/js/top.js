@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (selectedCity) {
                 newOption.value = '';
             } else {
-                newOption.value = "all";
+                newOption.value = "";
             }
 
             regionDropdown.appendChild(newOption);
