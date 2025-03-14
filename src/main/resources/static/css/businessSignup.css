@@ -1,65 +1,174 @@
+/* businessSignup.css */
 body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background-color: #f5f5f5;
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    font-family: 'Malgun Gothic', sans-serif;
+    background-color: #1a0067;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
+
 .container {
-    max-width: 600px;
-    margin: 0 auto;
     background-color: white;
-    padding: 30px;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 450px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 h1 {
     text-align: center;
-    color: #333;
+    font-size: 24px;
+    color: #1a0067;
     margin-bottom: 30px;
+    font-weight: 600;
 }
+
 .form-group {
     margin-bottom: 20px;
+    position: relative;
 }
+
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+label::after {
+    content: " *";
+    color: red;
     font-weight: bold;
 }
-input, textarea {
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    font-size: 16px;
-}
-textarea {
-    height: 100px;
-}
-.error {
-    color: red;
+    box-sizing: border-box;
     font-size: 14px;
-    margin-top: 5px;
+    transition: all 0.3s;
 }
+
+input:focus,
+textarea:focus {
+    border-color: #5d4b8c;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(93, 75, 140, 0.2);
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
 .checkbox-group {
     display: flex;
     align-items: center;
-    margin-top: 20px;
+    margin: 25px 0;
 }
-.checkbox-group input {
-    width: auto;
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
     margin-right: 10px;
+    accent-color: #5d4b8c;
 }
+
+.checkbox-group label {
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.checkbox-group label::after {
+    content: none;
+}
+
 .btn-submit {
-    background-color: #4CAF50;
+    width: 100%;
+    padding: 15px;
+    background-color: #1a0067;
     color: white;
     border: none;
-    padding: 12px 20px;
-    font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
-    width: 100%;
-    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: background-color 0.3s;
 }
+
 .btn-submit:hover {
-    background-color: #45a049;
+    background-color: #2c0087;
+}
+
+.error {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 500px) {
+    .container {
+        width: 90%;
+        padding: 30px;
+    }
+}
+
+/* 애니메이션 효과 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* 포커스 시 라벨 효과 */
+input:focus + label,
+textarea:focus + label {
+    color: #5d4b8c;
+}
+
+/* 필수 항목 안내 */
+.form-group:first-of-type::before {
+    content: "* 표시는 필수 입력 항목입니다";
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+/* 버튼 로딩 상태 */
+.btn-submit.loading {
+    background-color: #7965b3;
+    cursor: wait;
+}
+
+/* 이용약관 스타일 (추가할 경우) */
+.terms-section {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
+.terms-section a {
+    color: #5d4b8c;
+    text-decoration: none;
+}
+
+.terms-section a:hover {
+    text-decoration: underline;
 }
