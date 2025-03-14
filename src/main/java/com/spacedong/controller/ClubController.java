@@ -5,6 +5,7 @@ import com.spacedong.beans.ClubBean;
 import com.spacedong.beans.ClubMemberBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.service.CategoryService;
+import com.spacedong.service.ClubMemberService;
 import com.spacedong.service.ClubService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -36,11 +37,24 @@ public class ClubController {
 	@Autowired
 	private CategoryService categoryService;
 
+	@Autowired
+	ClubMemberService clubMemberService;
+
 	// ✅ 클럽 정보 페이지
 	@GetMapping("/club_info")
 	public String club_info(@RequestParam("club_id") int club_id, Model model) {
 		ClubBean club = clubService.oneClubInfo(club_id);
-		model.addAttribute("club", club);
+
+		if (loginMember.getMember_id() != null) {
+			ClubMemberBean clubMemberBean = clubMemberService.getMemberInfo(club_id, loginMember.getMember_id());
+
+			if (clubMemberBean != null) {
+				String member_role = clubMemberBean.getMember_role();
+
+				model.addAttribute("member_role", member_role);
+			}
+		}
+			model.addAttribute("club", club);
 		return "club/club_info";
 	}
 
@@ -152,4 +166,6 @@ public class ClubController {
 
 		return "redirect:/category/category_info";
 	}
+
+
 }

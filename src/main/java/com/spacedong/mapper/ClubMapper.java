@@ -81,8 +81,10 @@ public interface ClubMapper {
     ClubMemberBean getClubMember(@Param("club_id") int club_id,@Param("member_id") String member_id);
 
     //클럽에 멤버 가입
-    @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'normal')")
+    @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'reserve')")
     void join_club(@Param("club_id") int club_id,@Param("member_id") String member_id);
+
+    
 
     //클럽 생성시 역할 회장
     @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'master')")

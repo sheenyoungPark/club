@@ -8,8 +8,52 @@
     <link rel="stylesheet" th:href="@{/css/top.css}">
     <link rel="stylesheet" th:href="@{/css/club_info.css}">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .master-controls {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
 
+        .master-controls h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
 
+        .master-controls .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 10px;
+            transition: all 0.2s;
+        }
+
+        .master-controls .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .master-controls .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            background-color: #ff5722;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 <!-- 상단 메뉴 include -->
@@ -66,8 +110,24 @@
                 </div>
             </div>
 
-            <div class="club-actions">
+            <!-- 클럽 마스터 전용 컨트롤 -->
+            <div th:if="${member_role == 'master'}" class="master-controls">
+                <h3>동호회 관리자 메뉴</h3>
+                <a th:href="@{/club/pending(club_id=${club.club_id})}" class="btn btn-secondary">
+                    대기 중인 회원 관리
+                    <span th:if="${pendingCount > 0}" class="badge" th:text="${pendingCount}">3</span>
+                </a>
+                <a th:href="@{/club/edit(club_id=${club.club_id})}" class="btn btn-secondary">동호회 정보 수정</a>
+                <a th:href="@{/club/member/manage(club_id=${club.club_id})}" class="btn btn-secondary">회원 관리</a>
+            </div>
+
+            <div class="club-actions" th:if="${member_role == null}">
                 <a th:href="@{/club/club_join(club_id=${club.club_id})}" class="btn btn-primary">가입 신청하기</a>
+                <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-outline">문의하기</a>
+            </div>
+
+            <div class="club-actions" th:if="${member_role != null && member_role != 'master'}">
+                <a th:href="@{/club/myinfo(club_id=${club.club_id})}" class="btn btn-primary">내 정보 보기</a>
                 <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-outline">문의하기</a>
             </div>
         </div>
