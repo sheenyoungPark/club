@@ -1,5 +1,7 @@
 package com.spacedong.controller;
 
+import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.ClubBean;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
@@ -18,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -88,6 +91,17 @@ public class MemberController {
 		}
 		model.addAttribute("loginMember", loginMember);
 		model.addAttribute("maskedPhone", memberService.getMaskedPhone());
+
+		// 내가 가입한 클럽 목록 가져오기
+		List<ClubBean> joinedClubs = memberService.getJoinedClubs(loginMember.getMember_id());
+		model.addAttribute("joinedClubs", joinedClubs);
+
+		// 내가 작성한 게시글 목록 가져오기
+		List<BoardBean> userPosts = memberService.getUserPosts(loginMember.getMember_id());
+		model.addAttribute("userPosts", userPosts);
+
+
+
 		return "member/memberinfo";
 	}
 
@@ -134,6 +148,12 @@ public class MemberController {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
+
+		// 비밀번호가 null이면 (SNS 로그인 사용자 등) 비밀번호 인증 없이 바로 정보 수정 페이지로 이동
+		if (loginMember.getMember_pw() == null || loginMember.getMember_pw().isEmpty()) {
+			return "redirect:/member/integrated_edit";
+		}
+
 		return "member/edit_verification";
 	}
 
@@ -144,6 +164,11 @@ public class MemberController {
 								 RedirectAttributes redirectAttributes) {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
+		}
+
+		// 비밀번호가 null이면 인증 없이 통과
+		if (loginMember.getMember_pw() == null || loginMember.getMember_pw().isEmpty()) {
+			return "redirect:/member/integrated_edit";
 		}
 
 		// 비밀번호 검증
@@ -163,6 +188,8 @@ public class MemberController {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
+		System.out.println("멤버 비밀번호: " + loginMember.getMember_pw());
+		System.out.println("비밀번호 null 여부: " + (loginMember.getMember_pw() == null));
 
 		model.addAttribute("loginMember", loginMember);
 		return "member/integrated_edit";
@@ -195,7 +222,8 @@ public class MemberController {
 			}
 
 			// 비밀번호 변경 처리 (입력된 경우에만)
-			if (newPassword != null && !newPassword.isEmpty()) {
+			if (loginMember.getMember_pw() != null && !loginMember.getMember_pw().isEmpty() &&
+					newPassword != null && !newPassword.isEmpty()) {
 				// 비밀번호 유효성 검사
 				if (newPassword.length() < 8 || newPassword.length() > 16) {
 					redirectAttributes.addFlashAttribute("error", "비밀번호는 8~16자리여야 합니다.");
@@ -232,10 +260,6 @@ public class MemberController {
 	/** ✅ 프로필 이미지 업데이트 */
 	@PostMapping("/updateProfile")
 	public String updateProfile(@RequestParam("profileImage") MultipartFile profileImage) {
-		// 로그인 여부 확인
-		if (!loginMember.isLogin()) {
-			return "redirect:/member/login"; // 로그인되지 않은 경우 로그인 페이지로 이동
-		}
 
 		if (!profileImage.isEmpty()) {
 			try {

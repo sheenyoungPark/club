@@ -11,6 +11,12 @@
 <div class="container">
     <h2>회원 정보 수정</h2>
 
+    <div style="display: none;">
+        <p>비밀번호 값: <span th:text="${loginMember.member_pw}">비밀번호 값</span></p>
+        <p>비밀번호 null 여부: <span th:text="${loginMember.member_pw == null}">null 여부</span></p>
+        <p>비밀번호 빈 문자열 여부: <span th:text="${loginMember.member_pw == ''}">빈 문자열 여부</span></p>
+    </div>
+
     <!-- 메시지 표시 -->
     <div th:if="${message}" class="message" th:text="${message}"></div>
     <div th:if="${error}" class="error-message" th:text="${error}"></div>
@@ -62,8 +68,8 @@
             </div>
         </div>
 
-        <!-- 비밀번호 변경 섹션 -->
-        <div class="section password-section">
+        <!-- 비밀번호 변경 섹션 - 비밀번호가 null이 아닌 경우에만 표시 -->
+        <div class="section password-section" th:if="${loginMember.member_pw != null && !loginMember.member_pw.isEmpty()}">
             <h3>비밀번호 변경 <span class="optional">(선택사항)</span></h3>
 
             <div class="form-group">
@@ -148,47 +154,7 @@
     });
     }
 
-    function validateAndSubmit() {
-        const nickname = document.getElementById("nickname").value.trim();
-        const originalNickname = document.getElementById("originalNickname").value;
-        const isNicknameChecked = document.getElementById("isNicknameChecked").value;
-        const newPassword = document.getElementById("newPassword").value;
-        const confirmPassword = document.getElementById("confirmPassword").value;
 
-        // 닉네임 검증
-        if (nickname !== originalNickname && isNicknameChecked === "false") {
-            document.getElementById("nicknameError").textContent = "닉네임 중복확인이 필요합니다.";
-            document.getElementById("nicknameError").style.color = "red";
-            return;
-        }
-
-        // 닉네임 중복확인 결과가 사용 불가능인 경우
-        if (document.getElementById("nicknameError").textContent === "이미 사용 중인 닉네임입니다.") {
-            return;
-        }
-
-        // 비밀번호 변경 검증 (입력된 경우에만)
-        if (newPassword.length > 0) {
-            // 비밀번호 길이 검사
-            if (newPassword.length < 8 || newPassword.length > 16) {
-                document.getElementById("passwordError").textContent = "비밀번호는 8~16자리로 입력해야 합니다.";
-                document.getElementById("passwordError").style.color = "red";
-                return;
-            }
-
-            // 비밀번호 일치 여부 검사
-            if (newPassword !== confirmPassword) {
-                document.getElementById("passwordError").textContent = "비밀번호가 일치하지 않습니다.";
-                document.getElementById("passwordError").style.color = "red";
-                return;
-            }
-
-            document.getElementById("passwordError").textContent = "";
-        }
-
-        // 폼 제출
-        document.getElementById("memberEditForm").submit();
-    }
 
     function searchAddress() {
         new daum.Postcode({
@@ -219,17 +185,41 @@
             // 각 필드에 맞게 표시하는 로직을 추가하세요.
         }
     });
-
-    // 폼 제출 전 주소 정보 합치기
     function validateAndSubmit() {
-        // 기존 검증 코드는 그대로 유지...
+        // 닉네임 검증
+        const nickname = document.getElementById("nickname").value.trim();
+        const originalNickname = document.getElementById("originalNickname").value;
+        const isNicknameChecked = document.getElementById("isNicknameChecked").value;
+
+        if (nickname !== originalNickname && isNicknameChecked === "false") {
+            document.getElementById("nicknameError").textContent = "닉네임 중복확인이 필요합니다.";
+            document.getElementById("nicknameError").style.color = "red";
+            return;
+        }
+
+        // 비밀번호 검증
+        const newPassword = document.getElementById("newPassword");
+        if (newPassword && newPassword.value.length > 0) {
+            // 비밀번호 길이 검사
+            if (newPassword.value.length < 8 || newPassword.value.length > 16) {
+                document.getElementById("passwordError").textContent = "비밀번호는 8~16자리로 입력해야 합니다.";
+                document.getElementById("passwordError").style.color = "red";
+                return;
+            }
+
+            // 비밀번호 일치 확인
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            if (newPassword.value !== confirmPassword) {
+                document.getElementById("passwordError").textContent = "비밀번호가 일치하지 않습니다.";
+                document.getElementById("passwordError").style.color = "red";
+                return;
+            }
+        }
 
         // 주소 정보 합치기
-        const postcode = document.getElementById("member_postcode").value;
         const baseAddress = document.getElementById("address").value;
         const detailAddress = document.getElementById("member_address_detail").value;
 
-        // 주소 입력 여부 확인 (선택적)
         if (baseAddress) {
             let fullAddress = baseAddress;
             if (detailAddress) {
@@ -241,7 +231,7 @@
         // 폼 제출
         document.getElementById("memberEditForm").submit();
     }
-    /*]]>*/
+
 
 
 </script>

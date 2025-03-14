@@ -1,8 +1,12 @@
 package com.spacedong.mapper;
 
+import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.ClubBean;
 import org.apache.ibatis.annotations.*;
 
 import com.spacedong.beans.MemberBean;
+
+import java.util.List;
 
 @Mapper
 public interface MemberMapper {
@@ -13,7 +17,10 @@ public interface MemberMapper {
             " #{member_nickname}, NVL(#{member_personality}, 0), NVL(#{member_point}, 0), #{member_gender}, #{member_birthdate})")
     void signupMember(MemberBean memberBean);
 
-    @Select("select * from member where member_id = #{member_id} and member_pw = #{member_pw} ")
+    @Select("SELECT member_id, member_pw, member_name, member_email, member_phone, member_address, member_nickname" +
+            " FROM member " +
+            "WHERE member_id = #{member_id} " +
+            "AND member_pw = #{member_pw}")
     MemberBean getLoginMember(MemberBean tempLoginMember);
 
     @Select("SELECT COUNT(*) FROM member WHERE member_id = #{member_id}")
@@ -60,4 +67,13 @@ public interface MemberMapper {
     /** ✅ 프로필 이미지 업데이트 */
     @Update("UPDATE member SET member_profile = #{fileName} WHERE member_id = #{memberId}")
     void updateMemberProfile(@Param("memberId") String memberId, @Param("fileName") String fileName);
+
+    @Select("SELECT c.* FROM club c " +
+            "JOIN club_member cm ON c.club_id = cm.club_id " +
+            "WHERE cm.member_id = #{memberId}")
+    List<ClubBean> getJoinedClubs(@Param("memberId") String memberId);
+
+    // 사용자가 작성한 게시글 조회
+    @Select("SELECT * FROM member_board WHERE board_writer_id = #{memberId} ORDER BY create_date DESC")
+    List<BoardBean> getUserPosts(String memberId);
 }
