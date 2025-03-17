@@ -6,8 +6,9 @@ public class BusinessItemBean {
 	private String item_id;       // 아이템 ID (기본 키)
 	private String item_title;    // 게시글 제목
 	private String item_text;     // 게시글 내용
-	private Double item_price;    // 가격
+	private int item_price;    // 가격
 	private String item_img;      // 이미지 경로
+	private String item_category;//카테고리
 	private int item_starttime; // 운영 시작 시간 (예: 9, 13 등)
 	private int item_endtime;   // 운영 종료 시간 (예: 18, 22 등)
 
@@ -43,11 +44,11 @@ public class BusinessItemBean {
 		this.item_text = item_text;
 	}
 
-	public Double getItem_price() {
+	public int getItem_price() {
 		return item_price;
 	}
 
-	public void setItem_price(Double item_price) {
+	public void setItem_price(int item_price) {
 		this.item_price = item_price;
 	}
 
@@ -74,4 +75,12 @@ public class BusinessItemBean {
 	public void setItem_endtime(int item_endtime) {
 		this.item_endtime = item_endtime;
 	}
+
+    public String getItem_category() {
+        return item_category;
+    }
+
+    public void setItem_category(String item_category) {
+        this.item_category = item_category;
+    }
 }

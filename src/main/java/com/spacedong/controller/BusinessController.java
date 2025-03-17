@@ -1,8 +1,11 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.BusinessBean;
+import com.spacedong.beans.BusinessItemBean;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.service.BusinessService;
+import com.spacedong.service.CategoryService;
 import com.spacedong.validator.BusinessValidator;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
@@ -17,10 +20,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/business")
 public class BusinessController {
     private static final Logger logger = LoggerFactory.getLogger(BusinessController.class);
+
+    @Autowired
+    public CategoryService categoryService;
 
     @Autowired
     private BusinessService businessService;
@@ -91,4 +99,21 @@ public class BusinessController {
     public String checkEmail(@RequestParam String business_email) {
         return businessService.checkEmail(business_email) ? "true" : "false";
     }
+
+
+    @GetMapping("/category")
+    public String category(Model model) {
+
+        List<CategoryBean> categoryList = categoryService.categoryType();
+        model.addAttribute("categoryList", categoryList);
+
+        return "business/item_category"; // 대여 카테고리를 보여줄 HTML 페이지
+    }
+
+    @GetMapping("/category_info")
+    public String getItemCategoryInfo(Model model) {
+
+        return "business/category";
+    }
+
 }
