@@ -78,4 +78,17 @@ public class BusinessController {
         session.invalidate(); // 세션 초기화 (로그아웃)
         return "redirect:/"; // 로그아웃 후 메인 페이지로 이동
     }
+
+    // 아이디 중복 확인
+    @GetMapping("/checkId")
+    @ResponseBody
+    public String checkId(@RequestParam String business_id) {
+        return businessService.checkId(business_id) ? "true" : "false";
+    }
+
+    @GetMapping("/checkEmail")
+    @ResponseBody
+    public String checkEmail(@RequestParam String business_email) {
+        return businessService.checkEmail(business_email) ? "true" : "false";
+    }
 }

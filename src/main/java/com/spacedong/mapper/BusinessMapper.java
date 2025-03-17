@@ -17,4 +17,11 @@ public interface BusinessMapper {
     @Select("select * from business where business_id = #{business_id} and business_pw = #{business_pw}")
     BusinessBean getLoginMember(BusinessBean businessBean);
 
+    // 아이디 중복 검사
+    @Select("SELECT COUNT(*) FROM business WHERE business_id = #{business_id}")
+    int checkId(String business_id);
+
+    @Select("SELECT COUNT(*) FROM business WHERE business_email = #{business_email}")
+    int checkEmail(String business_email);
+
 }

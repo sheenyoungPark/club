@@ -17,8 +17,9 @@ public interface MemberMapper {
             " #{member_nickname}, NVL(#{member_personality}, 0), NVL(#{member_point}, 0), #{member_gender}, #{member_birthdate})")
     void signupMember(MemberBean memberBean);
 
-    @Select("SELECT member_id, member_pw, member_name, member_email, member_phone, member_address, member_nickname" +
-            " FROM member " +
+    @Select("SELECT member_id, member_pw, member_name, member_email, member_phone, member_address, member_nickname, " +
+            "member_gender, member_birthdate, member_profile, member_point, member_personality, member_joindate " +
+            "FROM member " +
             "WHERE member_id = #{member_id} " +
             "AND member_pw = #{member_pw}")
     MemberBean getLoginMember(MemberBean tempLoginMember);
