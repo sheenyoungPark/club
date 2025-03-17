@@ -254,7 +254,80 @@ public class ClubController {
 
 		return "redirect:/club/club_info?club_id=" + clubBoardBean.getClub_id();
 	}
+	//동호회 수정페이지
+	@GetMapping("edit")
+	public String edit(@ModelAttribute ClubBean clubBean,@RequestParam("club_id")int club_id, Model model){
+		clubBean = clubService.oneClubInfo(club_id);
+		model.addAttribute("clubBean", clubBean);
 
+		return "club/club_edit";
+	}
+	//동호회 수정
+	@PostMapping("edit_pro")
+	public String edit_pro(@ModelAttribute ClubBean clubBean,
+						   @RequestParam(value = "clubImage", required = false) MultipartFile clubImage) {
+		// 기존 클럽 정보 가져오기 (기존 프로필 이미지 정보 유지를 위해)
+		ClubBean existingClub = clubService.oneClubInfo(clubBean.getClub_id());
+
+		// 새 이미지가 업로드된 경우에만 처리
+		if (clubImage != null && !clubImage.isEmpty()) {
+			try {
+				String originalFilename = clubImage.getOriginalFilename();
+				if (originalFilename != null && !originalFilename.isEmpty()) {
+					String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+					List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".gif");
+
+					if (!allowedExtensions.contains(fileExtension.toLowerCase())) {
+						System.out.println("🚨 허용되지 않은 파일 확장자: " + fileExtension);
+						return "redirect:/club/edit?club_id=" + clubBean.getClub_id() + "&error=invalid_file_type";
+					}
+
+					// 디렉토리 생성
+					File uploadDir = new File(UPLOAD_DIR);
+					if (!uploadDir.exists()) {
+						boolean dirCreated = uploadDir.mkdirs();
+						System.out.println("📁 클럽 프로필 폴더 생성됨: " + dirCreated);
+					}
+
+					// 기존 파일 삭제 (있는 경우)
+					if (existingClub.getClub_profile() != null) {
+						File oldFile = new File(UPLOAD_DIR + existingClub.getClub_profile());
+						if (oldFile.exists()) {
+							boolean deleted = oldFile.delete();
+							System.out.println("🗑️ 기존 프로필 이미지 삭제: " + deleted);
+						}
+					}
+
+					// 새 파일명 생성 및 저장
+					String profileFileName = UUID.randomUUID().toString() + "_" + originalFilename;
+					File destFile = new File(UPLOAD_DIR + profileFileName);
+					clubImage.transferTo(destFile);
+
+					// 파일이 정상적으로 저장되었는지 확인
+					if (destFile.exists()) {
+						System.out.println("📌 클럽 프로필 저장 완료: " + profileFileName);
+						clubBean.setClub_profile(profileFileName);
+					} else {
+						System.out.println("🚨 파일 저장 실패: " + profileFileName);
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("🚨 클럽 프로필 저장 중 오류 발생: " + e.getMessage());
+			}
+		} else {
+			// 이미지가 업로드되지 않았으면 기존 이미지 정보 유지
+			clubBean.setClub_profile(existingClub.getClub_profile());
+		}
+
+		System.out.println("club_id : " + clubBean.getClub_id());
+		System.out.println("club_profile : " + clubBean.getClub_profile());
+
+		// 클럽 정보 업데이트
+		clubService.editClub(clubBean);
+
+		return "redirect:/club/club_info?club_id=" + clubBean.getClub_id();
+	}
 
 
 

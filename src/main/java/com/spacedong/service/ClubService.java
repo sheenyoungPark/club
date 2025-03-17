@@ -140,6 +140,10 @@ public class ClubService {
         clubRepository.updateBoardImage(board_id, imagePath);
     }
 
+    public void editClub(ClubBean clubBean){
+        clubRepository.editClub(clubBean);
+    }
+
 
 
 }

@@ -24,7 +24,7 @@ public class ClubMemberController {
     private ClubMemberService clubMemberService;
 
     // 대기 중인 회원 목록 페이지
-    @GetMapping("/pending")
+    @GetMapping("pending")
     public String pendingMembers(@RequestParam("club_id") int clubId, Model model) {
         // 현재 로그인한 사용자 ID 가져오기
         String loggedInMemberId = loginMember.getMember_id();
@@ -35,11 +35,13 @@ public class ClubMemberController {
         if (currentMember == null || !currentMember.getMember_role().equals("master")) {
             return "redirect:/club/info?club_id=" + clubId + "&error=unauthorized";
         }
-
         // 대기 중인 회원 목록 가져오기
         List<ClubMemberBean> pendingMembers = clubMemberService.getPendingMembers(clubId);
         model.addAttribute("pendingMembers", pendingMembers);
         model.addAttribute("club_id", clubId);
+        for(ClubMemberBean s : pendingMembers){
+            System.out.println("!" +  s);
+        }
 
         return "club/club_member_pending";
     }
@@ -63,6 +65,7 @@ public class ClubMemberController {
         // 선택된 회원들 승인 처리
         for (String memberId : memberIds) {
             clubMemberService.approveMember(clubId, memberId);
+
         }
 
         return "redirect:/club/pending?club_id=" + clubId + "&success=approved";
@@ -88,6 +91,7 @@ public class ClubMemberController {
         // 선택된 회원들 거부 처리 (삭제)
         for (String memberId : memberIds) {
             clubMemberService.deleteMember(clubId, memberId);
+
         }
 
         return "redirect:/club/pending?club_id=" + clubId + "&success=rejected";

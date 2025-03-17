@@ -125,4 +125,7 @@ public interface ClubMapper {
     @Select("SELECT COUNT(*) FROM club_member WHERE club_id = #{club_id} AND member_id = #{member_id}")
     int checkMemberInClub(@Param("club_id") int club_id, @Param("member_id") String member_id);
 
+    //동호회 정보 수정 (업데이트)
+    @Update("update club set club_name = #{club_name}, club_info = #{club_info}, club_profile = #{club_profile} where club_id = #{club_id}")
+    void editClub(ClubBean clubBean);
 }

@@ -106,5 +106,8 @@ public class ClubRepository {
     public boolean checkMemberInClub(int club_id, String member_id) {
         return clubMapper.checkMemberInClub(club_id, member_id) > 0;
     }
+    public void editClub(ClubBean clubBean){
+       clubMapper.editClub(clubBean);
+    }
 
 }
