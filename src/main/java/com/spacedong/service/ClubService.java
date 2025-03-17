@@ -3,9 +3,7 @@ package com.spacedong.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.spacedong.beans.Category;
-import com.spacedong.beans.ClubMemberBean;
-import com.spacedong.beans.MemberBean;
+import com.spacedong.beans.*;
 import com.spacedong.mapper.ClubMapper;
 import jakarta.annotation.Resource;
 import org.apache.ibatis.annotations.Param;
@@ -13,7 +11,6 @@ import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.spacedong.beans.ClubBean;
 import com.spacedong.repository.ClubRepository;
 
 @Service
@@ -113,5 +110,36 @@ public class ClubService {
     public ClubBean searchClubName(String club_name){
         return clubRepository.searchClubName(club_name);
     }
+
+    // ✅ 특정 동호회의 게시글 목록 조회
+    public List<ClubBoardBean> getBoardListByClubId(int club_id) {
+        return clubRepository.getBoardListByClubId(club_id);
+    }
+
+    public boolean isMemberOfClub(int club_id, String member_id) {
+        if (member_id == null) {
+            return false;
+        }
+        return clubRepository.checkMemberInClub(club_id, member_id);
+    }
+
+    /**
+     * ✅ 게시글 작성
+     * @param clubBoardBean 게시글 객체
+     */
+    public void createBoard(ClubBoardBean clubBoardBean) {
+        clubRepository.createBoard(clubBoardBean);
+    }
+
+    /**
+     * ✅ 게시글의 이미지 저장
+     * @param board_id 게시글 ID
+     * @param imagePath 이미지 경로
+     */
+    public void saveBoardImage(int board_id, String imagePath) {
+        clubRepository.updateBoardImage(board_id, imagePath);
+    }
+
+
 
 }

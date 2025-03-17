@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+    <link rel="stylesheet" th:href="@{/css/boardWrite.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+</head>
+<body>
+
+<!-- 상단 메뉴 include -->
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="write-container">
+    <h2 class="write-title">게시글 작성</h2>
+
+    <!-- 글쓰기 폼 -->
+    <form th:action="@{/club/board_write_pro}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="club_id" th:value="${clubBoardBean.club_id}">
+        <input type="hidden" name="board_writer_id" th:value="${loginMember.member_id}">
+
+        <label for="board_title">제목:</label>
+        <input type="text" id="board_title" name="board_title" class="input-field" placeholder="제목을 입력하세요" required>
+
+        <label for="board_text">내용:</label>
+        <textarea id="board_text" name="board_text" class="input-field" placeholder="내용을 입력하세요" rows="6" required></textarea>
+
+        <!-- ✅ 이미지 업로드 (1개 제한) -->
+        <label for="imageUpload">이미지 업로드:</label>
+        <input type="file" id="imageUpload" name="image" accept="image/*" class="input-file">
+        <p id="fileWarning" style="color: red; display: none;">※ 5MB 이하의 이미지만 업로드 가능합니다.</p>
+
+        <!-- ✅ 실시간 이미지 미리보기 (하나만 표시) -->
+        <div id="imagePreviewContainer" class="preview-container"></div>
+
+        <button type="submit" class="write-btn">작성 완료</button>
+    </form>
+
+    <a th:href="@{/club/club_info(club_id=${clubBoardBean.club_id})}" class="back-btn">← 목록으로 돌아가기</a>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<script th:src="@{/js/top.js}"></script>
+
+<!-- ✅ 이미지 미리보기 및 삭제 기능 (1개 제한) -->
+<script th:inline="javascript">
+    document.getElementById('imageUpload').addEventListener('change', function(event) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const fileWarning = document.getElementById('fileWarning');
+        previewContainer.innerHTML = ''; // 기존 미리보기 초기화
+
+        const file = event.target.files[0]; // 하나의 파일만 선택 가능
+        if (!file) return;
+
+        // ✅ 파일 크기 체크 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            fileWarning.style.display = "block";
+            return;
+        } else {
+            fileWarning.style.display = "none"; // 정상 파일이면 경고 숨김
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imgWrapper = document.createElement('div');
+            imgWrapper.classList.add('img-wrapper');
+
+            const imgElement = document.createElement('img');
+            imgElement.src = e.target.result;
+            imgElement.classList.add('preview-image');
+
+            // ✅ 삭제 버튼 추가
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerText = '✖';
+            deleteBtn.classList.add('delete-btn');
+            deleteBtn.onclick = function() {
+                imgWrapper.remove(); // 이미지 삭제
+                document.getElementById('imageUpload').value = ""; // 파일 입력 필드 초기화
+            };
+
+            imgWrapper.appendChild(imgElement);
+            imgWrapper.appendChild(deleteBtn);
+            previewContainer.appendChild(imgWrapper);
+        };
+        reader.readAsDataURL(file);
+    });
+</script>
+</body>
+</html>

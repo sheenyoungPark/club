@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.spacedong.beans.Category;
+import com.spacedong.beans.ClubBoardBean;
 import com.spacedong.beans.ClubMemberBean;
 import com.spacedong.repository.ClubRepository;
 import org.apache.ibatis.annotations.*;
 
 import com.spacedong.beans.ClubBean;
+import org.apache.ibatis.mapping.StatementType;
 
 @Mapper
 public interface ClubMapper {
@@ -84,8 +86,6 @@ public interface ClubMapper {
     @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'reserve')")
     void join_club(@Param("club_id") int club_id,@Param("member_id") String member_id);
 
-    
-
     //클럽 생성시 역할 회장
     @Insert("insert into club_member(club_id, member_id, member_joinDate, member_role) values (#{club_id}, #{member_id}, sysdate, 'master')")
     void create_join_club(@Param("club_id") int club_id,@Param("member_id") String member_id);
@@ -101,5 +101,28 @@ public interface ClubMapper {
     ClubBean searchClubName(String club_name);
 
 
+    // ✅ 특정 동호회의 게시글 목록 조회
+    @Select("SELECT * FROM club_board WHERE club_id = #{club_id} ORDER BY create_date DESC")
+    List<ClubBoardBean> getBoardListByClubId(@Param("club_id") int club_id);
+
+    /**
+     * ✅ 게시글 작성 (board_id 자동 증가)
+     */
+    @Insert("INSERT INTO club_board (board_id, club_id, board_title, board_text, board_writer_id, board_img, create_date) " +
+            "VALUES (club_board_seq.NEXTVAL, #{club_id}, #{board_title}, #{board_text}, #{board_writer_id}, #{board_img, jdbcType=VARCHAR}, CURRENT_TIMESTAMP)")
+    @Options(useGeneratedKeys = true, keyProperty = "board_id", keyColumn = "board_id")
+    void insertBoard(ClubBoardBean clubBoardBean);
+
+    /**
+     * ✅ 게시글의 이미지 업데이트 (이미지가 있는 경우)
+     */
+    @Update("UPDATE club_board SET board_img = #{board_img} WHERE board_id = #{board_id}")
+    void updateBoardImage(@Param("board_id") int board_id, @Param("board_img") String board_img);
+
+    /**
+     * ✅ 사용자가 특정 동호회의 회원인지 확인
+     */
+    @Select("SELECT COUNT(*) FROM club_member WHERE club_id = #{club_id} AND member_id = #{member_id}")
+    int checkMemberInClub(@Param("club_id") int club_id, @Param("member_id") String member_id);
 
 }

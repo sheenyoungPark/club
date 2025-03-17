@@ -1,9 +1,6 @@
 package com.spacedong.controller;
 
-import com.spacedong.beans.Category;
-import com.spacedong.beans.ClubBean;
-import com.spacedong.beans.ClubMemberBean;
-import com.spacedong.beans.MemberBean;
+import com.spacedong.beans.*;
 import com.spacedong.service.CategoryService;
 import com.spacedong.service.ClubMemberService;
 import com.spacedong.service.ClubService;
@@ -55,6 +52,15 @@ public class ClubController {
 			}
 		}
 			model.addAttribute("club", club);
+		List<ClubBoardBean> clubBoardList = clubService.getBoardListByClubId(club_id);
+
+		// ✅ 현재 사용자가 해당 클럽의 회원인지 확인
+		boolean isMember = clubService.isMemberOfClub(club_id, loginMember.getMember_id());
+
+		model.addAttribute("club", club);
+		model.addAttribute("clubBoardList", clubBoardList);
+		model.addAttribute("isMember", isMember);
+
 		return "club/club_info";
 	}
 
@@ -166,6 +172,91 @@ public class ClubController {
 
 		return "redirect:/category/category_info";
 	}
+
+	// ✅ 게시글 작성 페이지
+	@GetMapping("/board_write")
+	public String board_write(@RequestParam("club_id") int club_id, Model model) {
+		// 현재 사용자가 해당 클럽의 회원인지 확인
+		boolean isMember = clubService.isMemberOfClub(club_id, loginMember.getMember_id());
+		if (!isMember) {
+			return "redirect:/club/club_info?club_id=" + club_id;
+		}
+
+		// 새 게시글 객체 생성 및 모델에 추가
+		ClubBoardBean clubBoardBean = new ClubBoardBean();
+		clubBoardBean.setClub_id(club_id);
+		model.addAttribute("clubBoardBean", clubBoardBean);
+
+		return "club/board_write"; // 게시글 작성 페이지로 이동
+	}
+
+	// ✅ 게시글 작성 처리
+	@PostMapping("/board_write_pro")
+	public String board_write_pro(@ModelAttribute ClubBoardBean clubBoardBean,
+								  @RequestParam(value = "image", required = false) MultipartFile image) {
+		// 현재 사용자가 해당 클럽의 회원인지 확인
+		boolean isMember = clubService.isMemberOfClub(clubBoardBean.getClub_id(), loginMember.getMember_id());
+		if (!isMember) {
+			return "redirect:/club/club_info?club_id=" + clubBoardBean.getClub_id();
+		}
+
+		// ✅ 작성자 ID 및 작성 날짜 설정
+		clubBoardBean.setBoard_writer_id(loginMember.getMember_id());
+		clubBoardBean.setCreate_date(java.time.LocalDateTime.now());
+
+		// ✅ 이미지 업로드 처리 (선택 사항)
+		if (image != null && !image.isEmpty()) {
+			try {
+				String originalFilename = image.getOriginalFilename();
+				if (originalFilename != null && !originalFilename.isEmpty()) {
+					String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+					List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".gif");
+
+					if (!allowedExtensions.contains(fileExtension.toLowerCase())) {
+						System.out.println("🚨 허용되지 않은 파일 확장자: " + fileExtension);
+						return "redirect:/club/board_write?club_id=" + clubBoardBean.getClub_id() + "&error=invalid_file_type";
+					}
+
+					// ✅ 동호회명 가져오기
+					ClubBean club = clubService.oneClubInfo(clubBoardBean.getClub_id());
+					String clubName = club.getClub_name().replaceAll("[^a-zA-Z0-9가-힣]", "_"); // 특수문자 제거
+
+					// ✅ 저장 경로 생성
+					String uploadPath = "C:/upload/image/clubBoardImg/" + clubName + "/";
+					File uploadDir = new File(uploadPath);
+					if (!uploadDir.exists()) {
+						uploadDir.mkdirs();
+					}
+
+					// ✅ 파일명 생성 및 저장
+					String imageFileName = UUID.randomUUID().toString() + "_" + originalFilename;
+					File destFile = new File(uploadPath, imageFileName);
+					image.transferTo(destFile);
+
+					// ✅ 파일이 정상적으로 저장되었는지 확인
+					if (destFile.exists()) {
+						System.out.println("📌 게시글 이미지 저장 완료: " + uploadPath + imageFileName);
+
+						// ✅ 게시글 객체에 이미지 경로 설정 (DB 저장용)
+						clubBoardBean.setBoard_img("upload/image/clubBoardImg/" + clubName + "/" + imageFileName);
+					} else {
+						System.out.println("🚨 파일 저장 실패: " + imageFileName);
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("🚨 게시글 이미지 저장 중 오류 발생: " + e.getMessage());
+			}
+		}
+
+		// ✅ 게시글 저장 (board_img 포함)
+		clubService.createBoard(clubBoardBean);
+
+		return "redirect:/club/club_info?club_id=" + clubBoardBean.getClub_id();
+	}
+
+
+
 
 
 }

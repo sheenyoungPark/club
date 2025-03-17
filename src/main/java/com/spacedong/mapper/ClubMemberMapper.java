@@ -14,7 +14,7 @@ public interface ClubMemberMapper {
 
     //신청한 회원들 리스트
     @Select("SELECT cm.*, m.member_name FROM club_member cm " +
-            " JOIN member m ON cm.member_id = m.member_name " +
+            " JOIN member m ON cm.member_id = m.member_id " +
             " WHERE cm.club_id = #{club_id} AND cm.member_role = 'reserve'" +
             " ORDER BY cm.member_joindate ASC")
     List<ClubMemberBean> getPendingMembers(int club_id);
