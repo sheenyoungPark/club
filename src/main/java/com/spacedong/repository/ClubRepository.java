@@ -1,9 +1,8 @@
 package com.spacedong.repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.spacedong.beans.Category;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.ClubBoardBean;
 import com.spacedong.beans.ClubMemberBean;
 import org.apache.ibatis.annotations.Param;
@@ -55,7 +54,7 @@ public class ClubRepository {
        clubMapper.updateClubStatus(club_id, status);
    }
 
-   public List<Category> countCategory(){
+   public List<CategoryBean> countCategory(){
        return clubMapper.countCategory();
    }
    public List<ClubBean> countClub(){
@@ -105,6 +104,19 @@ public class ClubRepository {
     // ✅ 사용자가 특정 동호회의 회원인지 확인
     public boolean checkMemberInClub(int club_id, String member_id) {
         return clubMapper.checkMemberInClub(club_id, member_id) > 0;
+    }
+    public void editClub(ClubBean clubBean){
+       clubMapper.editClub(clubBean);
+    }
+
+    // ✅ 특정 게시글 조회 (삭제 시 사용)
+    public ClubBoardBean getBoardById(int board_id) {
+        return clubMapper.getBoardById(board_id);
+    }
+
+    // ✅ 게시글 삭제 (DB에서 삭제)
+    public void deleteBoard(int board_id) {
+        clubMapper.deleteBoard(board_id);
     }
 
 }

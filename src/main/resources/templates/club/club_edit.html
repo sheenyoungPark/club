@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동호회 정보 수정</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #333;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 15px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: #0078d7;
+            outline: none;
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-textarea:focus {
+            border-color: #0078d7;
+            outline: none;
+        }
+
+        .input-file {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background-color: #f9f9f9;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .file-info {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .file-warning {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #0078d7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0063b1;
+        }
+
+        .btn-cancel {
+            background-color: #f1f1f1;
+            color: #555;
+        }
+
+        .btn-cancel:hover {
+            background-color: #e1e1e1;
+        }
+
+        /* 이미지 미리보기 스타일 */
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .image-preview {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .remove-image:hover {
+            background-color: rgba(255,0,0,0.7);
+        }
+
+        .upload-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 15px;
+        }
+
+        /* 현재 이미지 표시 */
+        .current-image {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .current-image-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .current-image-container {
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .current-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="page-title">동호회 정보 수정</h1>
+
+    <form th:action="@{/club/edit_pro}" method="post" enctype="multipart/form-data">
+        <!-- 필요한 hidden 필드 추가 -->
+        <input type="hidden" name="club_id" th:value="${clubBean.club_id}">
+
+        <div class="form-group">
+            <label for="club_name" class="form-label">동호회 이름</label>
+            <input type="text" id="club_name" name="club_name" th:value="${clubBean.club_name}" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="club_info" class="form-label">동호회 소개</label>
+            <textarea id="club_info" name="club_info" th:text="${clubBean.club_info}" class="form-textarea"></textarea>
+        </div>
+
+        <!-- 현재 이미지 표시 -->
+        <div class="form-group" th:if="${clubBean.club_profile != null}">
+            <div class="current-image">
+                <p class="current-image-title">현재 대표 이미지</p>
+                <div class="current-image-container">
+                    <img th:src="@{/image/clubprofile/{img}(img=${clubBean.club_profile})}" alt="현재 대표 이미지">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="upload-label">대표 이미지 변경</label>
+            <input type="file" id="clubImage" name="clubImage" accept="image/*" class="input-file">
+            <p class="file-info">※ 새 이미지를 선택하지 않으면 기존 이미지가 유지됩니다.</p>
+            <p id="fileWarning" class="file-warning">※ 5MB 이하의 이미지만 업로드 가능합니다.</p>
+
+            <!-- 실시간 이미지 미리보기 -->
+            <div id="imagePreviewContainer" class="preview-container"></div>
+        </div>
+
+        <div class="button-group">
+            <button type="button" class="btn btn-cancel" onclick="history.back()">취소</button>
+            <button type="submit" class="btn btn-primary">수정하기</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // 파일 선택 시 이미지 미리보기 생성
+    document.getElementById('clubImage').addEventListener('change', function() {
+        const fileWarning = document.getElementById('fileWarning');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        // 파일 크기 검사
+        if (this.files[0] && this.files[0].size > maxSize) {
+            fileWarning.style.display = 'block';
+            this.value = ''; // 파일 선택 취소
+            previewContainer.innerHTML = '';
+            return;
+        } else {
+            fileWarning.style.display = 'none';
+        }
+
+        // 기존 미리보기 삭제
+        previewContainer.innerHTML = '';
+
+        // 선택한 파일이 있으면 미리보기 생성
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const previewWrapper = document.createElement('div');
+                previewWrapper.className = 'image-preview';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+
+                const removeButton = document.createElement('div');
+                removeButton.className = 'remove-image';
+                removeButton.innerHTML = '×';
+                removeButton.addEventListener('click', function() {
+                    previewWrapper.remove();
+                    // 파일 입력 초기화
+                    document.getElementById('clubImage').value = '';
+                });
+
+                previewWrapper.appendChild(img);
+                previewWrapper.appendChild(removeButton);
+                previewContainer.appendChild(previewWrapper);
+            };
+
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+</script>
+</body>
+</html>

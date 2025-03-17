@@ -97,7 +97,7 @@ public class ClubController {
 	// ✅ AJAX로 소분류 카테고리 목록 가져오기
 	@GetMapping("/get_sub_categories")
 	@ResponseBody
-	public List<Category> getSubCategories(@RequestParam("category_type") String categoryType) {
+	public List<CategoryBean> getSubCategories(@RequestParam("category_type") String categoryType) {
 		return categoryService.categoryInfo(categoryType);
 	}
 
@@ -112,9 +112,9 @@ public class ClubController {
 			model.addAttribute("categoryType", categoryTypes);
 
 			if (clubBean.getClub_category() != null && !clubBean.getClub_category().isEmpty()) {
-				Category category = categoryService.getCategoryByName(clubBean.getClub_category());
+				CategoryBean category = categoryService.getCategoryByName(clubBean.getClub_category());
 				if (category != null) {
-					List<Category> subCategoryList = categoryService.categoryInfo(category.getCategory_type());
+					List<CategoryBean> subCategoryList = categoryService.categoryInfo(category.getCategory_type());
 					model.addAttribute("subCategoryList", subCategoryList);
 				}
 			}
@@ -254,6 +254,132 @@ public class ClubController {
 
 		return "redirect:/club/club_info?club_id=" + clubBoardBean.getClub_id();
 	}
+	//동호회 수정페이지
+	@GetMapping("edit")
+	public String edit(@ModelAttribute ClubBean clubBean,@RequestParam("club_id")int club_id, Model model){
+		clubBean = clubService.oneClubInfo(club_id);
+		model.addAttribute("clubBean", clubBean);
+
+		return "club/club_edit";
+	}
+	//동호회 수정
+	@PostMapping("edit_pro")
+	public String edit_pro(@ModelAttribute ClubBean clubBean,
+						   @RequestParam(value = "clubImage", required = false) MultipartFile clubImage) {
+		// 기존 클럽 정보 가져오기 (기존 프로필 이미지 정보 유지를 위해)
+		ClubBean existingClub = clubService.oneClubInfo(clubBean.getClub_id());
+
+		// 새 이미지가 업로드된 경우에만 처리
+		if (clubImage != null && !clubImage.isEmpty()) {
+			try {
+				String originalFilename = clubImage.getOriginalFilename();
+				if (originalFilename != null && !originalFilename.isEmpty()) {
+					String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+					List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".gif");
+
+					if (!allowedExtensions.contains(fileExtension.toLowerCase())) {
+						System.out.println("🚨 허용되지 않은 파일 확장자: " + fileExtension);
+						return "redirect:/club/edit?club_id=" + clubBean.getClub_id() + "&error=invalid_file_type";
+					}
+
+					// 디렉토리 생성
+					File uploadDir = new File(UPLOAD_DIR);
+					if (!uploadDir.exists()) {
+						boolean dirCreated = uploadDir.mkdirs();
+						System.out.println("📁 클럽 프로필 폴더 생성됨: " + dirCreated);
+					}
+
+					// 기존 파일 삭제 (있는 경우)
+					if (existingClub.getClub_profile() != null) {
+						File oldFile = new File(UPLOAD_DIR + existingClub.getClub_profile());
+						if (oldFile.exists()) {
+							boolean deleted = oldFile.delete();
+							System.out.println("🗑️ 기존 프로필 이미지 삭제: " + deleted);
+						}
+					}
+
+					// 새 파일명 생성 및 저장
+					String profileFileName = UUID.randomUUID().toString() + "_" + originalFilename;
+					File destFile = new File(UPLOAD_DIR + profileFileName);
+					clubImage.transferTo(destFile);
+
+					// 파일이 정상적으로 저장되었는지 확인
+					if (destFile.exists()) {
+						System.out.println("📌 클럽 프로필 저장 완료: " + profileFileName);
+						clubBean.setClub_profile(profileFileName);
+					} else {
+						System.out.println("🚨 파일 저장 실패: " + profileFileName);
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("🚨 클럽 프로필 저장 중 오류 발생: " + e.getMessage());
+			}
+		} else {
+			// 이미지가 업로드되지 않았으면 기존 이미지 정보 유지
+			clubBean.setClub_profile(existingClub.getClub_profile());
+		}
+
+		System.out.println("club_id : " + clubBean.getClub_id());
+		System.out.println("club_profile : " + clubBean.getClub_profile());
+
+		// 클럽 정보 업데이트
+		clubService.editClub(clubBean);
+
+		return "redirect:/club/club_info?club_id=" + clubBean.getClub_id();
+	}
+
+	// ✅ 게시글 삭제 처리
+	@PostMapping("/board_delete")
+	public String deleteBoard(@RequestParam("board_id") int boardId,
+							  @RequestParam("club_id") int clubId) {
+
+		// 1️⃣ 게시글 정보 가져오기 (작성자 ID와 이미지 경로 확인)
+		ClubBoardBean board = clubService.getBoardById(boardId);
+
+		if (board == null) {
+			System.out.println("🚨 삭제 실패: 게시글을 찾을 수 없음 (board_id: " + boardId + ")");
+			return "redirect:/club/club_info?club_id=" + clubId;
+		}
+
+		// 2️⃣ 현재 로그인한 사용자의 역할 확인
+		ClubMemberBean clubMember = clubMemberService.getMemberInfo(clubId, loginMember.getMember_id());
+
+		if (clubMember == null) {
+			System.out.println("🚨 삭제 실패: 해당 동호회의 회원이 아님 (member_id: " + loginMember.getMember_id() + ")");
+			return "redirect:/club/club_info?club_id=" + clubId;
+		}
+
+		String memberRole = clubMember.getMember_role();
+
+		// 3️⃣ 삭제 권한 확인 (관리자는 모든 게시글 삭제 가능, 일반 회원은 본인 게시글만 삭제 가능)
+		if (!"master".equals(memberRole) && !board.getBoard_writer_id().equals(loginMember.getMember_id())) {
+			System.out.println("🚨 삭제 실패: 권한 없음 (board_id: " + boardId + ", 작성자: " + board.getBoard_writer_id() + ")");
+			return "redirect:/club/club_info?club_id=" + clubId;
+		}
+
+		// 4️⃣ 게시글에 첨부된 이미지가 있는 경우 삭제
+		if (board.getBoard_img() != null) {
+			String imagePath = "C:/upload/" + board.getBoard_img();
+			File imageFile = new File(imagePath);
+
+			if (imageFile.exists()) {
+				if (imageFile.delete()) {
+					System.out.println("🗑 게시글 이미지 삭제 완료: " + imagePath);
+				} else {
+					System.out.println("🚨 이미지 삭제 실패: " + imagePath);
+				}
+			}
+		}
+
+		// 5️⃣ DB에서 게시글 삭제
+		clubService.deleteBoard(boardId);
+		System.out.println("🗑 게시글 삭제 완료 (board_id: " + boardId + ")");
+
+		// 6️⃣ 삭제 후 동호회 상세 페이지로 이동
+		return "redirect:/club/club_info?club_id=" + clubId;
+	}
+
 
 
 

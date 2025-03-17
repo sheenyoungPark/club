@@ -1,6 +1,6 @@
 package com.spacedong.controller;
 
-import com.spacedong.beans.Category;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.ClubBean;
 import com.spacedong.service.CategoryService;
 import com.spacedong.service.ClubService;
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -25,7 +24,7 @@ public class HomeController {
     @RequestMapping("/")
     public String home(Model model) {
 
-        List<Category> categoryCount = categoryService.categoryTypeCount();
+        List<CategoryBean> categoryCount = categoryService.categoryTypeCount();
         List<ClubBean> clubCount = clubService.countClub();
 
         for (ClubBean c : clubCount){

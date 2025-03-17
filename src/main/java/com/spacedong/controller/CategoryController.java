@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.spacedong.beans.Category;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.ClubBean;
 import com.spacedong.service.CategoryService;
 import com.spacedong.service.ClubService;
@@ -27,7 +27,7 @@ public class CategoryController {
    @GetMapping("/category")
    public String category(Model model) {
       List<ClubBean> allList = null;
-      List<Category> categoryList = categoryService.categoryType();
+      List<CategoryBean> categoryList = categoryService.categoryType();
       allList = clubService.getAllClub();
 
       model.addAttribute("categoryList", categoryList);
@@ -43,12 +43,12 @@ public class CategoryController {
            Model model) {
 
       // 메인 카테고리 정보 가져오기
-      List<Category> categoryList = categoryService.categoryType();
+      List<CategoryBean> categoryList = categoryService.categoryType();
       model.addAttribute("categoryList", categoryList);
 
       // 서브 카테고리 정보 가져오기 (categoryType이 null이면 "all"로 처리)
       categoryType = (categoryType != null) ? categoryType : "all";
-      List<Category> subCategoryList = categoryService.categoryInfo(categoryType);
+      List<CategoryBean> subCategoryList = categoryService.categoryInfo(categoryType);
       model.addAttribute("list", subCategoryList);
 
       // 선택한 서브 카테고리에 해당하는 동호회 목록 가져오기

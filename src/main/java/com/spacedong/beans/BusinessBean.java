@@ -36,10 +36,42 @@ public class BusinessBean {
 	
 	@NotBlank
 	private String business_address;
-	
+	private String business_profile;
 	private Date business_joindate;
 	
 	private String business_public;
+
+	public String getBusiness_id() {
+		return business_id;
+	}
+
+	public void setBusiness_id(String business_id) {
+		this.business_id = business_id;
+	}
+
+	public String getBusiness_profile() {
+		return business_profile;
+	}
+
+	public void setBusiness_profile(String business_profile) {
+		this.business_profile = business_profile;
+	}
+
+	public String getBusiness_number() {
+		return business_number;
+	}
+
+	public void setBusiness_number(String business_number) {
+		this.business_number = business_number;
+	}
+
+	public boolean isLogin() {
+		return login;
+	}
+
+	public void setLogin(boolean login) {
+		this.login = login;
+	}
 
 	@Getter
 	@Setter

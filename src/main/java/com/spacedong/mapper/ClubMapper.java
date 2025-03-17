@@ -1,16 +1,13 @@
 package com.spacedong.mapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.spacedong.beans.Category;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.ClubBoardBean;
 import com.spacedong.beans.ClubMemberBean;
-import com.spacedong.repository.ClubRepository;
 import org.apache.ibatis.annotations.*;
 
 import com.spacedong.beans.ClubBean;
-import org.apache.ibatis.mapping.StatementType;
 
 @Mapper
 public interface ClubMapper {
@@ -72,7 +69,7 @@ public interface ClubMapper {
     * 같은 카테고리 숫자별 카운트
     * */
     @Select("SELECT ca.category_name,ca.category_type, COUNT(*) AS category_count FROM club c JOIN category ca ON c.club_category = ca.category_name GROUP BY ca.category_type, ca.category_name ORDER BY category_count DESC")
-    List<Category> countCategory();
+    List<CategoryBean> countCategory();
 
     //클럽별 인원수 순서
     @Select("select cm.club_id, c.club_name , count(*) as club_count from club_member cm join club c on c.club_id = cm.club_id group by cm.club_id, c.club_name order by cm.club_id")
@@ -124,5 +121,19 @@ public interface ClubMapper {
      */
     @Select("SELECT COUNT(*) FROM club_member WHERE club_id = #{club_id} AND member_id = #{member_id}")
     int checkMemberInClub(@Param("club_id") int club_id, @Param("member_id") String member_id);
+    /**
+     * ✅ 특정 게시글 조회 (삭제 시 사용)
+     */
+    @Select("SELECT * FROM club_board WHERE board_id = #{board_id}")
+    ClubBoardBean getBoardById(@Param("board_id") int board_id);
 
+    /**
+     * ✅ 게시글 삭제 (ON DELETE CASCADE로 댓글 및 이미지도 자동 삭제됨)
+     */
+    @Delete("DELETE FROM club_board WHERE board_id = #{board_id}")
+    void deleteBoard(@Param("board_id") int board_id);
+
+    //동호회 정보 수정 (업데이트)
+    @Update("update club set club_name = #{club_name}, club_info = #{club_info}, club_profile = #{club_profile} where club_id = #{club_id}")
+    void editClub(ClubBean clubBean);
 }

@@ -1,13 +1,11 @@
 package com.spacedong.service;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
 
 import com.spacedong.beans.*;
-import com.spacedong.mapper.ClubMapper;
 import jakarta.annotation.Resource;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -77,7 +75,7 @@ public class ClubService {
         clubRepository.updateClubStatus(club_id, status);
     }
 
-    public List<Category> countCategory(){
+    public List<CategoryBean> countCategory(){
         return clubRepository.countCategory();
     }
 
@@ -140,6 +138,50 @@ public class ClubService {
         clubRepository.updateBoardImage(board_id, imagePath);
     }
 
+    public void editClub(ClubBean clubBean){
+        clubRepository.editClub(clubBean);
+    }
+
+    /**
+     * ✅ 특정 게시글 조회 (삭제 시 사용)
+     * @param board_id 게시글 ID
+     * @return 게시글 객체 (작성자 ID 및 이미지 포함)
+     */
+    public ClubBoardBean getBoardById(int board_id) {
+        return clubRepository.getBoardById(board_id);
+    }
+
+    /**
+     * ✅ 게시글 삭제 (물리적 파일 삭제 포함)
+     * @param board_id 게시글 ID
+     */
+    public void deleteBoard(int board_id) {
+        // 1️⃣ 삭제할 게시글 정보 가져오기 (작성자 ID 및 이미지 경로 확인)
+        ClubBoardBean board = clubRepository.getBoardById(board_id);
+
+        if (board == null) {
+            System.out.println("🚨 삭제 실패: 게시글을 찾을 수 없음 (board_id: " + board_id + ")");
+            return;
+        }
+
+        // 2️⃣ 게시글에 첨부된 이미지 삭제
+        if (board.getBoard_img() != null) {
+            String imagePath = "C:/upload/" + board.getBoard_img();
+            File imageFile = new File(imagePath);
+
+            if (imageFile.exists()) {
+                if (imageFile.delete()) {
+                    System.out.println("🗑 게시글 이미지 삭제 완료: " + imagePath);
+                } else {
+                    System.out.println("🚨 이미지 삭제 실패: " + imagePath);
+                }
+            }
+        }
+
+        // 3️⃣ DB에서 게시글 삭제
+        clubRepository.deleteBoard(board_id);
+        System.out.println("🗑 게시글 삭제 완료 (board_id: " + board_id + ")");
+    }
 
 
 }

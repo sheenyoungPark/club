@@ -2,6 +2,8 @@ package com.spacedong.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.File;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -123,6 +125,33 @@ public class BoardService {
     /** ✅ 특정 게시글의 이미지 목록 가져오기 */
     public List<String> getBoardImages(String boardType, int boardId) { // ✅ boardType 추가
         return boardRepository.getBoardImages(boardType, boardId);
+    }
+
+    // ✅ 게시글 삭제 (물리적 파일 삭제 포함)
+    public void deleteBoard(String boardType, int boardId) {
+        System.out.println("🗑 서비스: 게시글 삭제 (boardType: " + boardType + ", boardId: " + boardId + ")");
+
+        // 1️⃣ 해당 게시글에 포함된 이미지 리스트 가져오기
+        List<String> images = boardRepository.getBoardImages(boardType, boardId);
+
+        // 2️⃣ 이미지 파일 삭제 (DB 삭제는 ON DELETE CASCADE가 처리함)
+        if (images != null && !images.isEmpty()) {
+            String uploadDir = "C:/upload/image/" + boardType + "BoardImg/";
+            for (String imageName : images) {
+                File imageFile = new File(uploadDir + imageName);
+                if (imageFile.exists()) {
+                    if (imageFile.delete()) {
+                        System.out.println("🗑 이미지 삭제 완료: " + imageFile.getAbsolutePath());
+                    } else {
+                        System.out.println("🚨 이미지 삭제 실패: " + imageFile.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
+        // 3️⃣ 게시글 DB에서 삭제 (댓글, 이미지도 같이 삭제됨 - ON DELETE CASCADE)
+        boardRepository.deleteBoard(boardType, boardId);
+        System.out.println("🗑 게시글 삭제 완료 (boardId: " + boardId + ")");
     }
 
 }
