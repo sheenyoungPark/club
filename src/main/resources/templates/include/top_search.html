@@ -12,9 +12,9 @@
             <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
         </a>
         <nav class="nav">
-            <a th:href="@{/category/category}">카테고리</a>
+            <a th:href="@{/category/category}">동호회</a>
+            <a th:href="@{/reserve/main}">대여하기</a>
             <a th:href="@{/community/board}">커뮤니티</a>
-            <a th:href="@{/reserve/main}">예약하기</a>
             <a th:href="@{/survey/start}">유형검사</a>
             <div class="right-section">
                 <button id="searchToggle" class="search-toggle" type="button">🔍</button>
@@ -24,7 +24,7 @@
         <div class="right-section">
             <!-- 로그인 상태에 따른 조건부 버튼 -->
             <div th:if="${loginMember != null && loginMember.login == true}">
-                <span th:text="${loginMember.member_name} + '님 환영합니다'"></span>
+                <span th:text="${loginMember.member_nickname} + '님 환영합니다'"></span>
                 <button type="button" th:onclick="|location.href='@{/member/memberinfo}'|" class="login-btn">내정보</button>
                 <button type="button" th:onclick="|location.href='@{/member/logout}'|" class="login-btn">로그아웃</button>
             </div>

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.spacedong.beans.Category;
+import com.spacedong.beans.ClubBoardBean;
 import com.spacedong.beans.ClubMemberBean;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,26 @@ public class ClubRepository {
     //클럽 이름으로 클럽 객체 찾기
     public ClubBean searchClubName(String club_name){
        return clubMapper.searchClubName(club_name);
+    }
+
+    public List<ClubBoardBean> getBoardListByClubId(int club_id) {
+        return clubMapper.getBoardListByClubId(club_id);
+    }
+
+
+    // ✅ 게시글 작성
+    public void createBoard(ClubBoardBean clubBoardBean) {
+        clubMapper.insertBoard(clubBoardBean);
+    }
+
+    // ✅ 게시글의 이미지 저장
+    public void updateBoardImage(int board_id, String imagePath) {
+        clubMapper.updateBoardImage(board_id, imagePath);
+    }
+
+    // ✅ 사용자가 특정 동호회의 회원인지 확인
+    public boolean checkMemberInClub(int club_id, String member_id) {
+        return clubMapper.checkMemberInClub(club_id, member_id) > 0;
     }
 
 }

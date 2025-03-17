@@ -8,8 +8,52 @@
     <link rel="stylesheet" th:href="@{/css/top.css}">
     <link rel="stylesheet" th:href="@{/css/club_info.css}">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .master-controls {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
 
+        .master-controls h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
 
+        .master-controls .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 10px;
+            transition: all 0.2s;
+        }
+
+        .master-controls .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .master-controls .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            background-color: #ff5722;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 <!-- 상단 메뉴 include -->
@@ -58,16 +102,72 @@
         </div>
 
         <div class="club-body">
-            <div class="club-info-box">
-                <h3 class="club-info-title">동호회 소개</h3>
-                <div class="club-info-content">
-                    <p th:if="${#strings.isEmpty(club.club_info)}">등록된 소개 내용이 없습니다.</p>
-                    <p th:unless="${#strings.isEmpty(club.club_info)}" th:text="${club.club_info}">동호회 소개 내용이 여기에 표시됩니다. 이 동호회는 다양한 활동을 통해 회원들간의 친목을 도모하고 취미를 공유하는 모임입니다. 함께 즐겁게 활동하며 소중한 추억을 만들어보세요!</p>
+            <div class="club-content-wrapper">
+                <!-- 동호회 소개 & 가입 버튼 -->
+                <div class="club-info-container">
+                    <div class="club-info-box">
+                        <h3 class="club-info-title">동호회 소개</h3>
+                        <div class="club-info-content">
+                            <p th:if="${#strings.isEmpty(club.club_info)}">등록된 소개 내용이 없습니다.</p>
+                            <p th:unless="${#strings.isEmpty(club.club_info)}" th:text="${club.club_info}">
+                                동호회 소개 내용이 여기에 표시됩니다. 이 동호회는 다양한 활동을 통해 회원들간의 친목을 도모하고 취미를 공유하는 모임입니다. 함께 즐겁게 활동하며 소중한 추억을 만들어보세요!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <!-- 클럽 마스터 전용 컨트롤 -->
+            <div th:if="${member_role == 'master'}" class="master-controls">
+                <h3>동호회 관리자 메뉴</h3>
+                <a th:href="@{/club/pending(club_id=${club.club_id})}" class="btn btn-secondary">
+                    대기 중인 회원 관리
+                    <span th:if="${pendingCount > 0}" class="badge" th:text="${pendingCount}">3</span>
+                </a>
+                <a th:href="@{/club/edit(club_id=${club.club_id})}" class="btn btn-secondary">동호회 정보 수정</a>
+                <a th:href="@{/club/member/manage(club_id=${club.club_id})}" class="btn btn-secondary">회원 관리</a>
+            </div>
+
+            <div class="club-actions" th:if="${member_role == null}">
+                <a th:href="@{/club/club_join(club_id=${club.club_id})}" class="btn btn-primary">가입 신청하기</a>
+                <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-outline">문의하기</a>
+                </div>
+
+                <!-- 동호회 게시글 칸 -->
+                <div class="club-posts-box">
+                    <div class="club-posts-header">
+                        <h3 class="club-posts-title">동호회 게시글</h3>
+                        <!-- 사용자가 동호회 회원일 때만 글쓰기 버튼 표시 -->
+                        <a th:if="${isMember}" th:href="@{/club/board_write(club_id=${club.club_id})}" class="btn btn-write">글쓰기</a>
+                    </div>
+
+                    <div class="club-posts-content">
+                        <p th:if="${#lists.isEmpty(clubBoardList)}">등록된 게시글이 없습니다.</p>
+
+                        <ul th:unless="${#lists.isEmpty(clubBoardList)}" class="club-post-list">
+                            <li th:each="board : ${clubBoardList}" class="club-post-item">
+                                <div class="post-thumbnail">
+                                    <img th:if="${board.board_img != null}"
+                                         th:src="@{/image/clubBoardImg/{img}(img=${#strings.substringAfter(board.board_img, 'clubBoardImg/')})}"
+                                         alt="게시글 이미지">
+
+                                    <img th:unless="${board.board_img != null}"
+                                         th:src="@{/sources/picture/기본이미지.png}"
+                                         alt="기본 이미지">
+                                </div>
+
+                                <!-- ✅ 게시글 제목 및 날짜 -->
+                                <div class="post-info">
+                                    <span class="post-title" th:text="${board.board_title}">게시글 제목</span>
+                                    <span class="post-date" th:text="${#temporals.format(board.create_date, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
                 </div>
             </div>
 
-            <div class="club-actions">
-                <a th:href="@{/club/club_join(club_id=${club.club_id})}" class="btn btn-primary">가입 신청하기</a>
+            <div class="club-actions" th:if="${member_role != null && member_role != 'master'}">
+                <a th:href="@{/club/myinfo(club_id=${club.club_id})}" class="btn btn-primary">내 정보 보기</a>
                 <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-outline">문의하기</a>
             </div>
         </div>
@@ -77,8 +177,10 @@
         <a href="javascript:history.back()" class="back-link">← 목록으로 돌아가기</a>
     </div>
 </div>
+
 <!-- 하단 정보바 -->
 
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
 </body>
 </html>
