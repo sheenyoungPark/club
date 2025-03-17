@@ -97,7 +97,7 @@ public class ClubController {
 	// ✅ AJAX로 소분류 카테고리 목록 가져오기
 	@GetMapping("/get_sub_categories")
 	@ResponseBody
-	public List<Category> getSubCategories(@RequestParam("category_type") String categoryType) {
+	public List<CategoryBean> getSubCategories(@RequestParam("category_type") String categoryType) {
 		return categoryService.categoryInfo(categoryType);
 	}
 
@@ -112,9 +112,9 @@ public class ClubController {
 			model.addAttribute("categoryType", categoryTypes);
 
 			if (clubBean.getClub_category() != null && !clubBean.getClub_category().isEmpty()) {
-				Category category = categoryService.getCategoryByName(clubBean.getClub_category());
+				CategoryBean category = categoryService.getCategoryByName(clubBean.getClub_category());
 				if (category != null) {
-					List<Category> subCategoryList = categoryService.categoryInfo(category.getCategory_type());
+					List<CategoryBean> subCategoryList = categoryService.categoryInfo(category.getCategory_type());
 					model.addAttribute("subCategoryList", subCategoryList);
 				}
 			}

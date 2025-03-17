@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.spacedong.beans.Category;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.repository.CategoryRepository;
 
 @Service
@@ -14,15 +14,15 @@ public class CategoryService {
    @Autowired
    private CategoryRepository categoryRepository;
 
-   public List<Category> categoryType() {
+   public List<CategoryBean> categoryType() {
 
-      List<Category> list = categoryRepository.categoryType();
+      List<CategoryBean> list = categoryRepository.categoryType();
 
       return list;
    }
 
-   public List<Category> categoryInfo(String type) {
-      List<Category> list = categoryRepository.categoryInfo(type);
+   public List<CategoryBean> categoryInfo(String type) {
+      List<CategoryBean> list = categoryRepository.categoryInfo(type);
       return list;
 
    }
@@ -32,17 +32,17 @@ public class CategoryService {
    }
 
    //겹치는거 제외 카테고리
-   public List<Category> categoryList(){
+   public List<CategoryBean> categoryList(){
       return categoryRepository.categoryList();
    }
 
    //소분류로 대분류 찾기
-   public Category getCategoryByName(String category_name){
+   public CategoryBean getCategoryByName(String category_name){
       return categoryRepository.getCategoryByName(category_name);
    }
 
    //대분류별 인원 많은순
-   public List<Category> categoryTypeCount(){
+   public List<CategoryBean> categoryTypeCount(){
       return categoryRepository.categoryTypeCount();
    }
    

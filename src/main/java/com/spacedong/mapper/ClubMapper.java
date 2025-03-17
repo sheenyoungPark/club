@@ -1,16 +1,13 @@
 package com.spacedong.mapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.spacedong.beans.Category;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.ClubBoardBean;
 import com.spacedong.beans.ClubMemberBean;
-import com.spacedong.repository.ClubRepository;
 import org.apache.ibatis.annotations.*;
 
 import com.spacedong.beans.ClubBean;
-import org.apache.ibatis.mapping.StatementType;
 
 @Mapper
 public interface ClubMapper {
@@ -72,7 +69,7 @@ public interface ClubMapper {
     * 같은 카테고리 숫자별 카운트
     * */
     @Select("SELECT ca.category_name,ca.category_type, COUNT(*) AS category_count FROM club c JOIN category ca ON c.club_category = ca.category_name GROUP BY ca.category_type, ca.category_name ORDER BY category_count DESC")
-    List<Category> countCategory();
+    List<CategoryBean> countCategory();
 
     //클럽별 인원수 순서
     @Select("select cm.club_id, c.club_name , count(*) as club_count from club_member cm join club c on c.club_id = cm.club_id group by cm.club_id, c.club_name order by cm.club_id")

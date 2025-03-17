@@ -1,9 +1,8 @@
 package com.spacedong.repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.spacedong.beans.Category;
+import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.ClubBoardBean;
 import com.spacedong.beans.ClubMemberBean;
 import org.apache.ibatis.annotations.Param;
@@ -55,7 +54,7 @@ public class ClubRepository {
        clubMapper.updateClubStatus(club_id, status);
    }
 
-   public List<Category> countCategory(){
+   public List<CategoryBean> countCategory(){
        return clubMapper.countCategory();
    }
    public List<ClubBean> countClub(){

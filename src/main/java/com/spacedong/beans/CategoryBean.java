@@ -1,6 +1,6 @@
 package com.spacedong.beans;
 
-public class Category {
+public class CategoryBean {
 
 	private String category_name;
 	private String category_type;

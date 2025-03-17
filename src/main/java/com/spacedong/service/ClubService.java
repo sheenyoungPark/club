@@ -1,14 +1,11 @@
 package com.spacedong.service;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.spacedong.beans.*;
-import com.spacedong.mapper.ClubMapper;
 import jakarta.annotation.Resource;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
