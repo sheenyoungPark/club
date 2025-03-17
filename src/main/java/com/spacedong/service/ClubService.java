@@ -78,7 +78,7 @@ public class ClubService {
         clubRepository.updateClubStatus(club_id, status);
     }
 
-    public List<Category> countCategory(){
+    public List<CategoryBean> countCategory(){
         return clubRepository.countCategory();
     }
 
@@ -139,6 +139,10 @@ public class ClubService {
      */
     public void saveBoardImage(int board_id, String imagePath) {
         clubRepository.updateBoardImage(board_id, imagePath);
+    }
+
+    public void editClub(ClubBean clubBean){
+        clubRepository.editClub(clubBean);
     }
 
     /**

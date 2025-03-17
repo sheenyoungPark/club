@@ -106,6 +106,9 @@ public class ClubRepository {
     public boolean checkMemberInClub(int club_id, String member_id) {
         return clubMapper.checkMemberInClub(club_id, member_id) > 0;
     }
+    public void editClub(ClubBean clubBean){
+       clubMapper.editClub(clubBean);
+    }
 
     // ✅ 특정 게시글 조회 (삭제 시 사용)
     public ClubBoardBean getBoardById(int board_id) {

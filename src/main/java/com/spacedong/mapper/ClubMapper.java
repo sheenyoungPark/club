@@ -136,4 +136,7 @@ public interface ClubMapper {
     @Delete("DELETE FROM club_board WHERE board_id = #{board_id}")
     void deleteBoard(@Param("board_id") int board_id);
 
+    //동호회 정보 수정 (업데이트)
+    @Update("update club set club_name = #{club_name}, club_info = #{club_info}, club_profile = #{club_profile} where club_id = #{club_id}")
+    void editClub(ClubBean clubBean);
 }
