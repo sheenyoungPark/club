@@ -25,8 +25,9 @@ public class BusinessBean {
 	@NotBlank
 	@Size(min = 2, max = 40)
 	private String business_name;
-	
-	@Email
+
+	@Email(message = "유효한 이메일 형식이 아닙니다.")
+	@NotBlank(message = "이메일을 입력해주세요.")
 	private String business_email;
 	
 	@NotBlank

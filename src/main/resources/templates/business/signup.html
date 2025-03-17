@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>기업회원 가입</title>
     <link th:href="@{/css/businessSignup.css}" rel="stylesheet" />
+    <!-- jQuery 추가 -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Daum 우편번호 API 추가 -->
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
 <div class="container">
@@ -13,7 +17,12 @@
     <form th:action="@{/business/signup_pro}" method="post" th:object="${businessBean}">
         <div class="form-group">
             <label for="business_id">아이디</label>
-            <input type="text" id="business_id" th:field="*{business_id}" placeholder="아이디를 입력하세요" />
+            <div class="address-row"> <!-- address-row 클래스 사용 -->
+                <input type="text" id="business_id" th:field="*{business_id}" class="input-field" placeholder="아이디를 입력하세요" />
+                <button type="button" class="check-button" onclick="checkBusinessId()">중복확인</button>
+            </div>
+            <input type="hidden" id="idExist" name="idExist" value="false" />
+            <span id="id_error" class="error"></span>
             <p class="error" th:if="${#fields.hasErrors('business_id')}" th:errors="*{business_id}"></p>
         </div>
 
@@ -31,15 +40,22 @@
 
         <div class="form-group">
             <label for="business_number">사업자 번호</label>
-            <input type="text" id="business_number" th:field="*{business_number}" placeholder="사업자 번호를 입력하세요 (예: 123-45-67890)" />
-            <button type="button" onclick="validateBusinessNumber()">사업자 번호 조회</button>
+            <div class="address-row"> <!-- address-row 클래스 사용 -->
+                <input type="text" id="business_number" th:field="*{business_number}" class="input-field" placeholder="사업자 번호를 입력하세요 (예: 123-45-67890)" />
+                <button type="button" class="check-button" onclick="validateBusinessNumber()">사업자 번호 조회</button>
+            </div>
             <p id="business_status" class="success"></p>
             <p id="business_error" class="error"></p>
         </div>
 
         <div class="form-group">
             <label for="business_email">이메일</label>
-            <input type="email" id="business_email" th:field="*{business_email}" placeholder="이메일을 입력하세요" />
+            <div class="address-row"> <!-- address-row 클래스 사용 -->
+                <input type="email" id="business_email" th:field="*{business_email}" class="input-field" placeholder="이메일을 입력하세요" />
+                <button type="button" class="check-button" onclick="checkBusinessEmail()">중복확인</button>
+            </div>
+            <input type="hidden" id="emailExist" name="emailExist" value="false" />
+            <span id="email_error" class="error"></span>
             <p class="error" th:if="${#fields.hasErrors('business_email')}" th:errors="*{business_email}"></p>
         </div>
 
@@ -51,7 +67,14 @@
 
         <div class="form-group">
             <label for="business_address">주소</label>
-            <textarea id="business_address" th:field="*{business_address}" placeholder="상세 주소를 입력하세요"></textarea>
+            <div class="address-container">
+                <div class="address-row">
+                    <input type="text" id="business_postcode" class="input-field" placeholder="우편번호" readonly />
+                    <button type="button" class="check-button" onclick="searchBusinessAddress()">주소검색</button>
+                </div>
+                <input type="text" id="business_address" th:field="*{business_address}" class="input-field" placeholder="기본주소" readonly="readonly" />
+                <input type="text" id="business_address_detail" class="input-field" placeholder="상세주소 입력" />
+            </div>
             <p class="error" th:if="${#fields.hasErrors('business_address')}" th:errors="*{business_address}"></p>
         </div>
 
@@ -69,6 +92,91 @@
 </div>
 
 <script>
+    // 아이디 중복 확인 함수
+    function checkBusinessId() {
+        let businessId = $("#business_id").val().trim();
+
+        if (businessId.length < 5) {
+            $("#id_error").text("아이디는 5자 이상이어야 합니다.");
+            $("#id_error").css("color", "red");
+            return;
+        }
+
+        console.log("아이디 중복 확인 요청: " + businessId); // 로그 추가
+
+        $.ajax({
+            url: "/business/checkId",
+            type: "get",
+            data: {business_id: businessId},
+            dataType: "text",
+            success: function(result) {
+                console.log("서버 응답: " + result); // 로그 추가
+                if (result === "true") {
+                    $("#id_error").text("✅ 사용 가능한 아이디입니다.");
+                    $("#id_error").css("color", "green");
+                    $("#idExist").val("true");
+                } else {
+                    $("#id_error").text("❌ 이미 사용 중인 아이디입니다.");
+                    $("#id_error").css("color", "red");
+                    $("#idExist").val("false");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX 오류:", status, error); // 상세 오류 로깅
+                $("#id_error").text("중복 확인 중 오류가 발생했습니다: " + error);
+                $("#id_error").css("color", "red");
+            }
+        });
+    }
+
+    // 아이디 입력 필드에 변경 이벤트 리스너 추가
+    $(document).ready(function() {
+        $("#business_id").on("input", function() {
+            // 입력 값이 변경되면 중복 확인 상태 초기화
+            $("#idExist").val("false");
+            $("#id_error").text("");
+        });
+    });
+
+    // 사업자 번호 중복 확인 및 유효성 검사 함수
+    function checkAndValidateBusinessNumber() {
+        const bizNo = $("#business_number").val().replace(/-/g, '');
+        const statusElement = document.getElementById("business_status");
+        const errorElement = document.getElementById("business_error");
+
+        // 기존 메시지 초기화
+        statusElement.innerText = "";
+        errorElement.innerText = "";
+
+        if (!bizNo || bizNo.length !== 10 || isNaN(bizNo)) {
+            errorElement.innerText = "올바른 사업자 번호(10자리)를 입력하세요.";
+            return;
+        }
+
+        // 중복 검사 먼저 수행
+        $.ajax({
+            url: "/business/checkBusinessNumber",
+            type: "get",
+            data: {business_number: bizNo},
+            dataType: "text",
+            success: function(result) {
+                if (result === "true") {
+                    // 중복이 없으면 유효성 검사 진행
+                    $("#businessNumberExist").val("true");
+                    validateBusinessNumber();
+                } else {
+                    errorElement.innerText = "❌ 이미 등록된 사업자 번호입니다.";
+                    $("#businessNumberExist").val("false");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX 오류:", status, error);
+                errorElement.innerText = "❌ 중복 확인 중 오류가 발생했습니다: " + error;
+            }
+        });
+    }
+
+    // 사업자 번호 유효성 검사 함수
     function validateBusinessNumber() {
         const bizNo = document.getElementById("business_number").value.replace(/-/g, '');
         const statusElement = document.getElementById("business_status");
@@ -149,58 +257,147 @@
             });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-        const pwConfirm = document.getElementById('business_pw_confirm');
-        const pwField = document.getElementById('business_pw');
-        const pwMatchError = document.getElementById('pw_match_error');
-        const submitBtn = document.querySelector('.btn-submit');
+    // 사업자 번호 입력 필드에 변경 이벤트 리스너 추가
+    $(document).ready(function() {
+        $("#business_number").on("input", function() {
+            // 입력 값이 변경되면 확인 상태 초기화
+            $("#businessNumberExist").val("false");
+            $("#business_status").text("");
+            $("#business_error").text("");
+        });
+    });
 
-        // 비밀번호 확인 필드가 존재하는 경우에만 이벤트 리스너 추가
-        if (pwConfirm && pwMatchError) {
-            // 비밀번호 확인 검증
-            pwConfirm.addEventListener('input', function() {
-                if(this.value !== pwField.value) {
-                    pwMatchError.style.display = 'block';
-                } else {
-                    pwMatchError.style.display = 'none';
-                }
-            });
+    // 이메일 유효성 검사 함수
+    function validateEmail(email) {
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        return emailRegex.test(email);
+    }
 
-            // 비밀번호 필드 변경 시에도 확인
-            pwField.addEventListener('input', function() {
-                if(pwConfirm.value && pwConfirm.value !== pwField.value) {
-                    pwMatchError.style.display = 'block';
-                } else if(pwConfirm.value && pwConfirm.value === pwField.value) {
-                    pwMatchError.style.display = 'none';
-                }
-            });
+    // 이메일 중복 확인 함수
+    function checkBusinessEmail() {
+        let email = $("#business_email").val().trim();
+
+        // 유효성 검사
+        if (!validateEmail(email)) {
+            $("#email_error").text("유효하지 않은 이메일 형식입니다.");
+            $("#email_error").css("color", "red");
+            return;
         }
 
-        // 폼 제출 시 사업자 번호 유효성 검증
-        form.addEventListener('submit', function(e) {
-            // 사업자 번호가 유효한지 확인
-            const statusElement = document.getElementById("business_status");
+        console.log("이메일 중복 확인 요청: " + email); // 로그 추가
 
-            // 정상 사업자로 확인되지 않은 경우 제출 차단
-            if (!statusElement.innerText.includes("정상 사업자")) {
+        // 중복 검사
+        $.ajax({
+            url: "/business/checkEmail",
+            type: "get",
+            data: {business_email: email},
+            dataType: "text",
+            success: function(result) {
+                console.log("서버 응답: " + result); // 로그 추가
+                if (result === "true") {
+                    $("#email_error").text("✅ 사용 가능한 이메일입니다.");
+                    $("#email_error").css("color", "green");
+                    $("#emailExist").val("true");
+                } else {
+                    $("#email_error").text("❌ 이미 사용 중인 이메일입니다.");
+                    $("#email_error").css("color", "red");
+                    $("#emailExist").val("false");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX 오류:", status, error); // 상세 오류 로깅
+                $("#email_error").text("중복 확인 중 오류가 발생했습니다: " + error);
+                $("#email_error").css("color", "red");
+            }
+        });
+    }
+
+    // 이메일 입력 필드에 변경 이벤트 리스너 추가
+    $(document).ready(function() {
+        $("#business_email").on("input", function() {
+            // 입력 값이 변경되면 중복 확인 상태 초기화
+            $("#emailExist").val("false");
+            $("#email_error").text("");
+        });
+    });
+
+    // 주소 검색 함수
+    function searchBusinessAddress() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드
+                var roadAddr = data.roadAddress; // 도로명 주소
+                var jibunAddr = data.jibunAddress; // 지번 주소
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById('business_postcode').value = data.zonecode;
+                document.getElementById('business_address').value = roadAddr || jibunAddr;
+
+                // 상세주소 필드로 포커스 이동
+                document.getElementById("business_address_detail").focus();
+            }
+        }).open();
+    }
+
+    // 폼 제출 전 모든 유효성 검사 수행
+    $(document).ready(function() {
+        $("form").submit(function(e) {
+            // ID 중복 확인 여부 검사
+            if ($("#idExist").val() !== "true") {
                 e.preventDefault();
-                alert("유효한 사업자 번호를 입력하고 '사업자 번호 조회' 버튼을 클릭하여 확인해주세요.");
+                alert("아이디 중복 확인을 해주세요.");
+                $("#business_id").focus();
                 return false;
             }
 
-            // 비밀번호 확인 (기존 로직)
-            if(pwConfirm && pwMatchError && pwConfirm.value !== pwField.value) {
+            // 사업자 번호 유효성 검사 (중복 체크 없이)
+            const statusElement = document.getElementById("business_status");
+            if (!statusElement.innerText.includes("정상 사업자")) {
                 e.preventDefault();
-                pwMatchError.style.display = 'block';
-                pwConfirm.focus();
+                alert("유효한 사업자 번호를 조회해주세요.");
+                $("#business_number").focus();
                 return false;
+            }
+
+            // 이메일 유효성 검사
+            let email = $("#business_email").val().trim();
+            if (!validateEmail(email)) {
+                e.preventDefault();
+                $("#email_error").text("유효하지 않은 이메일 형식입니다.");
+                $("#email_error").css("color", "red");
+                $("#business_email").focus();
+                return false;
+            }
+
+            // 이메일 중복 확인 여부 검사
+            if ($("#emailExist").val() !== "true") {
+                e.preventDefault();
+                alert("이메일 중복 확인을 해주세요.");
+                $("#business_email").focus();
+                return false;
+            }
+
+            // 주소 검사
+            if (!$("#business_address").val()) {
+                e.preventDefault();
+                alert("주소를 입력해주세요.");
+                $("#business_address").focus();
+                return false;
+            }
+
+            // 상세 주소가 있으면 기본 주소와 합치기
+            const addressDetail = $("#business_address_detail").val();
+            if (addressDetail) {
+                const mainAddress = $("#business_address").val();
+                $("#business_address").val(mainAddress + ' ' + addressDetail);
             }
 
             // 폼 제출 시 버튼 상태 변경
-            submitBtn.textContent = '처리 중...';
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
+            $(".btn-submit").text("처리 중...");
+            $(".btn-submit").addClass("loading");
+            $(".btn-submit").prop("disabled", true);
+
+            return true; // 모든 검증 통과
         });
     });
 </script>

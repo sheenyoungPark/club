@@ -34,4 +34,15 @@ public class BusinessService {
         }
         return false;
     }
+
+    // 아이디 중복 확인
+    public boolean checkId(String business_id) {
+        int count = businessRepository.checkId(business_id);
+        return count == 0; // 중복이 없으면 true, 있으면 false 반환
+    }
+
+    public boolean checkEmail(String business_email) {
+        int count = businessRepository.checkEmail(business_email);
+        return count == 0; // 중복이 없으면 true, 있으면 false 반환
+    }
 }

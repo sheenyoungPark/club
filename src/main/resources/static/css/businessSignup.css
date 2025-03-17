@@ -172,3 +172,34 @@ textarea:focus + label {
 .terms-section a:hover {
     text-decoration: underline;
 }
+.address-container {
+    width: 100%;
+}
+
+.address-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.check-button {
+    padding: 10px 15px;
+    background-color: #1a0067;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.check-button:hover {
+    background-color: #2c0087;
+}
