@@ -101,6 +101,7 @@ public class BusinessController {
     }
 
 
+    //컨트롤러를 분리해야되나 고민중
     @GetMapping("/category")
     public String category(Model model) {
 
