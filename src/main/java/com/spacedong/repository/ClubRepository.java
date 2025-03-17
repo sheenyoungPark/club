@@ -107,4 +107,14 @@ public class ClubRepository {
         return clubMapper.checkMemberInClub(club_id, member_id) > 0;
     }
 
+    // ✅ 특정 게시글 조회 (삭제 시 사용)
+    public ClubBoardBean getBoardById(int board_id) {
+        return clubMapper.getBoardById(board_id);
+    }
+
+    // ✅ 게시글 삭제 (DB에서 삭제)
+    public void deleteBoard(int board_id) {
+        clubMapper.deleteBoard(board_id);
+    }
+
 }

@@ -124,5 +124,16 @@ public interface ClubMapper {
      */
     @Select("SELECT COUNT(*) FROM club_member WHERE club_id = #{club_id} AND member_id = #{member_id}")
     int checkMemberInClub(@Param("club_id") int club_id, @Param("member_id") String member_id);
+    /**
+     * ✅ 특정 게시글 조회 (삭제 시 사용)
+     */
+    @Select("SELECT * FROM club_board WHERE board_id = #{board_id}")
+    ClubBoardBean getBoardById(@Param("board_id") int board_id);
+
+    /**
+     * ✅ 게시글 삭제 (ON DELETE CASCADE로 댓글 및 이미지도 자동 삭제됨)
+     */
+    @Delete("DELETE FROM club_board WHERE board_id = #{board_id}")
+    void deleteBoard(@Param("board_id") int board_id);
 
 }

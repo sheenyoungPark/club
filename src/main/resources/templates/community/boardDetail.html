@@ -14,6 +14,17 @@
 <div class="post-container">
     <h2 class="post-title" th:text="${post.board_title}">게시글 제목</h2>
 
+    <!-- ✅ 삭제 버튼 -->
+    <div th:if="${loginMember != null and loginMember.member_id == post.board_writer_id}">
+        <form th:action="@{/community/board/delete}" method="post" style="display: inline;">
+            <input type="hidden" name="board_id" th:value="${post.board_id}">
+            <input type="hidden" name="boardType" th:value="${boardType}">
+            <button type="submit" class="delete-btn" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+        </form>
+    </div>
+
+
+
     <!-- ✅ 이미지 표시 영역 -->
     <div class="image-container" th:if="${images != null and not #lists.isEmpty(images)}">
         <h3>📸 첨부된 사진</h3>

@@ -184,6 +184,35 @@ public class BoardController {
 		return "redirect:/community/board?boardType=" + boardType;
 	}
 
+	@PostMapping("/board/delete")
+	public String deleteBoard(@RequestParam("board_id") int boardId,
+							  @RequestParam("boardType") String boardType) {
+
+		// ✅ 삭제할 게시글 정보 가져오기 (예: 이미지 파일도 함께 삭제하기 위함)
+		List<String> images = boardService.getBoardImages(boardType, boardId);
+
+		// ✅ 1. 게시글 이미지 삭제 (물리적 파일 삭제)
+		if (images != null && !images.isEmpty()) {
+			String uploadDir = "C:/upload/image/" + boardType + "BoardImg/";
+			for (String imageName : images) {
+				File imageFile = new File(uploadDir + imageName);
+				if (imageFile.exists()) {
+					if (imageFile.delete()) {
+						System.out.println("🗑 이미지 삭제 완료: " + imageFile.getAbsolutePath());
+					} else {
+						System.out.println("🚨 이미지 삭제 실패: " + imageFile.getAbsolutePath());
+					}
+				}
+			}
+		}
+
+		// ✅ 2. 게시글 DB에서 삭제
+		boardService.deleteBoard(boardType, boardId);
+		System.out.println("🗑 게시글 삭제 완료: ID " + boardId);
+
+		// ✅ 3. 삭제 후 게시판 목록으로 이동
+		return "redirect:/community/board?boardType=" + boardType;
+	}
 
 
 

@@ -99,4 +99,12 @@ public class BoardRepository {
         return boardMapper.getBoardImages(boardType, boardId);
     }
 
+
+
+    // ✅ 게시글 삭제 (ON DELETE CASCADE 덕분에 관련 댓글과 이미지 정보도 삭제됨)
+    public void deleteBoard(String boardType, int boardId) {
+        System.out.println("🗑 Repository: 게시글 삭제 (boardType: " + boardType + ", boardId: " + boardId + ")");
+        boardMapper.deleteBoard(boardType, boardId);
+    }
+
 }

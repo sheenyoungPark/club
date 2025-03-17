@@ -256,6 +256,59 @@ public class ClubController {
 	}
 
 
+	// ✅ 게시글 삭제 처리
+	@PostMapping("/board_delete")
+	public String deleteBoard(@RequestParam("board_id") int boardId,
+							  @RequestParam("club_id") int clubId) {
+
+		// 1️⃣ 게시글 정보 가져오기 (작성자 ID와 이미지 경로 확인)
+		ClubBoardBean board = clubService.getBoardById(boardId);
+
+		if (board == null) {
+			System.out.println("🚨 삭제 실패: 게시글을 찾을 수 없음 (board_id: " + boardId + ")");
+			return "redirect:/club/club_info?club_id=" + clubId;
+		}
+
+		// 2️⃣ 현재 로그인한 사용자의 역할 확인
+		ClubMemberBean clubMember = clubMemberService.getMemberInfo(clubId, loginMember.getMember_id());
+
+		if (clubMember == null) {
+			System.out.println("🚨 삭제 실패: 해당 동호회의 회원이 아님 (member_id: " + loginMember.getMember_id() + ")");
+			return "redirect:/club/club_info?club_id=" + clubId;
+		}
+
+		String memberRole = clubMember.getMember_role();
+
+		// 3️⃣ 삭제 권한 확인 (관리자는 모든 게시글 삭제 가능, 일반 회원은 본인 게시글만 삭제 가능)
+		if (!"master".equals(memberRole) && !board.getBoard_writer_id().equals(loginMember.getMember_id())) {
+			System.out.println("🚨 삭제 실패: 권한 없음 (board_id: " + boardId + ", 작성자: " + board.getBoard_writer_id() + ")");
+			return "redirect:/club/club_info?club_id=" + clubId;
+		}
+
+		// 4️⃣ 게시글에 첨부된 이미지가 있는 경우 삭제
+		if (board.getBoard_img() != null) {
+			String imagePath = "C:/upload/" + board.getBoard_img();
+			File imageFile = new File(imagePath);
+
+			if (imageFile.exists()) {
+				if (imageFile.delete()) {
+					System.out.println("🗑 게시글 이미지 삭제 완료: " + imagePath);
+				} else {
+					System.out.println("🚨 이미지 삭제 실패: " + imagePath);
+				}
+			}
+		}
+
+		// 5️⃣ DB에서 게시글 삭제
+		clubService.deleteBoard(boardId);
+		System.out.println("🗑 게시글 삭제 완료 (board_id: " + boardId + ")");
+
+		// 6️⃣ 삭제 후 동호회 상세 페이지로 이동
+		return "redirect:/club/club_info?club_id=" + clubId;
+	}
+
+
+
 
 
 

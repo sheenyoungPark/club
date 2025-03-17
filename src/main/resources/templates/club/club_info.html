@@ -159,8 +159,20 @@
                                     <span class="post-title" th:text="${board.board_title}">게시글 제목</span>
                                     <span class="post-date" th:text="${#temporals.format(board.create_date, 'yyyy-MM-dd HH:mm')}">날짜</span>
                                 </div>
+
+                                <!-- ✅ 삭제 버튼 추가 (조건에 따라 보이도록 설정) -->
+                                <div class="post-actions">
+                                    <form th:if="${member_role == 'master' or (member_role == 'normal' and board.board_writer_id == loginMember.member_id)}"
+                                          th:action="@{/club/board_delete}" method="post"
+                                          onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                                        <input type="hidden" name="board_id" th:value="${board.board_id}">
+                                        <input type="hidden" name="club_id" th:value="${club.club_id}">
+                                        <button type="submit" class="btn btn-delete">삭제</button>
+                                    </form>
+                                </div>
                             </li>
                         </ul>
+
                     </div>
 
                 </div>

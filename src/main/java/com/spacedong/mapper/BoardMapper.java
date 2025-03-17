@@ -1,11 +1,8 @@
 package com.spacedong.mapper;
 
 import java.util.List;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+
+import org.apache.ibatis.annotations.*;
 import com.spacedong.beans.BoardBean;
 import com.spacedong.beans.BoardCommentBean;
 
@@ -97,5 +94,7 @@ public interface BoardMapper {
     @Select("SELECT img FROM ${boardType}_board_image WHERE board_id = #{boardId}")
     List<String> getBoardImages(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
-
+    /** ✅ 게시글 삭제 (ON DELETE CASCADE로 댓글 및 이미지도 자동 삭제됨) **/
+    @Delete("DELETE FROM ${boardType}_board WHERE board_id = #{boardId}")
+    void deleteBoard(@Param("boardType") String boardType, @Param("boardId") int boardId);
 }
