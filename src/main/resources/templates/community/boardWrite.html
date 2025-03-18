@@ -18,7 +18,7 @@
     <!-- 글쓰기 폼 -->
     <form th:action="@{/community/write}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="boardType" th:value="${boardType}">
-        <input type="hidden" name="board_writer_id" th:value="${loginMember.member_id}">
+        <input type="hidden" name="board_writer_id" th:value="${(loginBusiness != null && loginBusiness.login == true) ? loginBusiness.business_id : loginMember.member_id}">
 
         <label>제목:</label>
         <input type="text" name="board_title" class="input-field" placeholder="제목을 입력하세요" required>

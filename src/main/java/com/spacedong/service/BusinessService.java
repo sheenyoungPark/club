@@ -28,7 +28,17 @@ public class BusinessService {
         if(temp != null) {
             loginBusiness.setBusiness_id(temp.getBusiness_id());
             loginBusiness.setBusiness_name(temp.getBusiness_name());
+            loginBusiness.setBusiness_pw(temp.getBusiness_pw());
             logger.info("비지니스 서비스 로그인: {}", loginBusiness.getBusiness_name());
+            loginBusiness.setBusiness_address(temp.getBusiness_address());
+            loginBusiness.setBusiness_email(temp.getBusiness_email());
+            loginBusiness.setBusiness_info(temp.getBusiness_info());
+            loginBusiness.setBusiness_phone(temp.getBusiness_phone());
+            loginBusiness.setBusiness_point(temp.getBusiness_point());
+            loginBusiness.setBusiness_joindate(temp.getBusiness_joindate());
+            loginBusiness.setBusiness_profile(temp.getBusiness_profile());
+            loginBusiness.setBusiness_public(temp.getBusiness_public());
+            loginBusiness.setBusiness_number(temp.getBusiness_number());
             loginBusiness.setLogin(true);
             return true;
         }
