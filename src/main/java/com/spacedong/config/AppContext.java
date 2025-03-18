@@ -76,9 +76,8 @@ public class AppContext implements WebMvcConfigurer {
     // TopMenuInterceptor 빈 정의
     @Bean
     public TopMenuInterceptor topMenuInterceptor() {
-        return new TopMenuInterceptor(loginMember());
+        return new TopMenuInterceptor(loginMember(), loginBusiness()); // ✅ 수정됨
     }
-
     // 인터셉터 등록
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

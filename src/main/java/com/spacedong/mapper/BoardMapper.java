@@ -90,13 +90,27 @@ public interface BoardMapper {
     void incrementViewCount(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
     /** ✅ 댓글 조회 **/
-    @Select("SELECT * FROM ${boardType}_board_comment WHERE board_id = #{boardId} ORDER BY create_date ASC")
+    /** ✅ 댓글 조회 **/
+    @Select("SELECT c.*, " +
+            "       CASE " +
+            "           WHEN m.member_nickname IS NOT NULL THEN m.member_nickname " +
+            "           WHEN b.business_name IS NOT NULL THEN b.business_name " +
+            "           ELSE '관리자' " +
+            "       END AS comment_writer_name " +
+            "FROM ${boardType}_board_comment c " +
+            "LEFT JOIN member m ON c.comment_writer_id = m.member_id " +
+            "LEFT JOIN business b ON c.comment_writer_id = b.business_id " +
+            "WHERE c.board_id = #{boardId} " +  // ✅ 해당 게시글의 댓글만 가져오도록 수정
+            "ORDER BY c.create_date ASC")
     List<BoardCommentBean> getCommentsByBoardId(@Param("boardType") String boardType, @Param("boardId") int boardId);
+
+
 
     /** ✅ 댓글 작성 **/
     @Insert("INSERT INTO ${boardType}_board_comment (comment_id, board_id, comment_writer_id, comment_text, parent_comment_id, create_date) "
             + "VALUES (comment_id_seq.NEXTVAL, #{comment.board_id}, #{comment.comment_writer_id}, #{comment.comment_text}, #{comment.parent_comment_id, jdbcType=INTEGER}, CURRENT_TIMESTAMP)")
     void writeComment(@Param("boardType") String boardType, @Param("comment") BoardCommentBean comment);
+
 
 
     /** ✅ 게시글 작성 **/
