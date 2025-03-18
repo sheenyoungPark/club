@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ✅ 자동 슬라이드 시작
     function startAutoSlide() {
-        autoSlideInterval = setInterval(autoSlide, 3000);
+        autoSlideInterval = setInterval(autoSlide, 5000);
     }
 
     // ✅ 자동 슬라이드 정지

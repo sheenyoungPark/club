@@ -26,5 +26,7 @@ public interface ClubMemberMapper {
     @Delete("DELETE FROM club_member WHERE club_id = #{club_id} AND member_id = #{member_id}")
     void deleteMember(@Param("club_id") int club_id,@Param("member_id") String member_id);
 
+    @Select("select * from club_member where club_id = #{club_id}")
+    List<ClubMemberBean> getClubMembers(@Param("club_id") int club_id);
 
 }
