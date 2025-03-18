@@ -1,6 +1,7 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.ClubBean;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
@@ -33,6 +34,9 @@ public class MemberController {
 	@Resource(name="loginMember")
 	private MemberBean loginMember;
 
+	@Resource(name="loginBusiness")
+	private BusinessBean loginBusiness;
+
 	@InitBinder("memberBean")
 	protected void initBinder(WebDataBinder binder) {
 		binder.setValidator(new MemberValidator());
@@ -46,12 +50,39 @@ public class MemberController {
 	}
 
 	@PostMapping("/login_pro")
-	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean) {
+	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean, HttpSession session) {
 		if (memberBean.getMember_id().equals("admin") && memberBean.getMember_pw().equals("admin")) {
+			// 관리자 로그인 처리
+
+			// 기존 세션 초기화
+			MemberBean loginMember = (MemberBean) session.getAttribute("loginMember");
+			BusinessBean loginBusiness = (BusinessBean) session.getAttribute("loginBusiness");
+
+			if (loginMember != null) {
+				loginMember.setLogin(false);
+			}
+
+			if (loginBusiness != null) {
+				loginBusiness.setLogin(false);
+			}
+
 			return "admin/init";
 		} else {
 			if (memberService.getLoginMember(memberBean)) {
-				loginMember.setLogin(true);
+				// 멤버 로그인 성공
+
+				// 기존에 비즈니스 계정으로 로그인되어 있다면 로그아웃 처리
+				BusinessBean loginBusiness = (BusinessBean) session.getAttribute("loginBusiness");
+				if (loginBusiness != null) {
+					loginBusiness.setLogin(false);
+				}
+
+				// 멤버 로그인 처리
+				MemberBean loginMember = (MemberBean) session.getAttribute("loginMember");
+				if (loginMember != null) {
+					loginMember.setLogin(true);
+				}
+
 				return "member/login_success";
 			} else {
 				return "member/login_fail";
@@ -59,9 +90,21 @@ public class MemberController {
 		}
 	}
 
+	// MemberController의 logout 메서드
 	@RequestMapping("/logout")
 	public String logout(HttpSession session) {
-		session.invalidate();
+		// 두 계정 유형 모두 로그아웃 처리
+		MemberBean loginMember = (MemberBean) session.getAttribute("loginMember");
+		BusinessBean loginBusiness = (BusinessBean) session.getAttribute("loginBusiness");
+
+		if (loginMember != null) {
+			loginMember.setLogin(false);
+		}
+
+		if (loginBusiness != null) {
+			loginBusiness.setLogin(false);
+		}
+
 		return "redirect:/";
 	}
 

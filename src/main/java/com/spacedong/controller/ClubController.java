@@ -5,6 +5,7 @@ import com.spacedong.service.CategoryService;
 import com.spacedong.service.ClubMemberService;
 import com.spacedong.service.ClubService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,9 @@ public class ClubController {
 
 	@Resource(name = "loginMember")
 	private MemberBean loginMember;
+
+	@Resource(name = "loginBusiness")
+	private BusinessBean loginBusiness;
 
 	@Autowired
 	private ClubService clubService;
@@ -51,7 +56,7 @@ public class ClubController {
 				model.addAttribute("member_role", member_role);
 			}
 		}
-			model.addAttribute("club", club);
+		model.addAttribute("club", club);
 		List<ClubBoardBean> clubBoardList = clubService.getBoardListByClubId(club_id);
 
 		// ✅ 현재 사용자가 해당 클럽의 회원인지 확인
@@ -67,6 +72,11 @@ public class ClubController {
 	// ✅ 클럽 가입
 	@GetMapping("/club_join")
 	public String club_join(@RequestParam int club_id) {
+		// 비즈니스 계정으로 로그인한 경우 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			return "club/business_not_allowed";
+		}
+
 		String member_id = loginMember.getMember_id();
 		if (member_id != null) {
 			ClubMemberBean clubMemberBean = clubService.getClubMember(club_id, member_id);
@@ -83,7 +93,14 @@ public class ClubController {
 
 	// ✅ 클럽 생성 페이지
 	@GetMapping("/create")
-	public String create(@ModelAttribute ClubBean clubBean, Model model) {
+	public String create(@ModelAttribute ClubBean clubBean, Model model, RedirectAttributes redirectAttributes) {
+		// 비즈니스 계정으로 로그인한 경우 클럽 생성 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			redirectAttributes.addFlashAttribute("message",
+					"클럽 만들기는 일반 회원만 이용 가능합니다. 일반 회원으로 로그인해 주세요.");
+			return "redirect:/member/login";
+		}
+
 		if (loginMember.getMember_id() != null) {
 			List<String> categoryTypes = categoryService.getAllCategoryType();
 			model.addAttribute("categoryType", categoryTypes);
@@ -106,7 +123,15 @@ public class ClubController {
 	public String create_pro(@Valid ClubBean clubBean,
 							 BindingResult result,
 							 @RequestParam(value = "clubImage", required = false) MultipartFile clubImage,
-							 Model model) {
+							 Model model,
+							 RedirectAttributes redirectAttributes) {
+		// 비즈니스 계정으로 로그인한 경우 클럽 생성 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			redirectAttributes.addFlashAttribute("message",
+					"클럽 만들기는 일반 회원만 이용 가능합니다. 일반 회원으로 로그인해 주세요.");
+			return "redirect:/member/login";
+		}
+
 		if (result.hasErrors()) {
 			List<String> categoryTypes = categoryService.getAllCategoryType();
 			model.addAttribute("categoryType", categoryTypes);
@@ -176,6 +201,11 @@ public class ClubController {
 	// ✅ 게시글 작성 페이지
 	@GetMapping("/board_write")
 	public String board_write(@RequestParam("club_id") int club_id, Model model) {
+		// 비즈니스 계정으로 로그인한 경우 접근 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			return "redirect:/club/club_info?club_id=" + club_id;
+		}
+
 		// 현재 사용자가 해당 클럽의 회원인지 확인
 		boolean isMember = clubService.isMemberOfClub(club_id, loginMember.getMember_id());
 		if (!isMember) {
@@ -194,6 +224,11 @@ public class ClubController {
 	@PostMapping("/board_write_pro")
 	public String board_write_pro(@ModelAttribute ClubBoardBean clubBoardBean,
 								  @RequestParam(value = "image", required = false) MultipartFile image) {
+		// 비즈니스 계정으로 로그인한 경우 접근 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			return "redirect:/club/club_info?club_id=" + clubBoardBean.getClub_id();
+		}
+
 		// 현재 사용자가 해당 클럽의 회원인지 확인
 		boolean isMember = clubService.isMemberOfClub(clubBoardBean.getClub_id(), loginMember.getMember_id());
 		if (!isMember) {
@@ -254,18 +289,42 @@ public class ClubController {
 
 		return "redirect:/club/club_info?club_id=" + clubBoardBean.getClub_id();
 	}
+
 	//동호회 수정페이지
 	@GetMapping("edit")
-	public String edit(@ModelAttribute ClubBean clubBean,@RequestParam("club_id")int club_id, Model model){
+	public String edit(@ModelAttribute ClubBean clubBean, @RequestParam("club_id") int club_id, Model model) {
+		// 비즈니스 계정으로 로그인한 경우 접근 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			return "redirect:/club/club_info?club_id=" + club_id;
+		}
+
+		// 현재 사용자가 해당 클럽의 관리자인지 확인
+		ClubMemberBean clubMember = clubMemberService.getMemberInfo(club_id, loginMember.getMember_id());
+		if (clubMember == null || !"master".equals(clubMember.getMember_role())) {
+			return "redirect:/club/club_info?club_id=" + club_id;
+		}
+
 		clubBean = clubService.oneClubInfo(club_id);
 		model.addAttribute("clubBean", clubBean);
 
 		return "club/club_edit";
 	}
+
 	//동호회 수정
 	@PostMapping("edit_pro")
 	public String edit_pro(@ModelAttribute ClubBean clubBean,
 						   @RequestParam(value = "clubImage", required = false) MultipartFile clubImage) {
+		// 비즈니스 계정으로 로그인한 경우 접근 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			return "redirect:/club/club_info?club_id=" + clubBean.getClub_id();
+		}
+
+		// 현재 사용자가 해당 클럽의 관리자인지 확인
+		ClubMemberBean clubMember = clubMemberService.getMemberInfo(clubBean.getClub_id(), loginMember.getMember_id());
+		if (clubMember == null || !"master".equals(clubMember.getMember_role())) {
+			return "redirect:/club/club_info?club_id=" + clubBean.getClub_id();
+		}
+
 		// 기존 클럽 정보 가져오기 (기존 프로필 이미지 정보 유지를 위해)
 		ClubBean existingClub = clubService.oneClubInfo(clubBean.getClub_id());
 
@@ -333,6 +392,10 @@ public class ClubController {
 	@PostMapping("/board_delete")
 	public String deleteBoard(@RequestParam("board_id") int boardId,
 							  @RequestParam("club_id") int clubId) {
+		// 비즈니스 계정으로 로그인한 경우 접근 거부
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			return "redirect:/club/club_info?club_id=" + clubId;
+		}
 
 		// 1️⃣ 게시글 정보 가져오기 (작성자 ID와 이미지 경로 확인)
 		ClubBoardBean board = clubService.getBoardById(boardId);
@@ -379,10 +442,4 @@ public class ClubController {
 		// 6️⃣ 삭제 후 동호회 상세 페이지로 이동
 		return "redirect:/club/club_info?club_id=" + clubId;
 	}
-
-
-
-
-
-
 }

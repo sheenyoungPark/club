@@ -39,8 +39,8 @@
 
     <!-- 회원가입 버튼을 네이버 로그인 아래로 이동 -->
 
-    <form id="business-form" th:action="@{/business/login_pro}" method="post" style="display: none;" th:object="${businessBean}">
-        <input type="text" name="busines_id" class="input-field" placeholder="기업 아이디" />
+    <form id="business-form" th:action="@{/business/login_pro}" method="post" style="display: none;">
+        <input type="text" name="business_id" class="input-field" placeholder="기업 아이디" />
         <input type="password" name="business_pw" class="input-field" placeholder="기업 비밀번호" />
         <button type="submit" class="login-button">로그인</button>
         <div class="signup-section">

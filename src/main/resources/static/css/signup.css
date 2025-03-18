@@ -209,3 +209,11 @@ input[type="date"]:focus {
     border-color: #5d4b8c;
     box-shadow: 0 0 0 2px rgba(93, 75, 140, 0.2);
 }
+.optional-field {
+    font-size: 12px;
+    color: #888;
+    margin-left: 5px;
+}
+.no-required-mark::after {
+    content: none !important;
+}

@@ -1,12 +1,16 @@
 package com.spacedong.service;
 
 import com.spacedong.beans.BusinessBean;
+import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.repository.BusinessRepository;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 @Service
 public class BusinessService {
@@ -18,16 +22,45 @@ public class BusinessService {
     @Autowired
     private BusinessRepository businessRepository;
 
+    // 회원 관련 메서드
     public void businessJoin(BusinessBean businessBean) {
+        // business_public 값을 'WAIT'로 강제 설정
+        businessBean.setBusiness_public("WAIT");
+
+        // 기타 필드 처리
+        if (businessBean.getBusiness_point() < 0) {
+            businessBean.setBusiness_point(0);
+        }
+
+        if (businessBean.getBusiness_info() == null) {
+            businessBean.setBusiness_info("");
+        }
+
         businessRepository.businessJoin(businessBean);
     }
 
-    public boolean getLoginMember(BusinessBean businessBean) {
-        BusinessBean temp = businessRepository.getLoginMember(businessBean);
+    public boolean getLoginBusiness(BusinessBean businessBean) {
+        BusinessBean temp = businessRepository.getLoginBusiness(businessBean);
 
         if(temp != null) {
             loginBusiness.setBusiness_id(temp.getBusiness_id());
             loginBusiness.setBusiness_name(temp.getBusiness_name());
+            loginBusiness.setBusiness_email(temp.getBusiness_email());
+            loginBusiness.setBusiness_phone(temp.getBusiness_phone());
+            loginBusiness.setBusiness_address(temp.getBusiness_address());
+            loginBusiness.setBusiness_number(temp.getBusiness_number());
+            loginBusiness.setBusiness_profile(temp.getBusiness_profile());
+            loginBusiness.setBusiness_public(temp.getBusiness_public());
+
+            // 추가 필드도 세션에 설정
+            if (temp.getBusiness_info() != null) {
+                loginBusiness.setBusiness_info(temp.getBusiness_info());
+            } else {
+                loginBusiness.setBusiness_info("");
+            }
+
+            loginBusiness.setBusiness_point(temp.getBusiness_point());
+
             logger.info("비지니스 서비스 로그인: {}", loginBusiness.getBusiness_name());
             loginBusiness.setLogin(true);
             return true;
@@ -41,8 +74,133 @@ public class BusinessService {
         return count == 0; // 중복이 없으면 true, 있으면 false 반환
     }
 
+    // 이메일 중복 확인
     public boolean checkEmail(String business_email) {
         int count = businessRepository.checkEmail(business_email);
         return count == 0; // 중복이 없으면 true, 있으면 false 반환
     }
+
+    // 회원 정보 관리 메서드
+    public boolean checkPassword(String businessId, String password) {
+        return businessRepository.checkPassword(businessId, password);
+    }
+
+    public void updatePassword(String businessId, String newPassword) {
+        businessRepository.updatePassword(businessId, newPassword);
+    }
+
+    public void editBusiness(BusinessBean businessBean) {
+        // info가 null이면 빈 문자열로 설정
+        if (businessBean.getBusiness_info() == null) {
+            businessBean.setBusiness_info("");
+        }
+        businessRepository.updateBusiness(businessBean);
+    }
+
+    public void deleteBusiness(String businessId) {
+        businessRepository.deleteBusiness(businessId);
+    }
+
+    // 프로필 관리
+    public void updateBusinessProfile(String businessId, String profileName) {
+        businessRepository.updateBusinessProfile(businessId, profileName);
+    }
+
+    public BusinessBean getBusinessInfoById(String businessId) {
+        return businessRepository.getLoginBusinessById(businessId);
+    }
+
+    public void editBusinessWithValidation(BusinessBean businessBean) {
+        // 필수 필드 검증
+        if (businessBean.getBusiness_id() == null || businessBean.getBusiness_id().isEmpty()) {
+            throw new IllegalArgumentException("비즈니스 ID는 필수입니다.");
+        }
+
+        // 이메일 형식 검증 (정규식 사용)
+        if (!isValidEmail(businessBean.getBusiness_email())) {
+            throw new IllegalArgumentException("유효하지 않은 이메일 형식입니다.");
+        }
+
+        // info가 null이면 빈 문자열로 설정
+        if (businessBean.getBusiness_info() == null) {
+            businessBean.setBusiness_info("");
+        }
+
+        // 실제 업데이트 수행
+        businessRepository.updateBusiness(businessBean);
+
+        // 세션 업데이트
+        if (loginBusiness.getBusiness_id().equals(businessBean.getBusiness_id())) {
+            loginBusiness.setBusiness_phone(businessBean.getBusiness_phone());
+            loginBusiness.setBusiness_address(businessBean.getBusiness_address());
+            loginBusiness.setBusiness_email(businessBean.getBusiness_email());
+            loginBusiness.setBusiness_info(businessBean.getBusiness_info());
+        }
+    }
+
+    // 이메일 형식 검증 메서드
+    private boolean isValidEmail(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    }
+
+    // 포인트 관련 메서드
+    public void addPoints(String businessId, int points) {
+        businessRepository.updateBusinessPoint(businessId, points);
+        // 세션 정보 업데이트
+        if (loginBusiness.getBusiness_id().equals(businessId)) {
+            int currentPoints = businessRepository.getBusinessPoint(businessId);
+            loginBusiness.setBusiness_point(currentPoints);
+        }
+    }
+
+    public int getBusinessPoint(String businessId) {
+        return businessRepository.getBusinessPoint(businessId);
+    }
+
+    // 상품 관련 메서드
+    public List<BusinessItemBean> getBusinessItems(String businessId) {
+        return businessRepository.getBusinessItemsByBusinessId(businessId);
+    }
+
+    public List<BusinessItemBean> getBusinessItemsByCategory(String businessId, String category) {
+        return businessRepository.getBusinessItemsByCategory(businessId, category);
+    }
+
+    public BusinessItemBean getBusinessItemById(String itemId) {
+        return businessRepository.getBusinessItemById(itemId);
+    }
+
+    public int registerBusinessItem(BusinessItemBean businessItemBean) {
+        return businessRepository.insertBusinessItem(businessItemBean);
+    }
+
+    public boolean updateBusinessItem(BusinessItemBean businessItemBean) {
+        return businessRepository.updateBusinessItem(businessItemBean) > 0;
+    }
+
+    public boolean deleteBusinessItem(String itemId) {
+        return businessRepository.deleteBusinessItem(itemId) > 0;
+    }
+
+    // 게시글 관련 메서드
+    public List<BoardBean> getBusinessPosts(String businessId) {
+        return businessRepository.getBoardsByBusinessId(businessId);
+    }
+
+    public BoardBean getBoardById(int boardId) {
+        return businessRepository.getBoardById(boardId);
+    }
+
+    public int createBoard(BoardBean boardBean) {
+        return businessRepository.insertBoard(boardBean);
+    }
+
+    public boolean updateBoard(BoardBean boardBean) {
+        return businessRepository.updateBoard(boardBean) > 0;
+    }
+
+    public boolean deleteBoard(int boardId) {
+        return businessRepository.deleteBoard(boardId) > 0;
+    }
+
 }
