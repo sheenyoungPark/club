@@ -6,6 +6,7 @@ import com.spacedong.beans.MemberBean;
 import com.spacedong.service.ChatService;
 import com.spacedong.service.ClubChatService;
 import com.spacedong.service.MemberService;
+import com.spacedong.service.UserSearchService;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class ChatController {
     private final ChatService chatService;
     private final ClubChatService clubChatService;
     private final MemberService memberService;
+    private final UserSearchService userSearchService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Resource(name = "loginMember")
@@ -43,13 +45,12 @@ public class ChatController {
     public String chatView(Model model) {
         // 로그인 확인
         if (!loginMember.isLogin()) {
-            return "redirect:/user/login";
+            return "redirect:/member/login";
         }
 
         // 사용자의 채팅방 목록 조회
         List<ChatRoom> chatRooms = chatService.getChatRoomsByUserId(loginMember.getMember_id());
         model.addAttribute("chatRooms", chatRooms);
-        model.addAttribute("loginUser", loginMember);
 
         return "chat/chatView";
     }
@@ -243,21 +244,7 @@ public class ChatController {
             return ResponseEntity.status(401).build();
         }
 
-        // 사용자 검색 로직
-        List<MemberBean> members = memberService.searchUsersByKeyword(keyword);
-
-        // 결과 변환
-        List<Map<String, String>> results = members.stream()
-                .map(member -> {
-                    Map<String, String> result = new HashMap<>();
-                    result.put("userId", member.getMember_id());
-                    result.put("userName", member.getMember_nickname() != null ?
-                            member.getMember_nickname() : member.getMember_name());
-                    result.put("userType", "MEMBER");
-                    return result;
-                })
-                .collect(Collectors.toList());
-
+        List<Map<String, String>> results = userSearchService.searchAllUsersByKeyword(keyword);
         return ResponseEntity.ok(results);
     }
 }

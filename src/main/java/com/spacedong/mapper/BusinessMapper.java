@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 
 @Mapper
 public interface BusinessMapper {
@@ -23,5 +25,9 @@ public interface BusinessMapper {
 
     @Select("SELECT COUNT(*) FROM business WHERE business_email = #{business_email}")
     int checkEmail(String business_email);
+
+    @Select("SELECT * FROM business WHERE business_id LIKE '%'||#{keyword}||'%' OR business_name LIKE '%'||#{keyword}||'%'")
+    List<BusinessBean> searchBusinessByKeyword(String keyword);
+
 
 }

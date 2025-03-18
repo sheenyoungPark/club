@@ -77,4 +77,7 @@ public interface MemberMapper {
     // 사용자가 작성한 게시글 조회
     @Select("SELECT * FROM member_board WHERE board_writer_id = #{memberId} ORDER BY create_date DESC")
     List<BoardBean> getUserPosts(String memberId);
+
+    @Select("select * from member where member_id LIKE '%'||#{keyword}||'%' OR member_nickname LIKE '%'||#{keyword}||'%'")
+    List<MemberBean> searchUsersByKeyword(String keyword);
 }

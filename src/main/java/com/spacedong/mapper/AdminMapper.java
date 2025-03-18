@@ -16,5 +16,8 @@ public interface AdminMapper {
 	
 	@Select("select * from club where club_public='WAIT'")
 	List<ClubBean> getWaitClub();
+
+	@Select("SELECT * FROM admin WHERE admin_id LIKE '%'||#{keyword}||'%' OR admin_name LIKE '%'||#{keyword}||'%'")
+	List<AdminBean> searchAdminsByKeyword(String keyword);
 	
 }
