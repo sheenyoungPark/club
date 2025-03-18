@@ -105,24 +105,33 @@ public class BoardController {
 	@PostMapping("/comment/write")
 	public String writeComment(@RequestParam("board_id") int boardId,
 							   @RequestParam("comment_text") String commentText,
-							   @RequestParam("comment_writer_id") String writerId,
+							   @RequestParam(value = "comment_writer_id", required = false) String writerId, // ✅ NULL 허용
+							   @RequestParam(value = "comment_writer_name", required = false) String writerName, // ✅ NULL 허용
 							   @RequestParam("boardType") String boardType,
 							   @RequestParam(value = "parent_comment_id", required = false) Integer parentCommentId) {
 
+		// ✅ 필수값 체크
+		if (writerId == null || writerId.trim().isEmpty()) {
+			System.out.println("🚨 오류: comment_writer_id가 NULL입니다!");
+			return "redirect:/community/boardDetail?id=" + boardId + "&boardType=" + boardType + "&error=missing_writer_id";
+		}
+
 		// ✅ 댓글 객체 생성
 		BoardCommentBean comment = new BoardCommentBean();
-
 		comment.setBoard_id(boardId);
 		comment.setComment_writer_id(writerId);
+		comment.setComment_writer_name(writerName); // ✅ 닉네임 or 비즈니스명 저장
 		comment.setComment_text(commentText);
 		comment.setParent_comment_id(parentCommentId);
 
 		// ✅ 유동적인 boardType으로 댓글 저장
 		boardService.writeComment(boardType, comment);
-		System.out.println(boardId);
-		System.out.println(writerId);
+
 		return "redirect:/community/boardDetail?id=" + boardId + "&boardType=" + boardType;
 	}
+
+
+
 
 	/** ✅ 1. 글쓰기 페이지 이동 (복구된 부분) */
 	@GetMapping("/boardWrite")

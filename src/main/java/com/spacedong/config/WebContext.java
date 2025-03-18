@@ -24,8 +24,9 @@ public class WebContext implements WebMvcConfigurer {
 
     @Resource(name = "loginMember")
     public MemberBean loginMember;
-    @Autowired
-    private BusinessBean loginBusiness;
+
+    @Resource(name = "loginBusiness")  // ✅ @Resource 추가 (세션에서 주입)
+    public BusinessBean loginBusiness;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -34,7 +35,8 @@ public class WebContext implements WebMvcConfigurer {
         InterceptorRegistration reg1 = registry.addInterceptor(locationInterceptor);
         reg1.addPathPatterns("/**");
 
-        TopMenuInterceptor topMenuInterceptor = new TopMenuInterceptor(loginMember);
+        // 2️⃣ 상단 메뉴 인터셉터 (일반 회원 + 판매자 로그인 정보 추가)
+        TopMenuInterceptor topMenuInterceptor = new TopMenuInterceptor(loginMember, loginBusiness); // ✅ 수정됨!
         InterceptorRegistration reg2 = registry.addInterceptor(topMenuInterceptor);
         reg2.addPathPatterns("/**");
 

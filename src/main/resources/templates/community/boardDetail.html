@@ -15,7 +15,8 @@
     <h2 class="post-title" th:text="${post.board_title}">게시글 제목</h2>
 
     <!-- ✅ 삭제 버튼 -->
-    <div th:if="${loginMember != null and loginMember.member_id == post.board_writer_id}">
+    <div th:if="${(loginMember != null and loginMember.member_id == post.board_writer_id)
+            || (loginBusiness != null and loginBusiness.business_id == post.board_writer_id)}">
         <form th:action="@{/community/board/delete}" method="post" style="display: inline;">
             <input type="hidden" name="board_id" th:value="${post.board_id}">
             <input type="hidden" name="boardType" th:value="${boardType}">
@@ -40,12 +41,19 @@
     <div class="comment-section">
         <h3>댓글</h3>
 
-        <!-- ✅ 로그인한 사용자만 댓글 입력 가능 -->
-        <div th:if="${loginMember != null}">
+        <!-- ✅ 로그인한 사용자(일반 회원 & 비즈니스 회원)만 댓글 입력 가능 -->
+        <div th:if="${loginMember != null || loginBusiness != null}">
             <form th:action="@{/community/comment/write}" method="post">
                 <input type="hidden" name="board_id" th:value="${post.board_id}">
                 <input type="hidden" name="boardType" th:value="${boardType}">
-                <input type="hidden" name="comment_writer_id" th:value="${loginMember.member_id}">
+
+                <input type="hidden" name="comment_writer_id"
+                       th:value="${(loginMember != null and loginMember.member_id != null) ? loginMember.member_id : ((loginBusiness != null and loginBusiness.business_id != null) ? loginBusiness.business_id : '')}">
+
+                <!-- ✅ 추가: 로그인한 사용자의 닉네임 또는 비즈니스명 저장 -->
+                <input type="hidden" name="comment_writer_name"
+                       th:value="${(loginMember != null and loginMember.member_nickname != null) ? loginMember.member_nickname : ((loginBusiness != null and loginBusiness.business_name != null) ? loginBusiness.business_name : '')}">
+
                 <input type="hidden" name="parent_comment_id" value=""> <!-- 기본값: 일반 댓글 -->
 
                 <textarea class="comment-input" name="comment_text" placeholder="댓글을 입력하세요..." required></textarea>
@@ -53,8 +61,8 @@
             </form>
         </div>
 
-        <!-- ✅ 로그인하지 않은 경우 -->
-        <div th:if="${loginMember == null}">
+        <!-- ✅ 로그인하지 않은 경우 (댓글 입력 폼 숨기기) -->
+        <div th:if="${loginMember == null && loginBusiness == null}">
             <p style="color: red;">댓글을 작성하려면 로그인하세요.</p>
         </div>
 
@@ -63,26 +71,36 @@
             <li th:each="comment : ${comments}"
                 th:style="'margin-left:' + (${comment.parent_comment_id != null ? '40' : '0'}) + 'px'">
                 <div class="comment-info">
-                    <strong th:text="${comment.comment_writer_id}">작성자</strong> •
+                    <strong th:text="${comment.comment_writer_name}">작성자</strong> •
                     <span th:text="${#temporals.format(comment.create_date, 'yyyy-MM-dd HH:mm')}">작성일</span>
                 </div>
                 <p th:text="${comment.comment_text}">댓글 내용</p>
 
-                <!-- ✅ 부모 댓글(댓글)인 경우만 답글 작성 가능 -->
-                <div th:if="${loginMember != null and comment.parent_comment_id == null}">
-                    <form th:action="@{/community/comment/write}" method="post" style="display: flex; align-items: center;">
-                        <input type="hidden" name="board_id" th:value="${post.board_id}">
-                        <input type="hidden" name="boardType" th:value="${boardType}">
-                        <input type="hidden" name="comment_writer_id" th:value="${loginMember.member_id}">
-                        <input type="hidden" name="parent_comment_id" th:value="${comment.comment_id}">
+                <!-- ✅ 로그인한 사용자만 답글 작성 가능 (비로그인 시 답글 폼 숨기기) -->
+                <div th:if="${loginMember != null || loginBusiness != null}">
+                    <div th:if="${comment.parent_comment_id == null}">
+                        <form th:action="@{/community/comment/write}" method="post" style="display: flex; align-items: center;">
+                            <input type="hidden" name="board_id" th:value="${post.board_id}">
+                            <input type="hidden" name="boardType" th:value="${boardType}">
 
-                        <input type="text" name="comment_text" placeholder="답글을 입력하세요..." class="comment-input" required>
-                        <button type="submit" class="comment-btn">답글</button>
-                    </form>
+                            <input type="hidden" name="comment_writer_id"
+                                   th:value="${(loginMember != null and loginMember.member_id != null) ? loginMember.member_id : ((loginBusiness != null and loginBusiness.business_id != null) ? loginBusiness.business_id : '')}">
+
+                            <!-- ✅ 추가: 로그인한 사용자의 닉네임 또는 비즈니스명 저장 -->
+                            <input type="hidden" name="comment_writer_name"
+                                   th:value="${(loginMember != null and loginMember.member_nickname != null) ? loginMember.member_nickname : ((loginBusiness != null and loginBusiness.business_name != null) ? loginBusiness.business_name : '')}">
+
+                            <input type="hidden" name="parent_comment_id" th:value="${comment.comment_id}">
+
+                            <input type="text" name="comment_text" placeholder="답글을 입력하세요..." class="comment-input" required>
+                            <button type="submit" class="comment-btn">답글</button>
+                        </form>
+                    </div>
                 </div>
             </li>
         </ul>
     </div>
+
 
 
 
