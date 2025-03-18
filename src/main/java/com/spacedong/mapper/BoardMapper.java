@@ -10,35 +10,60 @@ import com.spacedong.beans.BoardCommentBean;
 public interface BoardMapper {
 
     /** ✅ 회원 게시판 조회 **/
-    @Select("SELECT * FROM member_board ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
+    @Select("SELECT mb.*, m.member_nickname AS writer_name " +
+            "FROM member_board mb " +
+            "LEFT JOIN member m ON mb.board_writer_id = m.member_id " +
+            "ORDER BY mb.create_date DESC " +
+            "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getMemberBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
     @Select("SELECT COUNT(*) FROM member_board")
     int getMemberBoardCount();
 
     /** ✅ 판매자 게시판 조회 **/
-    @Select("SELECT * FROM business_board ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
+    @Select("SELECT bb.*, b.business_name AS writer_name " +
+            "FROM business_board bb " +
+            "LEFT JOIN business b ON bb.board_writer_id = b.business_id " +
+            "ORDER BY bb.create_date DESC " +
+            "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getBusinessBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
     @Select("SELECT COUNT(*) FROM business_board")
     int getBusinessBoardCount();
 
     /** ✅ 운영자 게시판 조회 **/
-    @Select("SELECT * FROM admin_board ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
+    @Select("SELECT ab.*, '관리자' AS writer_name " +
+            "FROM admin_board ab " +
+            "ORDER BY ab.create_date DESC " +
+            "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getAdminBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
     @Select("SELECT COUNT(*) FROM admin_board")
     int getAdminBoardCount();
 
     /** ✅ 통합 게시판 조회 (회원 + 판매자 + 운영자) **/
-    @Select("SELECT * FROM ("
-            + "SELECT * FROM member_board "
-            + "UNION ALL "
-            + "SELECT * FROM business_board "
-            + "UNION ALL "
-            + "SELECT * FROM admin_board "
-            + ") ORDER BY create_date DESC OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
+    @Select("SELECT b.board_id, b.board_title, b.board_text, b.board_writer_id, b.board_view, b.board_like, b.create_date, " +
+            "       CASE " +
+            "           WHEN b.board_type = 'admin' THEN '관리자' " +
+            "           ELSE COALESCE(m.member_nickname, bs.business_name) " +
+            "       END AS writer_name, " +
+            "       b.board_type " +
+            "FROM ( " +
+            "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'member' AS board_type FROM member_board " +
+            "    UNION ALL " +
+            "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'business' AS board_type FROM business_board " +
+            "    UNION ALL " +
+            "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'admin' AS board_type FROM admin_board " +
+            ") b " +
+            "LEFT JOIN member m ON b.board_writer_id = m.member_id " +
+            "LEFT JOIN business bs ON b.board_writer_id = bs.business_id " +
+            "ORDER BY " +
+        "    CASE WHEN b.board_type = 'admin' THEN 1 ELSE 2 END, " +
+        "    b.create_date DESC " +
+                "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getAllBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
+
+
 
     @Select("SELECT COUNT(*) FROM ("
             + "SELECT board_id FROM member_board "

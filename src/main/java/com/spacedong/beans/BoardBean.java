@@ -13,7 +13,17 @@ public class BoardBean {
 	private int board_like; // 좋아요 수
 	private LocalDateTime create_date; // 생성일
 	private LocalDateTime update_date; // 수정일
-	
+	private String writer_name; // ✅ 닉네임 또는 비즈니스명 추가
+
+	// Getter & Setter 추가
+	public String getWriter_name() {
+		return writer_name;
+	}
+
+	public void setWriter_name(String writer_name) {
+		this.writer_name = writer_name;
+	}
+
 	public int getBoard_id() {
 		return board_id;
 	}
