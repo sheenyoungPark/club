@@ -82,7 +82,7 @@ h2:after {
 }
 
 .profile-number, .profile-email, .profile-phone,
-.profile-address, .profile-public {
+.profile-address, .profile-public, .profile-info, .profile-point {
     font-size: 16px;
     color: #666;
     width: 100%;
@@ -94,7 +94,7 @@ h2:after {
 
 .profile-number span, .profile-email span,
 .profile-phone span, .profile-address span,
-.profile-public span {
+.profile-public span, .profile-info span, .profile-point span {
     color: #333;
     font-weight: 500;
 }
@@ -190,44 +190,100 @@ h2:after {
     min-height: 300px;
 }
 
-.club-list, .post-list, .event-list {
+/* 두 리스트에 공통으로 적용될 스타일 */
+.product-list, .post-list {
     list-style-type: none;
     padding: 0;
 }
 
-.club-list li, .post-list li, .event-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
+.product-list li, .post-list li {
+    padding: 15px 0;
     border-bottom: 1px solid #eee;
 }
 
-.club-list li:last-child, .post-list li:last-child, .event-list li:last-child {
+.product-list li:last-child, .post-list li:last-child {
     border-bottom: none;
 }
 
-.club-list li a, .post-list li a, .event-list li a {
+/* 메인 콘텐츠 레이아웃(제목과 날짜) */
+.product-main, .post-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.product-main a, .post-main a {
     color: #333;
     text-decoration: none;
     font-weight: 500;
     flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.club-list li a:hover, .post-list li a:hover, .event-list li a:hover {
+.product-main a:hover, .post-main a:hover {
     color: #3a7bd5;
 }
 
-.club-list li span, .post-list li span {
+.product-main span, .post-main span {
     color: #666;
     font-size: 14px;
+    margin-left: 10px;
+    white-space: nowrap;
 }
 
-.event-details {
-    color: #666;
-    font-size: 14px;
+/* 상세 정보 스타일링 */
+.product-info, .post-info {
     display: flex;
-    gap: 5px;
+    gap: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+.product-category, .post-category {
+    background-color: #f1f5fd;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: #3a7bd5;
+}
+
+.product-price {
+    font-weight: 500;
+    color: #444;
+}
+
+.product-hours, .post-views {
+    color: #777;
+}
+
+/* 리스트 아이템 호버 효과 */
+.product-list li:hover, .post-list li:hover {
+    background-color: #f9fafc;
+}
+
+/* 새 항목 추가 링크 - 수정된 스타일 */
+.add-link-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.add-link {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #f1f5fd;
+    color: #3a7bd5;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.add-link:hover {
+    background-color: #e1e9fb;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(58, 123, 213, 0.15);
 }
 
 @media (max-width: 768px) {

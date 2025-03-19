@@ -8,10 +8,16 @@ import com.spacedong.beans.MemberBean;
 import com.spacedong.service.BusinessService;
 import com.spacedong.service.CategoryService;
 import com.spacedong.validator.BusinessValidator;
+import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.io.File;
+import java.util.List;
+import java.util.Collections;
+import org.springframework.http.MediaType;
+import java.util.UUID;
 import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,6 +49,7 @@ public class BusinessController {
     @Autowired
     private BusinessValidator businessValidator;
 
+    // session‑scope 빈(loginBusiness)을 주입받음 (Spring 설정 필요)
     @Resource(name = "loginBusiness")
     private BusinessBean loginBusiness;
 
@@ -52,7 +58,7 @@ public class BusinessController {
         if (binder.getTarget() instanceof MemberBean) {
             binder.addValidators(new MemberValidator());
         } else if (binder.getTarget() instanceof BusinessBean) {
-            binder.addValidators(new BusinessValidator());
+            binder.addValidators(new BusinessValidator(businessService));
         }
     }
 
@@ -87,51 +93,47 @@ public class BusinessController {
     }
 
     @PostMapping("/login_pro")
-    public String login_pro(@ModelAttribute BusinessBean businessBean, HttpSession session) {
-        // null 체크 추가
+    public String login_pro(@ModelAttribute BusinessBean businessBean) {
+        // null 체크
         if (businessBean.getBusiness_id() == null || businessBean.getBusiness_pw() == null) {
             return "/member/login_fail";
         }
-
         if (businessService.getLoginBusiness(businessBean)) {
-            // 비즈니스 로그인 성공
-
-            // 기존에 일반 회원으로 로그인되어 있다면 로그아웃 처리
-            MemberBean loginMember = (MemberBean) session.getAttribute("loginMember");
-            if (loginMember != null) {
-                loginMember.setLogin(false);
-            }
-
-            // 비즈니스 로그인 처리
-            BusinessBean loginBusiness = (BusinessBean) session.getAttribute("loginBusiness");
-            if (loginBusiness != null) {
+            // DB에서 전체 사업자 정보를 조회 (예: businessService.getBusinessById)
+            BusinessBean fullBusiness = businessService.selectBusinessById(businessBean.getBusiness_id());
+            if(fullBusiness != null && fullBusiness.getBusiness_pw().equals(businessBean.getBusiness_pw())){
+                loginBusiness.setBusiness_id(fullBusiness.getBusiness_id());
+                loginBusiness.setBusiness_pw(fullBusiness.getBusiness_pw());
+                loginBusiness.setBusiness_profile(fullBusiness.getBusiness_profile());
+                loginBusiness.setBusiness_name(fullBusiness.getBusiness_name());
+                // 필요한 다른 필드들도 업데이트
                 loginBusiness.setLogin(true);
+                return "business/login_success";
+            } else {
+                return "member/login_fail";
             }
-
-            return "/business/login_success";
         } else {
-            return "/member/login_fail";
+            return "member/login_fail";
         }
     }
 
     @RequestMapping("/logout")
     public String logout(HttpSession session) {
-        // 두 계정 유형 모두 로그아웃 처리
-        MemberBean loginMember = (MemberBean) session.getAttribute("loginMember");
-        BusinessBean loginBusiness = (BusinessBean) session.getAttribute("loginBusiness");
-
-        if (loginMember != null) {
-            loginMember.setLogin(false);
-        }
-
+        // DI로 주입된 loginBusiness 빈의 로그인 플래그를 false로 설정
         if (loginBusiness != null) {
             loginBusiness.setLogin(false);
         }
-
+        // (필요 시 session에서 loginBusiness를 제거할 수 있음)
+        session.removeAttribute("loginBusiness");
+        // 일반 회원 로그아웃 처리
+        MemberBean loginMember = (MemberBean) session.getAttribute("loginMember");
+        if (loginMember != null) {
+            loginMember.setLogin(false);
+            session.removeAttribute("loginMember");
+        }
         return "redirect:/";
     }
 
-    // 아이디 중복 확인
     @GetMapping("/checkId")
     @ResponseBody
     public String checkId(@RequestParam String business_id) {
@@ -143,77 +145,76 @@ public class BusinessController {
     public String checkEmail(@RequestParam String business_email) {
         return businessService.checkEmail(business_email) ? "true" : "false";
     }
-    // 사업자 내 정보 페이지 요청 처리
+
+    // 간소화된 사업자 정보 페이지 메소드
     @GetMapping("/info")
     public String businessInfo(Model model) {
-        // 로그인 여부 확인
-        if (!loginBusiness.isLogin()) {
+        // 로그인 검증
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
+            logger.info("사용자가 로그인하지 않았습니다. 로그인 페이지로 리다이렉트합니다.");
             return "redirect:/member/login";
         }
 
-        // 사업자 관련 모든 데이터를 BusinessService에서 조회
         String businessId = loginBusiness.getBusiness_id();
+        logger.info("businessInfo 메소드 호출 - 사업자 ID: {}", businessId);
 
-        // 1. 사업자가 등록한 상품 목록
-        List<BusinessItemBean> businessItems = businessService.getBusinessItems(businessId);
+        try {
+            // 아이템 목록 조회
+            List<BusinessItemBean> businessItems = businessService.getBusinessItems(businessId);
+            logger.info("사업자 아이템 조회 성공 - 항목 수: {}", businessItems.size());
 
-        // 2. 작성한 게시글 목록
-        List<BoardBean> businessPosts = businessService.getBusinessPosts(businessId);
+            // 게시글 목록 조회
+            List<BoardBean> businessPosts = businessService.getBusinessPosts(loginBusiness.getBusiness_id());
+            logger.info("사업자 게시글 조회 성공 - 항목 수: {}", businessPosts.size());
 
-        // 모델에 데이터 추가
-        model.addAttribute("businessItems", businessItems);  // 변수명 수정
-        model.addAttribute("businessPosts", businessPosts);
+            model.addAttribute("loginBusiness", loginBusiness);
+            model.addAttribute("businessItems", businessItems);
+            model.addAttribute("businessPosts", businessPosts);
 
-        return "business/businessinfo";
+            return "business/businessinfo";
+        } catch (Exception e) {
+            logger.error("사업자 정보 페이지 로드 중 오류 발생: ", e);
+            return "redirect:/";
+        }
     }
 
+    // 프로필 업데이트
     @PostMapping("/updateprofile")
     public String updateprofile(@RequestParam("logoImage") MultipartFile profileImage) {
-        // 로그인 여부 확인
-        if (!loginBusiness.isLogin()) {
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
             return "redirect:/member/login";
         }
 
-        if (!profileImage.isEmpty()) {
-            try {
-                // 디렉토리가 없으면 자동 생성
+        try {
+            if (!profileImage.isEmpty()) {
                 File dir = new File(UPLOAD_DIR);
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
 
-                // 기존 파일 삭제 (중복 방지)
-                if (loginBusiness.getBusiness_profile() != null && !loginBusiness.getBusiness_profile().isEmpty()) {
-                    File oldFile = new File(UPLOAD_DIR + loginBusiness.getBusiness_profile());
-                    if (oldFile.exists()) {
-                        oldFile.delete();
-                    }
-                }
-
-                // 새로운 파일 저장
+                // 파일명 생성 및 저장
                 String fileName = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
                 File destFile = new File(UPLOAD_DIR + fileName);
                 profileImage.transferTo(destFile);
 
                 // DB 업데이트
                 businessService.updateBusinessProfile(loginBusiness.getBusiness_id(), fileName);
-
-                // 세션에 반영
                 loginBusiness.setBusiness_profile(fileName);
-            } catch (Exception e) {
-                logger.error("프로필 업데이트 중 오류 발생", e);
-                return "redirect:/business/info?error=true";
+
+                logger.info("프로필 이미지 업데이트 성공: {}", fileName);
             }
+        } catch (Exception e) {
+            logger.error("프로필 업데이트 중 오류 발생: ", e);
         }
 
         return "redirect:/business/info";
     }
+
     @GetMapping("/edit")
     public String editInfoVerification(Model model) {
-        if (!loginBusiness.isLogin()) {
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
             return "redirect:/member/login";
         }
-
         return "business/edit_verification";
     }
     // 비밀번호 확인 처리
@@ -221,71 +222,51 @@ public class BusinessController {
     public String verifyPassword(@RequestParam("password") String password,
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
-        if (!loginBusiness.isLogin()) {
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
             return "redirect:/member/login";
         }
-
-        // 비밀번호 검증
         boolean isCorrectPassword = businessService.checkPassword(loginBusiness.getBusiness_id(), password);
         if (!isCorrectPassword) {
             model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
             return "business/edit_verification";
         }
-
-        // 비밀번호 확인 성공 - 통합 정보 수정 페이지로 이동
         return "redirect:/business/integrated_edit";
     }
 
-    // 통합 정보 수정 페이지
     @GetMapping("/integrated_edit")
-    public String integratedEdit(Model model, HttpSession session) {
-        if (!loginBusiness.isLogin()) {
+    public String integratedEdit(Model model) {
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
             return "redirect:/member/login";
         }
         System.out.println("멤버 비밀번호: " + loginBusiness.getBusiness_pw());
         System.out.println("비밀번호 null 여부: " + (loginBusiness.getBusiness_pw() == null));
-
         model.addAttribute("loginBusiness", loginBusiness);
-        return "business/integrated_edit";  // 경로 수정
+        return "business/integrated_edit";
     }
 
-    // 통합 정보 수정 처리 (수정된 메서드)
     @PostMapping("/integrated_update")
-    public String integratedUpdate(
-            @ModelAttribute BusinessBean businessBean,
-            @RequestParam(value = "newPassword", required = false) String newPassword,
-            @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
-            RedirectAttributes redirectAttributes,
-            HttpSession session) {
-
+    public String integratedUpdate(@ModelAttribute BusinessBean businessBean,
+                                   @RequestParam(value = "newPassword", required = false) String newPassword,
+                                   @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
+                                   RedirectAttributes redirectAttributes) {
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
+            redirectAttributes.addFlashAttribute("message", "로그인이 필요한 서비스입니다.");
+            return "redirect:/member/login";
+        }
         try {
-            if (!loginBusiness.isLogin()) {
-                redirectAttributes.addFlashAttribute("message", "로그인이 필요한 서비스입니다.");
-                return "redirect:/member/login";
-            }
-
-            // 비밀번호 변경 처리 (입력된 경우에만)
             if (loginBusiness.getBusiness_pw() != null && !loginBusiness.getBusiness_pw().isEmpty() &&
                     newPassword != null && !newPassword.isEmpty()) {
-                // 비밀번호 유효성 검사
                 if (newPassword.length() < 8 || newPassword.length() > 16) {
                     redirectAttributes.addFlashAttribute("error", "비밀번호는 8~16자리여야 합니다.");
                     return "redirect:/business/integrated_edit";
                 }
-
-                // 비밀번호 일치 확인
                 if (!newPassword.equals(confirmPassword)) {
                     redirectAttributes.addFlashAttribute("error", "새 비밀번호가 일치하지 않습니다.");
                     return "redirect:/business/integrated_edit";
                 }
-
-                // 비밀번호 업데이트
                 businessService.updatePassword(loginBusiness.getBusiness_id(), newPassword);
             }
-
-            // 회원정보 업데이트 (수정된 메서드 사용)
             businessService.editBusinessWithValidation(businessBean);
-
             redirectAttributes.addFlashAttribute("message", "회원정보가 성공적으로 수정되었습니다.");
             return "redirect:/business/info";
         } catch (Exception e) {
@@ -444,7 +425,7 @@ public class BusinessController {
             @RequestParam("item_id") String itemId,
             Model model) {
 
-        BusinessItemBean item = businessService.getItemById(itemId);
+        BusinessItemBean item = businessService.getItemById(loginBusiness.getBusiness_id());
 
         // 자신이 등록한 아이템인지 확인
         if (!item.getBusiness_id().equals(loginBusiness.getBusiness_id())) {

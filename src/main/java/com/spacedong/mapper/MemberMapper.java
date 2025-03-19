@@ -77,4 +77,9 @@ public interface MemberMapper {
     // 사용자가 작성한 게시글 조회
     @Select("SELECT * FROM member_board WHERE board_writer_id = #{memberId} ORDER BY create_date DESC")
     List<BoardBean> getUserPosts(String memberId);
+
+    @Select("SELECT member_id, member_pw, member_nickname, member_phone, member_email, member_profile, member_address " +
+            "FROM member " +
+            "WHERE member_id = #{memberId}")
+    MemberBean selectMemberById(String memberId);
 }

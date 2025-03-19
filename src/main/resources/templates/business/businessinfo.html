@@ -20,7 +20,7 @@
     <div class="profile-image">
       <img th:src="${loginBusiness.business_profile != null and loginBusiness.business_profile != ''}
                 ? @{/image/business/{img}(img=${loginBusiness.business_profile})}
-                : @{/sources/picture/기본기업로고.png}"
+                : @{/sources/picture/기본이미지.png}"
            id="logoPreview" alt="기업 로고">
     </div>
 
@@ -52,45 +52,32 @@
     </div>
 
     <div id="products-content" class="activity-content">
-      <!-- 카테고리 필터 추가 -->
-<!--      <div class="category-filter">-->
-<!--        <select id="categorySelect" onchange="filterByCategory()">-->
-<!--          <option value="">모든 카테고리</option>-->
-<!--          <option value="식품">식품</option>-->
-<!--          <option value="의류">의류</option>-->
-<!--          <option value="전자제품">전자제품</option>-->
-<!--          <option value="가구">가구</option>-->
-<!--          <option value="기타">기타</option>-->
-<!--        </select>-->
-<!--      </div>-->
-
       <ul class="product-list">
-        <li th:each="product : ${businessItem}" th:attr="data-category=${product.item_category}">
-          <a th:href="@{/product/detail(product_id=${product.item_id})}" th:text="${product.item_title}"></a>
+        <li th:each="product : ${businessItems}" th:attr="data-category=${product.item_category}">
+          <div class="product-main">
+            <a th:href="@{/business/item_info(item_id=${product.item_id})}" th:text="${product.item_title}"></a>
+          </div>
           <div class="product-info">
             <span class="product-category" th:text="${product.item_category}"></span>
             <span class="product-price" th:text="${#numbers.formatInteger(product.item_price, 3, 'COMMA') + '원'}"></span>
             <span class="product-hours" th:text="${product.item_starttime + '시 ~ ' + product.item_endtime + '시'}"></span>
           </div>
         </li>
-        <li th:if="${#lists.isEmpty(businessItem)}">등록한 상품이 없습니다.</li>
+        <li th:if="${#lists.isEmpty(businessItems)}">등록한 상품이 없습니다.</li>
       </ul>
       <div class="add-link-container">
-        <a th:href="@{/product/register}" class="add-link">+ 새 상품 등록하기</a>
+        <a th:href="@{/business/create_item}" class="add-link">+ 새 상품 등록하기</a>
       </div>
     </div>
 
     <div id="posts-content" class="activity-content" style="display:none;">
       <ul class="post-list">
         <li th:each="post : ${businessPosts}">
-          <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}" th:text="${post.board_title}"></a>
-          <span th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
+            <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}" th:text="${post.board_title}"></a>
+            <span th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
         </li>
         <li th:if="${#lists.isEmpty(businessPosts)}">작성한 게시글이 없습니다.</li>
       </ul>
-      <div class="add-link-container">
-        <a th:href="@{/community/write}" class="add-link">+ 새 게시글 작성하기</a>
-      </div>
     </div>
   </div>
 </div>
@@ -120,20 +107,6 @@
 
     document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
     document.getElementById(`${tabName}-content`).style.display = 'block';
-  }
-
-  // 카테고리 필터링
-  function filterByCategory() {
-    const category = document.getElementById('categorySelect').value;
-    const items = document.querySelectorAll('.product-list li[data-category]');
-
-    items.forEach(item => {
-      if (!category || item.getAttribute('data-category') === category) {
-        item.style.display = '';
-      } else {
-        item.style.display = 'none';
-      }
-    });
   }
 </script>
 

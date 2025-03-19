@@ -86,6 +86,10 @@ public class BusinessService {
         return count == 0; // 중복이 없으면 true, 있으면 false 반환
     }
 
+    public BusinessBean selectBusinessById(String businessId) {
+        return businessRepository.selectBusinessById(businessId);
+    }
+
     // 이메일 중복 확인
     public boolean checkEmail(String business_email) {
         int count = businessRepository.checkEmail(business_email);

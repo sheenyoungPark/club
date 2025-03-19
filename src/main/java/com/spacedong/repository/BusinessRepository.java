@@ -150,4 +150,8 @@ public class BusinessRepository {
     public BusinessBean getLoginBusinessById(String businessId) {
         return businessMapper.getBusinessInfoById(businessId);
     }
+
+    public BusinessBean selectBusinessById(String businessId) {
+        return businessMapper.selectBusinessById(businessId);
+    }
 }

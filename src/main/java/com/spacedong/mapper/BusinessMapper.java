@@ -3,6 +3,7 @@ package com.spacedong.mapper;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.ReservationBean;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -60,15 +61,15 @@ public interface BusinessMapper {
     void deleteItem(@Param("item_id") String item_id);
 
 
-    // 아이템 정보 업데이트
+    // 아이템 정보 업데이트 - 콤마 오류 수정
     @Update("UPDATE business_item SET " +
             "item_title = #{item_title}, " +
             "item_text = #{item_text}, " +
             "item_price = #{item_price}, " +
             "item_category = #{item_category}, " +
             "item_starttime = #{item_starttime}, " +
-            "item_endtime = #{item_endtime} " +
-             "item_img = #{item_img}" +
+            "item_endtime = #{item_endtime}, " +
+            "item_img = #{item_img} " +
             "WHERE item_id = #{item_id}")
     void updateItem(BusinessItemBean businessItemBean);
 
@@ -119,9 +120,9 @@ public interface BusinessMapper {
     @Select("SELECT business_point FROM business WHERE business_id = #{businessId}")
     int getBusinessPoint(String businessId);
 
-    // 상품 조회 (해당 사업자의 모든 상품)
-    @Select("SELECT * FROM business_item WHERE business_id = #{businessId}")
-    List<BusinessItemBean> selectBusinessItemsByBusinessId(String businessId);
+    // 사업자별 아이템 조회 - 간단한 쿼리 (오류 방지)
+    @Select("SELECT * FROM business_item WHERE business_id = #{business_id}")
+    List<BusinessItemBean> selectBusinessItemsByBusinessId(String business_id);
 
     // 카테고리별 상품 조회
     @Select("SELECT * FROM business_item WHERE business_id = #{param1} AND item_category = #{param2}")
@@ -150,8 +151,8 @@ public interface BusinessMapper {
     @Delete("DELETE FROM business_item WHERE item_id = #{itemId}")
     int deleteBusinessItem(String itemId);
 
-    // 게시글 조회 (해당 사업자의 모든 게시글)
-    @Select("SELECT * FROM business_board WHERE board_writer_id = #{businessId}")
+    // 사업자별 게시글 조회 쿼리 수정
+    @Select("SELECT * FROM business_board WHERE board_writer_id = #{businessId} ORDER BY create_date DESC")
     List<BoardBean> selectBoardsByBusinessId(String businessId);
 
     // 게시글 상세 조회
@@ -176,4 +177,9 @@ public interface BusinessMapper {
     // 게시글 삭제
     @Delete("DELETE FROM business_board WHERE board_id = #{boardId}")
     int deleteBoard(int boardId);
+
+    @Select("SELECT business_id, business_pw, business_name, business_profile " +
+            "FROM business " +
+            "WHERE business_id = #{businessId}")
+    BusinessBean selectBusinessById(String businessId);
 }

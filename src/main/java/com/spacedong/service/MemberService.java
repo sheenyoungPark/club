@@ -216,4 +216,10 @@ public class MemberService {
 		return memberRepository.getUserPosts(memberId);
 	}
 
+	public MemberBean selectMemberById(String memberId) {
+		return memberRepository.selectMemberById(memberId);
+	}
+
+
+
 }

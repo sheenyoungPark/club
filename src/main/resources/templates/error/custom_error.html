@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>오류 발생</title>
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <style>
+    .error-container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .error-icon {
+      font-size: 64px;
+      color: #e74c3c;
+      margin-bottom: 20px;
+    }
+
+    .error-message {
+      margin: 20px 0;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .back-button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    .back-button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="error-container">
+  <div class="error-icon">⚠️</div>
+  <h1>죄송합니다</h1>
+  <p class="error-message" th:text="${errorMessage ?: '요청을 처리하는 중 오류가 발생했습니다.'}"></p>
+  <p>문제가 지속되면 관리자에게 문의해주세요.</p>
+  <a href="javascript:history.back()" class="back-button">이전 페이지로 돌아가기</a>
+  <a th:href="@{/}" class="back-button">메인 페이지로 이동</a>
+</div>
+
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+</body>
+</html>
