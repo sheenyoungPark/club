@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사업자 정보</title>
+  <link rel="stylesheet" th:href="@{/css/businessinfo.css}">
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+</head>
+<body>
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="mypage-container">
+  <!-- 프로필 섹션 (좌측) -->
+  <div class="profile-section">
+    <h2>사업자 정보</h2>
+
+    <!-- 기업 로고 표시 (기본 or 사업자 설정) -->
+    <div class="profile-image">
+      <img th:src="${loginBusiness.business_profile != null and loginBusiness.business_profile != ''}
+                ? @{/image/business/{img}(img=${loginBusiness.business_profile})}
+                : @{/sources/picture/기본이미지.png}"
+           id="logoPreview" alt="기업 로고">
+    </div>
+
+    <!-- 기업 로고 변경 -->
+    <form th:action="@{/business/updateprofile}" method="post" enctype="multipart/form-data">
+      <input type="file" id="logoUpload" name="logoImage" accept="image/*" class="input-file">
+      <button type="submit" class="button">로고 변경</button>
+    </form>
+
+    <div class="profile-name">기업명 : <span th:text="${loginBusiness.business_name}"></span></div>
+    <div class="profile-number">사업자번호 : <span th:text="${loginBusiness.business_number}"></span></div>
+    <div class="profile-email">이메일 : <span th:text="${loginBusiness.business_email}"></span></div>
+    <div class="profile-phone">전화번호 : <span th:text="${loginBusiness.business_phone}"></span></div>
+    <div class="profile-address">주소 : <span th:text="${loginBusiness.business_address}"></span></div>
+    <div class="profile-info">소개 : <span th:text="${loginBusiness.business_info}"></span></div>
+    <div class="profile-point">포인트 : <span th:text="${#numbers.formatInteger(loginBusiness.business_point, 3, 'COMMA')}"></span> P</div>
+
+    <div class="extra-actions">
+      <a th:href="@{/business/edit}" class="button">회원정보 관리</a>
+      <a th:href="@{/business/deleteAccount}" class="button danger">회원 탈퇴</a>
+    </div>
+  </div>
+
+  <!-- 활동 섹션 (우측) -->
+  <div class="activity-section">
+    <div class="activity-tabs">
+      <button class="tab active" onclick="showTab('products')">등록한 상품</button>
+      <button class="tab" onclick="showTab('posts')">작성한 게시글</button>
+    </div>
+
+    <div id="products-content" class="activity-content">
+      <ul class="product-list">
+        <li th:each="product : ${businessItems}" th:attr="data-category=${product.item_category}">
+          <div class="product-main">
+            <a th:href="@{/business/item_info(item_id=${product.item_id})}" th:text="${product.item_title}"></a>
+          </div>
+          <div class="product-info">
+            <span class="product-category" th:text="${product.item_category}"></span>
+            <span class="product-price" th:text="${#numbers.formatInteger(product.item_price, 3, 'COMMA') + '원'}"></span>
+            <span class="product-hours" th:text="${product.item_starttime + '시 ~ ' + product.item_endtime + '시'}"></span>
+          </div>
+        </li>
+        <li th:if="${#lists.isEmpty(businessItems)}">등록한 상품이 없습니다.</li>
+      </ul>
+      <div class="add-link-container">
+        <a th:href="@{/business/create_item}" class="add-link">+ 새 상품 등록하기</a>
+      </div>
+    </div>
+
+    <div id="posts-content" class="activity-content" style="display:none;">
+      <ul class="post-list">
+        <li th:each="post : ${businessPosts}">
+            <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}" th:text="${post.board_title}"></a>
+            <span th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
+        </li>
+        <li th:if="${#lists.isEmpty(businessPosts)}">작성한 게시글이 없습니다.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 로고 이미지 미리보기 스크립트
+  document.getElementById('logoUpload').addEventListener('change', function(event) {
+    const preview = document.getElementById('logoPreview');
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // 탭 전환 스크립트
+  function showTab(tabName) {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.activity-content');
+
+    tabs.forEach(tab => tab.classList.remove('active'));
+    contents.forEach(content => content.style.display = 'none');
+
+    document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
+    document.getElementById(`${tabName}-content`).style.display = 'block';
+  }
+</script>
+
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+</body>
+</html>

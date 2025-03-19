@@ -1,10 +1,12 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.BoardBean;
+import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.ClubBean;
+import com.spacedong.beans.MemberBean;
+import com.spacedong.service.MemberService;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,11 +14,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import com.spacedong.beans.MemberBean;
-import com.spacedong.service.MemberService;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +29,12 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 
-	@Resource(name="loginMember")
+	// session‑scope 빈으로 정의된 loginMember와 loginBusiness를 주입받음
+	@Resource(name = "loginMember")
 	private MemberBean loginMember;
+
+	@Resource(name = "loginBusiness")
+	private BusinessBean loginBusiness;
 
 	@InitBinder("memberBean")
 	protected void initBinder(WebDataBinder binder) {
@@ -47,21 +50,41 @@ public class MemberController {
 
 	@PostMapping("/login_pro")
 	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean) {
-		if (memberBean.getMember_id().equals("admin") && memberBean.getMember_pw().equals("admin")) {
-			return "admin/init";
-		} else {
-			if (memberService.getLoginMember(memberBean)) {
+		// 로그인 검증 (ID와 PW로 로그인 성공 여부 판단)
+		if (memberService.getLoginMember(memberBean)) {
+			// DB에서 전체 회원 정보를 조회 (예: memberService.getMemberById)
+			MemberBean fullMember = memberService.selectMemberById(memberBean.getMember_id());
+			if(fullMember != null && fullMember.getMember_pw().equals(memberBean.getMember_pw())){
+				// DI로 주입받은 loginMember 빈에 DB에서 조회한 전체 정보를 업데이트
+				loginMember.setMember_id(fullMember.getMember_id());
+				loginMember.setMember_pw(fullMember.getMember_pw());
+				loginMember.setMember_nickname(fullMember.getMember_nickname());
+				loginMember.setMember_phone(fullMember.getMember_phone());
+				loginMember.setMember_email(fullMember.getMember_email());
+				// 그 외 필요한 필드도 설정
 				loginMember.setLogin(true);
+				// 비즈니스 계정이 로그인되어 있다면 로그아웃 처리
+				loginBusiness.setLogin(false);
 				return "member/login_success";
 			} else {
 				return "member/login_fail";
 			}
+		} else {
+			return "member/login_fail";
 		}
 	}
 
 	@RequestMapping("/logout")
-	public String logout(HttpSession session) {
-		session.invalidate();
+	public String logout() {
+		// DI로 주입받은 loginMember와 loginBusiness의 로그인 상태를 해제하고, 필요시 필드를 초기화합니다.
+		loginMember.setLogin(false);
+		loginMember.setMember_id(null);
+		loginMember.setMember_nickname(null);
+		loginMember.setMember_pw(null);
+		loginBusiness.setLogin(false);
+		loginBusiness.setBusiness_id(null);
+		loginBusiness.setBusiness_name(null);
+		loginBusiness.setBusiness_pw(null);
 		return "redirect:/";
 	}
 
@@ -75,16 +98,12 @@ public class MemberController {
 		if (result.hasErrors()) {
 			return "member/signup";
 		}
-
-//		if (memberBean.getMember_phone() == null || memberBean.getMember_phone().trim().isEmpty()) {
-//			result.rejectValue("member_phone", "error.member_phone", "휴대폰 번호를 입력해주세요.");
-//			return "member/signup";
-//		}
 		memberService.signupMember(memberBean);
 		return "member/signup_success";
 	}
-	@GetMapping("signup_choice")
-	public String signup_choice(){
+
+	@GetMapping("/signup_choice")
+	public String signup_choice() {
 		return "member/signup_choice";
 	}
 
@@ -95,20 +114,14 @@ public class MemberController {
 		}
 		model.addAttribute("loginMember", loginMember);
 		model.addAttribute("maskedPhone", memberService.getMaskedPhone());
-
 		// 내가 가입한 클럽 목록 가져오기
 		List<ClubBean> joinedClubs = memberService.getJoinedClubs(loginMember.getMember_id());
 		model.addAttribute("joinedClubs", joinedClubs);
-
 		// 내가 작성한 게시글 목록 가져오기
 		List<BoardBean> userPosts = memberService.getUserPosts(loginMember.getMember_id());
 		model.addAttribute("userPosts", userPosts);
-
-
-
 		return "member/memberinfo";
 	}
-
 
 	@GetMapping("/deleteAccount")
 	public String deleteAccountPage(Model model) {
@@ -118,28 +131,24 @@ public class MemberController {
 		model.addAttribute("loginMember", loginMember);
 		return "member/deleteAccount";
 	}
+
 	@PostMapping("/deleteAccount_pro")
 	public String deleteAccount(@RequestParam("password") String password, Model model) {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
-
-		// 현재 비밀번호 확인
+		// 비밀번호 확인
 		boolean isCorrectPassword = memberService.checkPassword(loginMember.getMember_id(), password);
 		if (!isCorrectPassword) {
 			model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
 			return "member/deleteAccount";
 		}
-
 		// 회원 탈퇴 처리
 		memberService.deleteMember(loginMember.getMember_id());
-
-		// 세션 초기화
+		// DI로 주입된 loginMember 초기화
 		loginMember.setLogin(false);
 		loginMember.setMember_id(null);
 		loginMember.setMember_name(null);
-
-		// 성공 페이지로 이동 (알림창 표시)
 		return "member/deleteAccount_success";
 	}
 
@@ -147,21 +156,19 @@ public class MemberController {
 	public String deleteAccountSuccess() {
 		return "member/deleteAccount_success";
 	}
+
 	@GetMapping("/edit")
 	public String editInfoVerification(Model model) {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
-
-		// 비밀번호가 null이면 (SNS 로그인 사용자 등) 비밀번호 인증 없이 바로 정보 수정 페이지로 이동
+		// 비밀번호가 없는 경우 (예: SNS 로그인 사용자)에는 바로 정보 수정 페이지로 이동
 		if (loginMember.getMember_pw() == null || loginMember.getMember_pw().isEmpty()) {
 			return "redirect:/member/integrated_edit";
 		}
-
 		return "member/edit_verification";
 	}
 
-	// 비밀번호 확인 처리
 	@PostMapping("/verify_password")
 	public String verifyPassword(@RequestParam("password") String password,
 								 Model model,
@@ -169,86 +176,65 @@ public class MemberController {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
-
-		// 비밀번호가 null이면 인증 없이 통과
+		// 비밀번호가 없으면 인증 없이 바로 통과
 		if (loginMember.getMember_pw() == null || loginMember.getMember_pw().isEmpty()) {
 			return "redirect:/member/integrated_edit";
 		}
-
-		// 비밀번호 검증
 		boolean isCorrectPassword = memberService.checkPassword(loginMember.getMember_id(), password);
 		if (!isCorrectPassword) {
 			model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
 			return "member/edit_verification";
 		}
-
-		// 비밀번호 확인 성공 - 통합 정보 수정 페이지로 이동
 		return "redirect:/member/integrated_edit";
 	}
 
-	// 통합 정보 수정 페이지
 	@GetMapping("/integrated_edit")
-	public String integratedEdit(Model model, HttpSession session) {
+	public String integratedEdit(Model model) {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
 		System.out.println("멤버 비밀번호: " + loginMember.getMember_pw());
 		System.out.println("비밀번호 null 여부: " + (loginMember.getMember_pw() == null));
-
 		model.addAttribute("loginMember", loginMember);
 		return "member/integrated_edit";
 	}
 
-	// 통합 정보 수정 처리
 	@PostMapping("/integrated_update")
 	public String integratedUpdate(
 			@ModelAttribute MemberBean memberBean,
 			@RequestParam(value = "newPassword", required = false) String newPassword,
 			@RequestParam(value = "confirmPassword", required = false) String confirmPassword,
 			RedirectAttributes redirectAttributes) {
-
 		try {
 			if (!loginMember.isLogin()) {
 				redirectAttributes.addFlashAttribute("message", "로그인이 필요한 서비스입니다.");
 				return "redirect:/member/login";
 			}
-
-			// 요청 정보 로깅
+			// 정보 수정 요청 로깅
 			System.out.println("정보 수정 요청 - ID: " + memberBean.getMember_id());
 			System.out.println("변경된 닉네임: " + memberBean.getMember_nickname());
 			System.out.println("변경된 전화번호: " + memberBean.getMember_phone());
 			System.out.println("변경된 주소: " + memberBean.getMember_address());
 			System.out.println("변경된 이메일: " + memberBean.getMember_email());
-
-			// ID 설정
 			if (memberBean.getMember_id() == null || memberBean.getMember_id().isEmpty()) {
 				memberBean.setMember_id(loginMember.getMember_id());
 			}
-
 			// 비밀번호 변경 처리 (입력된 경우에만)
 			if (loginMember.getMember_pw() != null && !loginMember.getMember_pw().isEmpty() &&
 					newPassword != null && !newPassword.isEmpty()) {
-				// 비밀번호 유효성 검사
 				if (newPassword.length() < 8 || newPassword.length() > 16) {
 					redirectAttributes.addFlashAttribute("error", "비밀번호는 8~16자리여야 합니다.");
 					return "redirect:/member/integrated_edit";
 				}
-
-				// 비밀번호 일치 확인
 				if (!newPassword.equals(confirmPassword)) {
 					redirectAttributes.addFlashAttribute("error", "새 비밀번호가 일치하지 않습니다.");
 					return "redirect:/member/integrated_edit";
 				}
-
-				// 비밀번호 업데이트
 				memberService.updatePassword(loginMember.getMember_id(), newPassword);
 				System.out.println("비밀번호 변경 완료");
 			}
-
-			// 회원정보 업데이트
 			memberService.editMember(memberBean);
 			System.out.println("회원정보 업데이트 완료");
-
 			redirectAttributes.addFlashAttribute("message", "회원정보가 성공적으로 수정되었습니다.");
 			return "redirect:/member/memberinfo";
 		} catch (Exception e) {
@@ -261,50 +247,29 @@ public class MemberController {
 
 	private static final String UPLOAD_DIR = "C:/upload/image/profile/";
 
-	/** ✅ 프로필 이미지 업데이트 */
 	@PostMapping("/updateProfile")
 	public String updateProfile(@RequestParam("profileImage") MultipartFile profileImage) {
-
 		if (!profileImage.isEmpty()) {
 			try {
-				// ✅ 디렉토리가 없으면 자동 생성
 				File dir = new File(UPLOAD_DIR);
 				if (!dir.exists()) {
 					dir.mkdirs();
 				}
-
-				// ✅ 기존 파일 삭제 (중복 방지)
 				if (loginMember.getMember_profile() != null) {
 					File oldFile = new File(UPLOAD_DIR + loginMember.getMember_profile());
 					if (oldFile.exists()) {
 						oldFile.delete();
 					}
 				}
-
-				// ✅ 새로운 파일 저장
 				String fileName = UUID.randomUUID().toString() + "_" + profileImage.getOriginalFilename();
 				File destFile = new File(UPLOAD_DIR + fileName);
 				profileImage.transferTo(destFile);
-
-				// ✅ DB 업데이트
 				memberService.updateMemberProfile(loginMember.getMember_id(), fileName);
-
-				// ✅ 세션에 반영
 				loginMember.setMember_profile(fileName);
-
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-
 		return "redirect:/member/memberinfo";
 	}
-
-	}
-
-
-
-
-
-
-
+}

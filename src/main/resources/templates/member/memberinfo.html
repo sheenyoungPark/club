@@ -63,6 +63,9 @@
                 </li>
                 <li th:if="${#lists.isEmpty(joinedClubs)}">가입한 클럽이 없습니다.</li>
             </ul>
+            <div class="add-link-container">
+                <a th:href="@{/category/category}" class="add-link">+ 새 클럽 가입하기</a>
+            </div>
         </div>
 
         <div class="reservation-button-container">

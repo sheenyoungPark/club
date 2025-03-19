@@ -35,6 +35,10 @@ public class MemberRepository {
 		return memberMapper.getMemberById(member_id);
 	}
 
+	public MemberBean selectMemberById(String memberId) {
+		return memberMapper.selectMemberById(memberId);
+	}
+
 	public MemberBean getLoginMember(MemberBean tempLoginMember) {
 		return memberMapper.getLoginMember(tempLoginMember);
 
@@ -83,5 +87,7 @@ public class MemberRepository {
 	public List<BoardBean> getUserPosts(String memberId) {
 		return memberMapper.getUserPosts(memberId);
 	}
+
+
 
 }

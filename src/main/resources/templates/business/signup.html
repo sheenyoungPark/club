@@ -78,20 +78,30 @@
             <p class="error" th:if="${#fields.hasErrors('business_address')}" th:errors="*{business_address}"></p>
         </div>
 
+        <div class="form-group">
+            <div style="position: relative;">
+                <span style="font-size: 14px; display: block; margin-bottom: 5px;">기업소개 <span class="optional">(선택사항)</span></span>
+            </div>
+            <textarea id="business_info" name="business_info" th:field="*{business_info}" placeholder="기업 소개글을 입력하세요 (선택사항)" rows="3"></textarea>
+        </div>
+
+        <!-- Hidden field for business_point -->
+        <input type="hidden" id="business_point" th:field="*{business_point}" value="0" />
+
         <div class="checkbox-group">
-            <input type="checkbox" id="business_public" th:field="*{business_public}" value="Y" />
-            <label for="business_public">기업정보 공개에 동의합니다</label>
+            <input type="checkbox" id="business_public_checkbox" onclick="togglePublicValue()"/>
+            <label for="business_public_checkbox">기업정보 공개에 동의합니다</label>
+            <input type="hidden" th:field="*{business_public}" id="business_public" value="WAIT"/>
         </div>
 
         <button type="submit" class="btn-submit">회원가입</button>
     </form>
-
-    <div class="terms-section">
-        <p>가입 시 <a href="#" target="_blank">이용약관</a>과 <a href="#" target="_blank">개인정보처리방침</a>에 동의하게 됩니다.</p>
-    </div>
 </div>
 
 <script>
+    function setPublicValue(checkbox) {
+        document.getElementById('business_public').value = checkbox.checked ? 'PASS' : 'WAIT';
+    }
     // 아이디 중복 확인 함수
     function checkBusinessId() {
         let businessId = $("#business_id").val().trim();
@@ -341,6 +351,9 @@
 
     // 폼 제출 전 모든 유효성 검사 수행
     $(document).ready(function() {
+        // 포인트 초기값 설정
+        $("#business_point").val(0);
+
         $("form").submit(function(e) {
             // ID 중복 확인 여부 검사
             if ($("#idExist").val() !== "true") {
@@ -400,6 +413,11 @@
             return true; // 모든 검증 통과
         });
     });
+    function togglePublicValue() {
+        const checkbox = document.getElementById('business_public_checkbox');
+        const hiddenField = document.getElementById('business_public');
+        hiddenField.value = checkbox.checked ? 'PASS' : 'WAIT';
+    }
 </script>
 </body>
 </html>

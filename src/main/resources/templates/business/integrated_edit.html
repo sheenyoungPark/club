@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 정보 수정</title>
+    <link rel="stylesheet" th:href="@{/css/editBusinessInfo.css}">
+    <!-- Daum 우편번호 서비스 스크립트 -->
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>회원 정보 수정</h2>
+
+    <div style="display: none;">
+        <p>비밀번호 값: <span th:text="${loginBusiness.business_pw}">비밀번호 값</span></p>
+        <p>비밀번호 null 여부: <span th:text="${loginBusiness.business_pw == null}">null 여부</span></p>
+        <p>비밀번호 빈 문자열 여부: <span th:text="${loginBusiness.business_pw == ''}">빈 문자열 여부</span></p>
+    </div>
+
+    <!-- 메시지 표시 -->
+    <div th:if="${message}" class="message" th:text="${message}"></div>
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+    <form th:action="@{/business/integrated_update}" method="post" id="businessEditForm">
+        <!-- hidden 필드 -->
+        <input type="hidden" name="business_id" th:value="${loginBusiness.business_id}" />
+        <input type="hidden" id="isNicknameChecked" name="isNicknameChecked" value="true">
+
+        <!-- 기본 정보 섹션 -->
+        <div class="section">
+            <h3>기본 정보</h3>
+            <div class="form-group">
+                <label for="phone">전화번호</label>
+                <input type="tel" id="phone" name="business_phone" class="input-field"
+                       th:value="${loginBusiness.business_phone}">
+            </div>
+
+            <div class="form-group">
+                <label for="address">주소</label>
+                <div class="address-container">
+                    <div class="input-row">
+                        <input type="text" id="business_postcode" class="input-field" placeholder="우편번호" readonly />
+                        <button type="button" class="check-button" onclick="searchAddress()">주소검색</button>
+                    </div>
+                    <input type="text" id="address" name="business_address" class="input-field"
+                           th:value="${loginBusiness.business_address}" placeholder="기본주소" readonly="readonly" />
+                    <input type="text" id="business_address_detail" class="input-field" name="business_address_detail"
+                           placeholder="상세주소 입력" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" name="business_email" class="input-field"
+                       th:value="${loginBusiness.business_email}">
+            </div>
+        </div>
+
+        <!-- 비밀번호 변경 섹션 - 비밀번호가 null이 아닌 경우에만 표시 -->
+        <div class="section password-section" th:if="${loginBusiness.business_pw != null && !loginBusiness.business_pw.isEmpty()}">
+            <h3>비밀번호 변경 <span class="optional">(선택사항)</span></h3>
+
+            <div class="form-group">
+                <label for="newPassword">새 비밀번호</label>
+                <input type="password" id="newPassword" name="newPassword" class="input-field">
+                <span class="hint">8~16자리로 입력해주세요.</span>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">새 비밀번호 확인</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="input-field">
+                <span id="passwordError" class="error-message"></span>
+            </div>
+        </div>
+
+        <button type="button" onclick="validateAndSubmit()" class="button">정보 수정 저장</button>
+        <a th:href="@{/business/businessinfo}" class="button cancel">취소</a>
+    </form>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script th:inline="javascript">
+
+    function searchAddress() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드
+                var roadAddr = data.roadAddress; // 도로명 주소
+                var jibunAddr = data.jibunAddress; // 지번 주소
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById('business_postcode').value = data.zonecode;
+                document.getElementById('address').value = roadAddr || jibunAddr;
+
+                // 상세주소 필드로 포커스 이동
+                document.getElementById("business_address_detail").focus();
+            }
+        }).open();
+    }
+
+    // 페이지 로드 시 주소를 분리해서 표시
+    document.addEventListener('DOMContentLoaded', function() {
+        // 기존 이벤트 리스너 코드는 그대로 유지...
+
+        // 기존 주소가 있다면 처리
+        const fullAddress = document.getElementById("address").value;
+        if (fullAddress) {
+            // 여기서는 기존 주소를 그대로 표시합니다.
+            // 만약 주소를 우편번호, 기본주소, 상세주소로 분리해서 저장했다면
+            // 각 필드에 맞게 표시하는 로직을 추가하세요.
+        }
+    });
+    // 폼 유효성 검증 및 제출 함수
+    function validateAndSubmit() {
+        // 필수 입력 필드 검증
+        const phone = document.getElementById('phone').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const email = document.getElementById('email').value.trim();
+
+        // 상세 주소가 입력되었을 경우 주소에 추가
+        const addressDetail = document.getElementById('business_address_detail').value.trim();
+        if (addressDetail) {
+            document.getElementById('address').value = address + " " + addressDetail;
+        }
+
+        // 기본 유효성 검사
+        if (!phone) {
+            alert('전화번호를 입력해주세요.');
+            document.getElementById('phone').focus();
+            return false;
+        }
+
+        if (!address) {
+            alert('주소를 입력해주세요.');
+            document.getElementById('address').focus();
+            return false;
+        }
+
+        if (!email) {
+            alert('이메일을 입력해주세요.');
+            document.getElementById('email').focus();
+            return false;
+        }
+
+        // 이메일 형식 검증
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('유효한 이메일 형식이 아닙니다.');
+            document.getElementById('email').focus();
+            return false;
+        }
+
+        // 비밀번호 변경 시 유효성 검사
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+
+        if (newPassword && confirmPassword) {
+            if (newPassword.value && newPassword.value.length > 0) {
+                // 비밀번호 길이 검사
+                if (newPassword.value.length < 8 || newPassword.value.length > 16) {
+                    document.getElementById('passwordError').textContent = '비밀번호는 8~16자리여야 합니다.';
+                    newPassword.focus();
+                    return false;
+                }
+
+                // 비밀번호 일치 검사
+                if (newPassword.value !== confirmPassword.value) {
+                    document.getElementById('passwordError').textContent = '비밀번호가 일치하지 않습니다.';
+                    confirmPassword.focus();
+                    return false;
+                }
+            }
+        }
+
+        // 모든 검증을 통과하면 폼 제출
+        document.getElementById('businessEditForm').submit();
+        return true;
+    }
+</script>
+</body>
+</html>
