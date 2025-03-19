@@ -11,8 +11,8 @@
 <!-- 상단 메뉴 include -->
 <div th:replace="~{include/top_search :: top_search}"></div>
 
-<!-- 클럽 생성하기 버튼 -->
-<a th:href="@{/club/create_item}" class="create-club-button">
+<!-- 아이템 생성하기 버튼 -->
+<a th:href="@{/business/create_item}" class="create-club-button">
   <i class="fas fa-plus"></i> 아이템 등록하기
 </a>
 
@@ -60,32 +60,34 @@
 
 <!-- 동호회 목록 컨테이너 -->
 <div class="clubs-container">
-  <h3 class="clubs-title">등록된 동호회</h3>
+  <h3 class="clubs-title">등록된 아이템</h3>
 
-  <div th:if="${clublist == null || clublist.isEmpty()}" class="no-clubs" style="display: block;">
-    등록된 동호회가 없습니다.
+  <div th:if="${itemList == null || itemList.isEmpty()}" class="no-clubs" style="display: block;">
+    등록된 아이템이 없습니다.
   </div>
 
-  <ul th:if="${clublist != null && !clublist.isEmpty()}" class="clubs-list">
-    <li th:each="club : ${clublist}" class="club-item" th:attr="data-category=${club.club_category}">
-      <a th:href="@{/club/club_info(club_id=${club.club_id})}" class="club-link">
+  <ul th:if="${itemList != null && !itemList.isEmpty()}" class="clubs-list">
+    <li th:each="item : ${itemList}" class="club-item" th:attr="data-category=${item.item_category}">
+      <a th:href="@{/business/item_info(item_id=${item.item_id})}" class="club-link">
 
-        <!-- ✅ 프로필 이미지 추가 -->
+        <!-- 아이템 이미지 -->
         <div class="club-profile-box">
-          <img th:if="${club.club_profile != null}"
-               th:src="@{/image/clubprofile/{img}(img=${club.club_profile})}"
-               alt="클럽 대표 이미지"
+          <img th:if="${item.item_img != null}"
+               th:src="@{/image/itemImage/{img}(img=${item.item_img})}"
+               alt="아이템 이미지"
                class="club-profile-image">
 
-          <img th:unless="${club.club_profile != null}"
+          <img th:unless="${item.item_img != null}"
                th:src="@{/sources/picture/기본이미지.png}"
                alt="기본 이미지"
                class="club-profile-image">
         </div>
-        <!-- ✅ 클럽 정보 (한 줄 정렬) -->
+        <!-- 아이템 정보 -->
         <div class="club-info">
-          <div class="club-name" th:text="${club.club_name}"></div>
-          <div class="club-category" th:text="'카테고리: ' + ${club.club_category}"></div>
+          <div class="club-name" th:text="${item.item_title}"></div>
+          <div class="club-category" th:text="'카테고리: ' + ${item.item_category}"></div>
+          <div class="item-price" th:text="${#numbers.formatInteger(item.item_price, 0, 'COMMA') + '원'}"></div>
+          <div class="item-time" th:text="'운영시간: ' + ${item.item_starttime} + ':00 ~ ' + ${item.item_endtime} + ':00'"></div>
         </div>
       </a>
     </li>

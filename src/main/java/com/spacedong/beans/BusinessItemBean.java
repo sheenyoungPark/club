@@ -1,11 +1,18 @@
 package com.spacedong.beans;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class BusinessItemBean {
 
 	private String business_id;   // 판매자 ID (외래 키)
 	private String item_id;       // 아이템 ID (기본 키)
+
+	@NotBlank
 	private String item_title;    // 게시글 제목
+	@NotBlank
 	private String item_text;     // 게시글 내용
+	@NotNull
 	private int item_price;    // 가격
 	private String item_img;      // 이미지 경로
 	private String item_category;//카테고리
