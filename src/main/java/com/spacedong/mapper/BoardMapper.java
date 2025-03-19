@@ -9,8 +9,9 @@ import com.spacedong.beans.BoardCommentBean;
 @Mapper
 public interface BoardMapper {
 
-    /** ✅ 회원 게시판 조회 **/
-    @Select("SELECT mb.*, m.member_nickname AS writer_name " +
+    /** ✅ 회원 게시판 조회 (댓글 개수 추가) **/
+    @Select("SELECT mb.*, m.member_nickname AS writer_name, " +
+            "       (SELECT COUNT(*) FROM member_board_comment c WHERE c.board_id = mb.board_id) AS comment_count " +
             "FROM member_board mb " +
             "LEFT JOIN member m ON mb.board_writer_id = m.member_id " +
             "ORDER BY mb.create_date DESC " +
@@ -20,8 +21,9 @@ public interface BoardMapper {
     @Select("SELECT COUNT(*) FROM member_board")
     int getMemberBoardCount();
 
-    /** ✅ 판매자 게시판 조회 **/
-    @Select("SELECT bb.*, b.business_name AS writer_name " +
+    /** ✅ 판매자 게시판 조회 (댓글 개수 추가) **/
+    @Select("SELECT bb.*, b.business_name AS writer_name, " +
+            "       (SELECT COUNT(*) FROM business_board_comment c WHERE c.board_id = bb.board_id) AS comment_count " +
             "FROM business_board bb " +
             "LEFT JOIN business b ON bb.board_writer_id = b.business_id " +
             "ORDER BY bb.create_date DESC " +
@@ -31,8 +33,9 @@ public interface BoardMapper {
     @Select("SELECT COUNT(*) FROM business_board")
     int getBusinessBoardCount();
 
-    /** ✅ 운영자 게시판 조회 **/
-    @Select("SELECT ab.*, '관리자' AS writer_name " +
+    /** ✅ 운영자 게시판 조회 (댓글 개수 추가) **/
+    @Select("SELECT ab.*, '관리자' AS writer_name, " +
+            "       (SELECT COUNT(*) FROM admin_board_comment c WHERE c.board_id = ab.board_id) AS comment_count " +
             "FROM admin_board ab " +
             "ORDER BY ab.create_date DESC " +
             "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
@@ -41,13 +44,16 @@ public interface BoardMapper {
     @Select("SELECT COUNT(*) FROM admin_board")
     int getAdminBoardCount();
 
-    /** ✅ 통합 게시판 조회 (회원 + 판매자 + 운영자) **/
+    /** ✅ 통합 게시판 조회 (댓글 개수 추가) **/
     @Select("SELECT b.board_id, b.board_title, b.board_text, b.board_writer_id, b.board_view, b.board_like, b.create_date, " +
             "       CASE " +
             "           WHEN b.board_type = 'admin' THEN '관리자' " +
             "           ELSE COALESCE(m.member_nickname, bs.business_name) " +
             "       END AS writer_name, " +
-            "       b.board_type " +
+            "       b.board_type, " +
+            "       (SELECT COUNT(*) FROM member_board_comment mc WHERE mc.board_id = b.board_id AND b.board_type = 'member') + " +
+            "       (SELECT COUNT(*) FROM business_board_comment bc WHERE bc.board_id = b.board_id AND b.board_type = 'business') + " +
+            "       (SELECT COUNT(*) FROM admin_board_comment ac WHERE ac.board_id = b.board_id AND b.board_type = 'admin') AS comment_count " +
             "FROM ( " +
             "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'member' AS board_type FROM member_board " +
             "    UNION ALL " +
@@ -58,11 +64,10 @@ public interface BoardMapper {
             "LEFT JOIN member m ON b.board_writer_id = m.member_id " +
             "LEFT JOIN business bs ON b.board_writer_id = bs.business_id " +
             "ORDER BY " +
-        "    CASE WHEN b.board_type = 'admin' THEN 1 ELSE 2 END, " +
-        "    b.create_date DESC " +
-                "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
+            "    CASE WHEN b.board_type = 'admin' THEN 1 ELSE 2 END, " +
+            "    b.create_date DESC " +
+            "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getAllBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
-
 
 
     @Select("SELECT COUNT(*) FROM ("
@@ -88,6 +93,18 @@ public interface BoardMapper {
     /** ✅ 게시글 조회수 증가 **/
     @Update("UPDATE ${boardType}_board SET board_view = board_view + 1 WHERE board_id = #{boardId}")
     void incrementViewCount(@Param("boardType") String boardType, @Param("boardId") int boardId);
+
+
+
+    @Update("UPDATE ${boardType}_board SET board_like = board_like + 1 WHERE board_id = #{boardId}")
+    void incrementLike(@Param("boardType") String boardType, @Param("boardId") int boardId);
+
+    @Select("SELECT board_like FROM ${boardType}_board WHERE board_id = #{boardId}")
+    int getLikeCount(@Param("boardType") String boardType, @Param("boardId") int boardId);
+
+
+
+
 
     /** ✅ 댓글 조회 **/
     /** ✅ 댓글 조회 **/

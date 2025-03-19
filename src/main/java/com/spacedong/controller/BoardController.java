@@ -11,7 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -100,6 +102,25 @@ public class BoardController {
 
 		return "community/boardDetail";
 	}
+
+	/** ✅ 게시글 좋아요 증가 API */
+	@PostMapping("/like")
+	@ResponseBody
+	public Map<String, Object> increaseLike(
+			@RequestParam("board_id") int boardId,
+			@RequestParam("boardType") String boardType) {
+
+		// 좋아요 증가 처리
+		int newLikeCount = boardService.incrementLike(boardType, boardId);
+
+		// JSON 응답 생성
+		Map<String, Object> response = new HashMap<>();
+		response.put("success", true);
+		response.put("newLikeCount", newLikeCount);
+
+		return response;
+	}
+
 
 	/** ✅ 댓글 작성 */
 	@PostMapping("/comment/write")

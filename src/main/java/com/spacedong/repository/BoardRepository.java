@@ -1,6 +1,8 @@
 package com.spacedong.repository;
 
 import java.util.List;
+
+import org.apache.ibatis.annotations.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import com.spacedong.beans.BoardBean;
@@ -68,6 +70,17 @@ public class BoardRepository {
     public void incrementViewCount(String boardType, int boardId) {
         boardMapper.incrementViewCount(boardType, boardId);
     }
+
+    /** ✅ 게시글 좋아요 증가 */
+    public void incrementLike(String boardType, int boardId) {
+        boardMapper.incrementLike(boardType, boardId);
+    }
+
+    /** ✅ 현재 게시글의 좋아요 개수 가져오기 */
+    public int getLikeCount(String boardType, int boardId) {
+        return boardMapper.getLikeCount(boardType, boardId);
+    }
+
 
     /** 댓글 조회 **/
     public List<BoardCommentBean> getCommentsByBoardId(String boardType, int boardId) {

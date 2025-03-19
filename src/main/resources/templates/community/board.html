@@ -50,6 +50,7 @@
       <th>작성자</th>
       <th>작성일</th>
       <th>조회수</th>
+      <th>추천수</th>
     </tr>
     </thead>
     <tbody>
@@ -57,12 +58,15 @@
       <td class="title-cell">
         <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType=${boardType != null ? boardType : 'all'})}">
           <span th:text="${post.board_title}"></span>
-          <span class="like-count" style="color: red;">[<span th:text="${post.board_like}"></span>]</span>
+          <span class="comment-count" style="color: red;">
+            [<span th:text="${post.comment_count}"></span>]
+          </span>
         </a>
       </td>
       <td th:text="${post.writer_name}"></td>
       <td th:text="${post.create_date}"></td>
       <td th:text="${post.board_view}"></td>
+      <td th:text="${post.board_like}"></td>
     </tr>
     </tbody>
   </table>

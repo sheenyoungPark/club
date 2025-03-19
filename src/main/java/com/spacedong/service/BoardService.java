@@ -75,6 +75,13 @@ public class BoardService {
         boardRepository.incrementViewCount(boardType, boardId);
     }
 
+    /** ✅ 좋아요 증가 */
+    public int incrementLike(String boardType, int boardId) {
+        boardRepository.incrementLike(boardType, boardId);
+        return boardRepository.getLikeCount(boardType, boardId); // 업데이트된 좋아요 수 반환
+    }
+
+
     /** 댓글 조회 (계층 구조 정렬) **/
     public List<BoardCommentBean> getCommentHierarchy(String boardType, int boardId) {
         List<BoardCommentBean> comments = boardRepository.getCommentsByBoardId(boardType, boardId);

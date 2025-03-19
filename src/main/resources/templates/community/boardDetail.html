@@ -37,6 +37,14 @@
 
     <p class="post-content" th:text="${post.board_text}">게시글 내용</p>
 
+    <!-- ✅ 좋아요 버튼 추가 -->
+    <button type="button"
+            th:attr="data-board-id=${post.board_id}, data-board-type=${boardType}"
+            class="like-btn"
+            onclick="incrementLike(this)">
+        ❤️좋아요 <span th:text="${post.board_like}">0</span>
+    </button>
+
     <!-- 댓글 섹션 -->
     <div class="comment-section">
         <h3>댓글</h3>
@@ -112,5 +120,22 @@
 <!-- 하단 정보바 -->
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
 <script th:src="@{/js/top.js}"></script>
+
+<script th:inline="javascript">
+    function incrementLike(button) {
+        let boardId = button.getAttribute("data-board-id");
+        let boardType = button.getAttribute("data-board-type");
+
+        fetch(`/community/like?board_id=${boardId}&boardType=${boardType}`, {
+            method: "POST"
+        }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let likeCount = button.querySelector("span");
+                    likeCount.textContent = data.newLikeCount;
+                }
+            }).catch(error => console.error("🚨 오류:", error));
+    }
+</script>
 </body>
 </html>
