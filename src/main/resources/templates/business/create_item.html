@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>아이템 등록</title>
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" th:href="@{/css/create.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="create-club-container">
+    <form th:action="@{/business/create_item_pro}" method="post" th:object="${businessItemBean}" class="create-club-form" enctype="multipart/form-data">
+        <h2 class="form-title">새 아이템 등록하기</h2>
+
+        <input type="hidden" id="business_id" name="business_id" th:field="*{business_id}">
+
+        <div class="form-group">
+            <label for="item_title" class="form-label">아이템 제목 *</label>
+            <input type="text" id="item_title" name="item_title" th:field="*{item_title}" class="form-input" required minlength="2" maxlength="40">
+            <small class="error-message" th:if="${#fields.hasErrors('item_title')}" th:errors="*{item_title}"></small>
+        </div>
+
+        <div class="form-group">
+            <label for="item_text" class="form-label">아이템 설명</label>
+            <textarea id="item_text" name="item_text" th:field="*{item_text}" class="form-textarea" placeholder="아이템에 대한 설명을 입력해주세요."></textarea>
+            <small class="error-message" th:if="${#fields.hasErrors('item_text')}" th:errors="*{item_text}"></small>
+        </div>
+
+        <div class="form-group">
+            <label for="item_price" class="form-label">가격 *</label>
+            <input type="number" id="item_price" name="item_price" th:field="*{item_price}" class="form-input" required min="0">
+            <small class="error-message" th:if="${#fields.hasErrors('item_price')}" th:errors="*{item_price}"></small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">카테고리 선택 *</label>
+            <div class="category-selection">
+                <div class="category-column">
+                    <label for="category_type" class="form-label">대분류</label>
+                    <select id="category_type" name="category_type" class="form-select" onchange="get_sub_categories()">
+                        <option value="">대분류 선택</option>
+                        <option th:each="type : ${categoryType}" th:value="${type}" th:text="${type}"></option>
+                    </select>
+                    <div id="main-category-loading" class="loading">불러오는 중...</div>
+                </div>
+
+                <div class="category-column">
+                    <label for="item_category" class="form-label">소분류</label>
+                    <select id="item_category" name="item_category" th:field="*{item_category}" class="form-select" required>
+                        <option value="">소분류 선택</option>
+                        <option th:each="category : ${subCategoryList}" th:value="${category.category_name}" th:text="${category.getCategory_name()}"></option>
+                    </select>
+                    <div id="sub-category-loading" class="loading">불러오는 중...</div>
+                    <small class="error-message" th:if="${#fields.hasErrors('item_category')}" th:errors="*{item_category}"></small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">운영 시간</label>
+            <div class="time-selection">
+                <div class="time-column">
+                    <label for="item_starttime" class="form-label">시작 시간</label>
+                    <select id="item_starttime" name="item_starttime" th:field="*{item_starttime}" class="form-select">
+                        <option value="0">시작 시간</option>
+                        <option value="0">00:00</option>
+                        <option value="1">01:00</option>
+                        <option value="2">02:00</option>
+                        <option value="3">03:00</option>
+                        <option value="4">04:00</option>
+                        <option value="5">05:00</option>
+                        <option value="6">06:00</option>
+                        <option value="7">07:00</option>
+                        <option value="8">08:00</option>
+                        <option value="9">09:00</option>
+                        <option value="10">10:00</option>
+                        <option value="11">11:00</option>
+                        <option value="12">12:00</option>
+                        <option value="13">13:00</option>
+                        <option value="14">14:00</option>
+                        <option value="15">15:00</option>
+                        <option value="16">16:00</option>
+                        <option value="17">17:00</option>
+                        <option value="18">18:00</option>
+                        <option value="19">19:00</option>
+                        <option value="20">20:00</option>
+                        <option value="21">21:00</option>
+                        <option value="22">22:00</option>
+                        <option value="23">23:00</option>
+                    </select>
+                </div>
+
+                <div class="time-column">
+                    <label for="item_endtime" class="form-label">종료 시간</label>
+                    <select id="item_endtime" name="item_endtime" th:field="*{item_endtime}" class="form-select">
+                        <option value="0">종료 시간</option>
+                        <option value="0">00:00</option>
+                        <option value="1">01:00</option>
+                        <option value="2">02:00</option>
+                        <option value="3">03:00</option>
+                        <option value="4">04:00</option>
+                        <option value="5">05:00</option>
+                        <option value="6">06:00</option>
+                        <option value="7">07:00</option>
+                        <option value="8">08:00</option>
+                        <option value="9">09:00</option>
+                        <option value="10">10:00</option>
+                        <option value="11">11:00</option>
+                        <option value="12">12:00</option>
+                        <option value="13">13:00</option>
+                        <option value="14">14:00</option>
+                        <option value="15">15:00</option>
+                        <option value="16">16:00</option>
+                        <option value="17">17:00</option>
+                        <option value="18">18:00</option>
+                        <option value="19">19:00</option>
+                        <option value="20">20:00</option>
+                        <option value="21">21:00</option>
+                        <option value="22">22:00</option>
+                        <option value="23">23:00</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 아이템 이미지 업로드 -->
+        <div class="form-group">
+            <label class="form-label">아이템 이미지 업로드</label>
+            <input type="file" id="itemImageUpload" name="itemImage" accept="image/*" class="input-file">
+            <p id="fileWarning" style="color: red; display: none;">※ 5MB 이하의 이미지만 업로드 가능합니다.</p>
+
+            <!-- 기본 이미지 미리보기 -->
+            <div id="imagePreviewContainer" class="preview-container">
+                <img id="profilePreview" th:src="@{/sources/picture/기본이미지.png}" alt="아이템 이미지 미리보기" style="max-width: 200px; margin-top: 10px;">
+            </div>
+        </div>
+
+        <input type="hidden" name="business_id" th:value="${session.businessId}">
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">아이템 등록하기</button>
+            <a th:href="@{/business/business_main}" class="btn btn-secondary">취소</a>
+        </div>
+    </form>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<script th:src="@{/js/top.js}"></script>
+<script>
+    // 이미지 업로드 및 미리보기 스크립트
+    document.getElementById('itemImageUpload').addEventListener('change', function() {
+        const fileInput = this;
+        const warningElement = document.getElementById('fileWarning');
+        const previewElement = document.getElementById('profilePreview');
+
+        // 파일 크기 확인 (5MB 제한)
+        if (fileInput.files[0] && fileInput.files[0].size > 5 * 1024 * 1024) {
+            warningElement.style.display = 'block';
+            fileInput.value = '';
+            return;
+        } else {
+            warningElement.style.display = 'none';
+        }
+
+        // 이미지 미리보기
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewElement.src = e.target.result;
+            }
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+    });
+
+    // 카테고리 관련 스크립트
+    function get_sub_categories() {
+        const mainCategory = document.getElementById('category_type').value;
+        const loadingElement = document.getElementById('main-category-loading');
+        const subCategoryElement = document.getElementById('item_category');
+
+        if (!mainCategory) {
+            return;
+        }
+
+        // 로딩 표시
+        loadingElement.style.display = 'block';
+
+        // AJAX 요청으로 서브 카테고리 가져오기
+        fetch(`/business/get_sub_categories?category_type=${mainCategory}`)
+            .then(response => response.json())
+            .then(data => {
+                // 기존 옵션 제거
+                while (subCategoryElement.options.length > 1) {
+                    subCategoryElement.remove(1);
+                }
+
+                // 새 옵션 추가
+                data.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.category_name;
+                    option.textContent = category.category_name;
+                    subCategoryElement.appendChild(option);
+                });
+
+                // 로딩 숨기기
+                loadingElement.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('카테고리 로딩 오류:', error);
+                loadingElement.style.display = 'none';
+            });
+    }
+</script>
+
+</body>
+</html>

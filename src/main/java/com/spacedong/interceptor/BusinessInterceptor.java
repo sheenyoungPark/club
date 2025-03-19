@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+
 public class BusinessInterceptor implements HandlerInterceptor {
 
     @Resource(name = "loginBuseiness")
