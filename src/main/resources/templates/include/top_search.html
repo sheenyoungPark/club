@@ -43,6 +43,12 @@
     <div id="searchContainer" class="search-container hidden">
         <div class="search-box">
             <form th:action="@{/search/search}" class="search-form">
+                <!-- 검색 유형 드롭다운 추가 -->
+                <select id="searchTypeDropdown" class="search-dropdown" name="searchType">
+                    <option value="all" selected>통합검색</option>
+                    <option value="club">동호회검색</option>
+                    <option value="business">대여검색</option>
+                </select>
                 <select id="regionDropdown" class="search-dropdown" name="region">
                     <option selected disabled value="">지역</option>
                 </select>

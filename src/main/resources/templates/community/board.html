@@ -41,22 +41,32 @@
   </div>
 </div>
 
-<!-- 게시판 목록 -->
-<div class="sub-categories">
-  <ul class="sub-category-list">
-    <!-- boardType이 비어 있으면 'all', 그렇지 않으면 현재 boardType을 사용 -->
-    <li th:each="post : ${boardList}">
-      <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType=${boardType != null ? boardType : 'all'})}">
-        <span th:text="${post.board_title}"></span>
-        <span style="color: red;">[<span th:text="${post.board_like}"></span>]</span>
-      </a>
-      <span style="margin-left: 15px;">작성자: <span th:text="${post.writer_name}"></span></span>
-      <span style="margin-left: 15px;">작성일: <span th:text="${post.create_date}"></span></span>
-      <span style="margin-left: 15px;">조회수: <span th:text="${post.board_view}"></span></span>
-    </li>
-  </ul>
+<!-- 게시판 목록 - 테이블 형식으로 변경 -->
+<div class="board-table-container">
+  <table class="board-table">
+    <thead>
+    <tr>
+      <th>제목</th>
+      <th>작성자</th>
+      <th>작성일</th>
+      <th>조회수</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="post : ${boardList}">
+      <td class="title-cell">
+        <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType=${boardType != null ? boardType : 'all'})}">
+          <span th:text="${post.board_title}"></span>
+          <span class="like-count" style="color: red;">[<span th:text="${post.board_like}"></span>]</span>
+        </a>
+      </td>
+      <td th:text="${post.writer_name}"></td>
+      <td th:text="${post.create_date}"></td>
+      <td th:text="${post.board_view}"></td>
+    </tr>
+    </tbody>
+  </table>
 </div>
-
 
 <!-- 페이지네이션 -->
 <div class="pagination">

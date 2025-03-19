@@ -19,6 +19,10 @@ public class BusinessItemBean {
 	private int item_starttime; // 운영 시작 시간 (예: 9, 13 등)
 	private int item_endtime;   // 운영 종료 시간 (예: 18, 22 등)
 
+	// 🔴 아래 필드가 없으면 추가!
+	private String business_name;  // 업체명
+	private String business_address;  // 업체 주소
+
 	public String getBusiness_id() {
 		return business_id;
 	}
@@ -89,5 +93,21 @@ public class BusinessItemBean {
 
     public void setItem_category(String item_category) {
         this.item_category = item_category;
+    }
+
+    public String getBusiness_name() {
+        return business_name;
+    }
+
+    public void setBusiness_name(String business_name) {
+        this.business_name = business_name;
+    }
+
+    public String getBusiness_address() {
+        return business_address;
+    }
+
+    public void setBusiness_address(String business_address) {
+        this.business_address = business_address;
     }
 }
