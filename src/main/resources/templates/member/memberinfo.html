@@ -18,9 +18,9 @@
 
         <!-- 프로필 이미지 표시 (기본 or 사용자 설정) -->
         <div class="profile-image">
-            <img th:src="${loginMember.member_profile != null and loginMember.member_profile != ''}
-                        ? @{/image/profile/{img}(img=${loginMember.member_profile})}
-                        : @{/sources/picture/기본이미지.png}"
+            <img th:src="${(loginMember.member_profile != null and loginMember.member_profile != '')
+                ? '/image/profile/' + loginMember.member_profile
+                : '/sources/picture/기본이미지.png'}"
                  id="profilePreview" alt="프로필 이미지">
         </div>
 
@@ -63,6 +63,10 @@
                 </li>
                 <li th:if="${#lists.isEmpty(joinedClubs)}">가입한 클럽이 없습니다.</li>
             </ul>
+        </div>
+
+        <div class="reservation-button-container">
+            <a th:href="@{'/reservation/my-reservations'}" class="reservation-button">나의 예약 확인</a>
         </div>
 
         <div id="posts-content" class="activity-content" style="display:none;">

@@ -14,6 +14,16 @@ public class ReservationBean {
     private String status;        // 예약 상태 (CONFIRMED, CANCELLED, PENDING 등)
     private Date created_at;
 
+    private String item_title;
+
+    public String getItem_title() {
+        return item_title;
+    }
+
+    public void setItem_title(String item_title) {
+        this.item_title = item_title;
+    }
+
     public int getReservation_id() {
         return reservation_id;
     }

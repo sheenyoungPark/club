@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내 예약 정보</title>
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* 메인 컨테이너 스타일 */
+        .my-reservations-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 페이지 제목 스타일 */
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
+        }
+
+        /* 필터 섹션 스타일 */
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .search-box {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+
+        /* 예약 없음 메시지 스타일 */
+        .no-reservations {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .no-reservations i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #adb5bd;
+        }
+
+        .no-reservations h3 {
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        /* 예약 카드 스타일 */
+        .reservations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .reservation-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .reservation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .reservation-header {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .reservation-title {
+            font-size: 1.25rem;
+            margin: 0;
+            color: #343a40;
+        }
+
+        .business-name {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .reservation-content {
+            padding: 1rem;
+        }
+
+        .reservation-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .reservation-details {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #212529;
+        }
+
+        .reservation-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .status-completed {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+
+        .reservation-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background-color: #c82333;
+        }
+
+        .btn-view {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: #0b5ed7;
+        }
+
+        .btn-disabled {
+            background-color: #6c757d;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        /* 페이지네이션 스타일 */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .page-item {
+            margin: 0 0.25rem;
+        }
+
+        .page-link {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: #0d6efd;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .page-link:hover {
+            background-color: #e9ecef;
+        }
+
+        .page-item.active .page-link {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+
+        /* 모달 스타일 */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            margin: 0;
+            color: #343a40;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* 반응형 스타일 */
+        @media (max-width: 768px) {
+            .filter-section {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .reservations-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="my-reservations-container">
+    <h1 class="page-title">내 예약 정보</h1>
+
+    <!-- 필터 섹션 -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <span class="filter-label">상태:</span>
+            <select id="statusFilter" class="filter-select">
+                <option value="all">전체</option>
+                <option value="PENDING">대기중</option>
+                <option value="CONFIRMED">확정됨</option>
+                <option value="CANCELLED">취소됨</option>
+                <option value="COMPLETED">완료됨</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <span class="filter-label">정렬:</span>
+            <select id="sortFilter" class="filter-select">
+                <option value="date_desc">날짜 (최근순)</option>
+                <option value="date_asc">날짜 (오래된순)</option>
+                <option value="price_desc">가격 (높은순)</option>
+                <option value="price_asc">가격 (낮은순)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <input type="text" id="searchBox" class="search-box" placeholder="아이템 이름 검색...">
+        </div>
+    </div>
+
+    <!-- 예약 없음 메시지 (예약이 없을 때만 표시) -->
+    <div class="no-reservations" th:if="${#lists.isEmpty(reservations)}">
+        <i class="fas fa-calendar-times"></i>
+        <h3>예약 내역이 없습니다</h3>
+        <p>새로운 예약을 등록하시면 이곳에서 확인하실 수 있습니다.</p>
+        <a th:href="@{/}" class="btn btn-view">메인으로 돌아가기</a>
+    </div>
+
+    <!-- 예약 목록 -->
+    <div class="reservations-grid" th:if="${not #lists.isEmpty(reservations)}">
+        <!-- 예약 카드 반복 -->
+        <div class="reservation-card" th:each="reservation : ${reservations}">
+            <div class="reservation-header">
+                <div class="reservation-header">
+                    <h3 class="reservation-title" th:text="${reservation.item_title}">아이템 제목</h3>
+                </div>
+            </div>
+            <div class="reservation-content">
+
+                <div class="reservation-details">
+                    <div class="detail-label">예약 날짜:</div>
+                    <div class="detail-value" th:text="${#dates.format(reservation.reservation_date, 'yyyy년 MM월 dd일')}">2023년 07월 15일</div>
+
+                    <div class="detail-label">예약 시간:</div>
+                    <div class="detail-value" th:text="${reservation.start_time} + ':00 ~ ' + ${reservation.end_time} + ':00'">10:00 ~ 12:00</div>
+
+                    <div class="detail-label">예약 금액:</div>
+                    <div class="detail-value" th:text="${#numbers.formatInteger(reservation.total_price, 0, 'COMMA') + '원'}">20,000원</div>
+
+                    <div class="detail-label">예약 상태:</div>
+                    <div class="detail-value">
+                <span
+                        class="status-badge"
+                        th:with="status=${reservation.status}"
+                        th:classappend="${status == 'PENDING' ? 'status-pending' :
+                                       (status == 'CONFIRMED' ? 'status-confirmed' :
+                                       (status == 'CANCELLED' ? 'status-cancelled' :
+                                       'status-completed'))}"
+                        th:text="${status == 'PENDING' ? '대기중' :
+                               (status == 'CONFIRMED' ? '예약완료' :
+                               (status == 'CANCELLED' ? '취소됨' :
+                               '완료됨'))}">
+                상태
+                </span>
+                    </div>
+                </div>
+            </div>
+            <div class="reservation-footer">
+                <button
+                        th:if="${reservation.status != 'CANCELLED' && reservation.status != 'COMPLETED'}"
+                        th:onclick="'openCancelModal(' + ${reservation.reservation_id} + ')'"
+                        class="btn btn-cancel">
+                    예약 취소
+                </button>
+                <button
+                        th:if="${reservation.status == 'CANCELLED' || reservation.status == 'COMPLETED'}"
+                        class="btn btn-disabled" disabled>
+                    예약 취소
+                </button>
+                <a
+                        th:href="@{/reservation/confirmation(reservation_id=${reservation.reservation_id})}"
+                        class="btn btn-view">
+                    상세 보기
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <div class="pagination-container" th:if="${not #lists.isEmpty(reservations)}">
+        <ul class="pagination">
+            <!-- 페이지네이션 로직은 실제 데이터와 연동 필요 -->
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">다음</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- 취소 확인 모달 -->
+<div class="modal-backdrop" id="cancelModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h4 class="modal-title">예약 취소 확인</h4>
+            <button type="button" class="close-modal" onclick="closeCancelModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>정말로 이 예약을 취소하시겠습니까?</p>
+            <p>취소 후에는 복구할 수 없습니다.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">취소</button>
+            <form id="cancelForm" th:action="@{/reservation/cancel}" method="post">
+                <input type="hidden" id="reservationIdToCancel" name="reservation_id">
+                <button type="submit" class="btn btn-danger">예약 취소하기</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<script th:src="@{/js/top.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 필터링 기능
+        const statusFilter = document.getElementById('statusFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const searchBox = document.getElementById('searchBox');
+        const reservationCards = document.querySelectorAll('.reservation-card');
+
+        // 필터와 검색 적용 함수
+        function applyFilters() {
+            const statusValue = statusFilter.value;
+            const searchValue = searchBox.value.toLowerCase();
+
+            reservationCards.forEach(card => {
+                // 상태 필터링
+                const cardStatus = card.querySelector('.reservation-status').textContent.trim();
+                const statusMatch = statusValue === 'all' ||
+                    (statusValue === 'PENDING' && cardStatus === '대기중') ||
+                    (statusValue === 'CONFIRMED' && cardStatus === '확정됨') ||
+                    (statusValue === 'CANCELLED' && cardStatus === '취소됨') ||
+                    (statusValue === 'COMPLETED' && cardStatus === '완료됨');
+
+                // 검색어 필터링
+                const cardTitle = card.querySelector('.reservation-title').textContent.toLowerCase();
+                const searchMatch = cardTitle.includes(searchValue);
+
+                // 필터 적용
+                if (statusMatch && searchMatch) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // 필터 적용 후 보이는 카드가 없으면 메시지 표시
+            checkNoVisibleCards();
+        }
+
+        // 정렬 기능
+        function applySorting() {
+            const sortValue = sortFilter.value;
+            const container = document.querySelector('.reservations-grid');
+            const cards = Array.from(reservationCards);
+
+            cards.sort((a, b) => {
+                if (sortValue === 'date_desc' || sortValue === 'date_asc') {
+                    const dateA = new Date(a.querySelector('.detail-value').textContent.trim());
+                    const dateB = new Date(b.querySelector('.detail-value').textContent.trim());
+
+                    return sortValue === 'date_asc' ? dateA - dateB : dateB - dateA;
+                } else if (sortValue === 'price_desc' || sortValue === 'price_asc') {
+                    const priceA = parseInt(a.querySelectorAll('.detail-value')[2].textContent.replace(/[^0-9]/g, ''));
+                    const priceB = parseInt(b.querySelectorAll('.detail-value')[2].textContent.replace(/[^0-9]/g, ''));
+
+                    return sortValue === 'price_asc' ? priceA - priceB : priceB - priceA;
+                }
+
+                return 0;
+            });
+
+            // 정렬된 카드를 다시 컨테이너에 추가
+            cards.forEach(card => container.appendChild(card));
+        }
+
+        // 보이는 카드가 없는지 확인하고 메시지 표시
+        function checkNoVisibleCards() {
+            const visibleCards = document.querySelectorAll('.reservation-card[style="display: block;"]');
+            const noReservations = document.querySelector('.no-reservations');
+            const grid = document.querySelector('.reservations-grid');
+
+            if (visibleCards.length === 0 && reservationCards.length > 0) {
+                // 동적으로 "필터링된 결과 없음" 메시지 생성
+                if (!document.querySelector('.no-filtered-results')) {
+                    const noResults = document.createElement('div');
+                    noResults.className = 'no-reservations no-filtered-results';
+                    noResults.innerHTML = `
+              <i class="fas fa-filter"></i>
+              <h3>검색 결과가 없습니다</h3>
+              <p>다른 검색어나 필터 조건을 사용해보세요.</p>
+            `;
+                    grid.after(noResults);
+                }
+                grid.style.display = 'none';
+                document.querySelector('.no-filtered-results').style.display = 'block';
+            } else {
+                grid.style.display = 'grid';
+                const noResults = document.querySelector('.no-filtered-results');
+                if (noResults) {
+                    noResults.style.display = 'none';
+                }
+            }
+        }
+
+        // 이벤트 리스너 설정
+        statusFilter.addEventListener('change', function() {
+            applyFilters();
+        });
+
+        sortFilter.addEventListener('change', function() {
+            applySorting();
+            applyFilters(); // 정렬 후 필터도 적용
+        });
+
+        searchBox.addEventListener('input', function() {
+            applyFilters();
+        });
+
+        // 초기 필터 적용
+        if (reservationCards.length > 0) {
+            applySorting();
+            applyFilters();
+        }
+    });
+
+    // 모달 관련 함수
+    function openCancelModal(reservationId) {
+        document.getElementById('reservationIdToCancel').value = reservationId;
+        document.getElementById('cancelModal').style.display = 'flex';
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancelModal').style.display = 'none';
+    }
+
+    // ESC 키로 모달 닫기
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeCancelModal();
+        }
+    });
+
+    // 모달 바깥 클릭 시 닫기
+    window.onclick = function(event) {
+        const modal = document.getElementById('cancelModal');
+        if (event.target === modal) {
+            closeCancelModal();
+        }
+    };
+</script>
+</body>
+</html>

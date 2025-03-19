@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class BusinessRepository {
@@ -72,6 +73,12 @@ public class BusinessRepository {
     public void updateItem(BusinessItemBean businessItemBean){
         businessMapper.updateItem(businessItemBean);
     }
+
+    public Map<String, String> getItemInfo(@Param("itemId") String itemId){
+        return businessMapper.getItemInfo(itemId);
+    }
+
+
 
 }
 

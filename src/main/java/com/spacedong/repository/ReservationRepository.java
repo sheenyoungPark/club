@@ -30,8 +30,12 @@ public class ReservationRepository {
     }
 
     //예약생성
-    public int createReservation(ReservationBean reservationBean){
-        return reservationMapper.createReservation(reservationBean);
+    public void createReservation(ReservationBean reservationBean){
+       reservationMapper.createReservation(reservationBean);
+    }
+    //예약번호 조회
+    public int getReservationId(String member_id, String item_id, int start_time, Date date){
+        return reservationMapper.getReservationId(member_id, item_id, start_time, date);
     }
 
     //예약정보 가져오기
