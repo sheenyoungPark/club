@@ -8,6 +8,7 @@
     <link rel="stylesheet" th:href="@{/css/bottom.css}">
     <link rel="stylesheet" th:href="@{/css/top.css}">
     <style>
+        /* 기존 스타일 유지 */
         * {
             margin: 0;
             padding: 0;
@@ -42,9 +43,18 @@
             transform: translateX(-50%);
         }
 
-        .club-container {
+        h3.section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #5d4b8c;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaeaea;
+        }
+
+        .club-container, .business-container {
             max-width: 900px;
-            margin: 40px auto;
+            margin: 20px auto;
         }
 
         .empty-results {
@@ -57,7 +67,7 @@
             color: #666;
         }
 
-        .club-card {
+        .club-card, .business-card {
             background-color: #fff;
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
@@ -67,26 +77,30 @@
             cursor: pointer;
         }
 
-        .club-card:hover {
+        .club-card:hover, .business-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        .club-title {
+        .club-title, .business-title {
             font-size: 22px;
             font-weight: 700;
             color: #5d4b8c;
             margin-bottom: 12px;
         }
 
-        .club-info {
+        .business-title {
+            color: #4b8c5d; /* 비즈니스 카드는 다른 색상으로 구분 */
+        }
+
+        .club-info, .business-info {
             font-size: 16px;
             color: #666;
             margin-bottom: 15px;
             line-height: 1.7;
         }
 
-        .club-meta {
+        .club-meta, .business-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
@@ -111,22 +125,48 @@
             font-weight: 500;
         }
 
+        .business .meta-value {
+            color: #4b8c5d; /* 비즈니스 메타 데이터 색상 */
+        }
+
         .highlight {
             background-color: rgba(93, 75, 140, 0.1);
             border-radius: 4px;
             padding: 2px 5px;
         }
 
+        .business .highlight {
+            background-color: rgba(75, 140, 93, 0.1); /* 비즈니스 하이라이트 색상 */
+        }
+
+        .search-results {
+            width: 100%;
+            max-width: 900px;
+            margin: 40px auto; /* 가로 중앙 정렬 */
+        }
+
+        .search-info {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .search-param {
+            font-weight: 500;
+            color: #5d4b8c;
+        }
+
         @media (max-width: 768px) {
-            .club-container {
+            .club-container, .business-container {
                 width: 100%;
             }
 
-            .club-card {
+            .club-card, .business-card {
                 padding: 20px;
             }
 
-            .club-title {
+            .club-title, .business-title {
                 font-size: 20px;
             }
 
@@ -134,11 +174,10 @@
                 font-size: 24px;
                 margin: 20px 0;
             }
-        }
-        .search-results {
-            width: 100%;
-            max-width: 900px;
-            margin: 40px auto; /* 가로 중앙 정렬 */
+
+            h3.section-title {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -147,32 +186,85 @@
 <div th:insert="~{include/top_search :: top_search}"></div>
 
 <div class="search-results">
-<h2>검색 결과</h2>
+    <h2>검색 결과</h2>
 
-<div class="club-container">
-    <div th:if="${searchedClubs.isEmpty()}" class="empty-results">
-        검색 결과가 없습니다.
+    <div class="search-info">
+        <span th:if="${searchType == 'all'}">통합검색</span>
+        <span th:if="${searchType == 'club'}">동호회검색</span>
+        <span th:if="${searchType == 'business'}">대여검색</span>
+        <span th:if="${region != null && !region.isEmpty()}"> - 지역: <span class="search-param" th:text="${region}"></span></span>
+        <span th:if="${age > 0}"> - 나이: <span class="search-param" th:text="${age}"></span>세</span>
+        <span th:if="${searchtxt != null && !searchtxt.isEmpty()}"> - 검색어: <span class="search-param" th:text="${searchtxt}"></span></span>
     </div>
 
-    <div th:each="club : ${searchedClubs}" class="club-card">
-        <a th:href="@{/club/club_info(club_id=${club.club_id})}" class="club-link">
+    <!-- 동호회 검색 결과 (all 또는 club 타입) -->
+    <div th:if="${searchType == 'all' || searchType == 'club'}">
+        <h3 class="section-title">동호회 검색 결과</h3>
 
-        <h3 class="club-title" th:text="${club.club_name}">클럽 이름</h3>
-        <p class="club-info" th:text="${club.club_info}">클럽 정보</p>
-        <div class="club-meta">
-            <div class="meta-item">
-                <span class="meta-label">지역:</span>
-                <span class="meta-value highlight" th:text="${club.club_region}">지역</span>
+        <div class="club-container">
+            <div th:if="${searchedClubs == null || searchedClubs.isEmpty()}" class="empty-results">
+                동호회 검색 결과가 없습니다.
             </div>
-            <div class="meta-item">
-                <span class="meta-label">가입 가능 연령:</span>
-                <span class="meta-value" th:text="${club.club_agemin}">연령</span><span class="meta-value">세 이상</span>
+
+            <div th:each="club : ${searchedClubs}" class="club-card">
+                <a th:href="@{/club/club_info(club_id=${club.club_id})}" class="club-link">
+                    <h3 class="club-title" th:text="${club.club_name}">클럽 이름</h3>
+                    <p class="club-info" th:text="${club.club_info}">클럽 정보</p>
+                    <div class="club-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">지역:</span>
+                            <span class="meta-value highlight" th:text="${club.club_region}">지역</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">가입 가능 연령:</span>
+                            <span class="meta-value" th:text="${club.club_agemin}">연령</span><span class="meta-value">세 이상</span>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
-            </a>
+    </div>
+
+    <!-- 비즈니스(대여) 검색 결과 (all 또는 business 타입) -->
+    <div th:if="${searchType == 'all' || searchType == 'business'}">
+        <h3 class="section-title">대여 검색 결과</h3>
+
+        <div class="business-container">
+            <!-- 변경: searchedBusinesses를 searchedBusinessItems로 변경 -->
+            <div th:if="${searchedBusinessItems == null || searchedBusinessItems.isEmpty()}" class="empty-results">
+                대여 검색 결과가 없습니다.
+            </div>
+
+            <!-- 변경: searchedBusinesses를 searchedBusinessItems로 변경하고 필드 이름 수정 -->
+            <div th:each="item : ${searchedBusinessItems}" class="business-card">
+                <a th:href="@{/business/business_item(business_id=${item.business_id}, item_id=${item.item_id})}" class="business-link">
+                    <h3 class="business-title" th:text="${item.item_title}">대여 아이템 제목</h3>
+                    <p class="business-info" th:text="${item.item_text}">대여 아이템 설명</p>
+                    <div class="business-meta business">
+                        <div class="meta-item">
+                            <span class="meta-label">업체:</span>
+                            <span class="meta-value" th:text="${item.business_name}">업체명</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">지역:</span>
+                            <span class="meta-value highlight" th:text="${item.business_address}">지역</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">카테고리:</span>
+                            <span class="meta-value" th:text="${item.item_category}">카테고리</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">가격:</span>
+                            <span class="meta-value" th:text="${#numbers.formatInteger(item.item_price, 0, 'COMMA')}">가격</span>
+                            <span class="meta-value">원</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
-</div>
+
 <!-- 하단 정보바 -->
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
 

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>아이템 카테고리 페이지</title>
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <link rel="stylesheet" th:href="@{/css/category.css}">
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<!-- 아이템 생성하기 버튼 -->
+<a th:href="@{/business/create_item}" class="create-club-button">
+  <i class="fas fa-plus"></i> 아이템 등록하기
+</a>
+
+<!-- 카테고리 컨테이너 -->
+<div class="category-container">
+  <!-- 메인 카테고리 -->
+  <div class="main-categories">
+    <h3 class="category-title">아이템 카테고리</h3>
+    <ul class="category-list">
+      <li class="category-item" th:classappend="${param.category_type == null || param.category_type == 'all' ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type='all')}">
+          <img th:src="@{/sources/picture/전체보기.png}" alt="전체보기 아이콘" class="category-icon">
+          전체보기
+        </a>
+      </li>
+      <li th:each="category : ${categoryList}"
+          class="category-item"
+          th:classappend="${category.category_type == param.category_type ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type=${category.category_type})}">
+          <img th:src="@{/sources/picture/{categoryType}.png(categoryType=${category.category_type})}"
+               alt="카테고리 아이콘"
+               class="category-icon">
+          <span th:text="${category.category_type}"></span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 서브 카테고리 -->
+  <div class="sub-categories">
+    <h3 class="category-title">세부 카테고리</h3>
+    <ul class="sub-category-list">
+      <li class="sub-category-item" th:classappend="${param.sub_category == null || param.sub_category == 'all' ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type=${param.category_type ?: 'all'}, sub_category='all')}">전체보기</a>
+      </li>
+      <li th:if="${list != null}" th:each="subCategory : ${list}"
+          class="sub-category-item"
+          th:classappend="${subCategory.category_name == param.sub_category ? 'active' : ''}">
+        <a th:href="@{/category/category_info(category_type=${param.category_type ?: 'all'}, sub_category=${subCategory.category_name})}"
+           th:text="${subCategory.category_name}"></a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- 동호회 목록 컨테이너 -->
+<div class="clubs-container">
+  <h3 class="clubs-title">등록된 아이템</h3>
+
+  <div th:if="${itemList == null || itemList.isEmpty()}" class="no-clubs" style="display: block;">
+    등록된 아이템이 없습니다.
+  </div>
+
+  <ul th:if="${itemList != null && !itemList.isEmpty()}" class="clubs-list">
+    <li th:each="item : ${itemList}" class="club-item" th:attr="data-category=${item.item_category}">
+      <a th:href="@{/business/item_info(item_id=${item.item_id})}" class="club-link">
+
+        <!-- 아이템 이미지 -->
+        <div class="club-profile-box">
+          <img th:if="${item.item_img != null}"
+               th:src="@{/image/itemImage/{img}(img=${item.item_img})}"
+               alt="아이템 이미지"
+               class="club-profile-image">
+
+          <img th:unless="${item.item_img != null}"
+               th:src="@{/sources/picture/기본이미지.png}"
+               alt="기본 이미지"
+               class="club-profile-image">
+        </div>
+        <!-- 아이템 정보 -->
+        <div class="club-info">
+          <div class="club-name" th:text="${item.item_title}"></div>
+          <div class="club-category" th:text="'카테고리: ' + ${item.item_category}"></div>
+          <div class="item-price" th:text="${#numbers.formatInteger(item.item_price, 0, 'COMMA') + '원'}"></div>
+          <div class="item-time" th:text="'운영시간: ' + ${item.item_starttime} + ':00 ~ ' + ${item.item_endtime} + ':00'"></div>
+        </div>
+      </a>
+    </li>
+  </ul>
+</div>
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<script th:src="@{/js/top.js}"></script>
+<!-- Font Awesome for icons (You can add this if you want the plus icon) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</body>
+</html>

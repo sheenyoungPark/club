@@ -8,11 +8,20 @@ public class BoardCommentBean {
     private int comment_id; // 댓글 ID
     private int board_id; // 게시글 ID
     private String comment_writer_id; // 댓글 작성자 ID
+    private String comment_writer_name; // ✅ 추가: 작성자의 닉네임 또는 비즈니스명
     private String comment_text; // 댓글 내용
     private Integer parent_comment_id; // 부모 댓글 ID (NULL이면 일반 댓글)
     private LocalDateTime create_date; // 작성일
 
     private List<BoardCommentBean> re_comments; // 대댓글 목록
+
+    public String getComment_writer_name() {
+        return comment_writer_name;
+    }
+
+    public void setComment_writer_name(String comment_writer_name) {
+        this.comment_writer_name = comment_writer_name;
+    }
 
     public int getComment_id() {
         return comment_id;

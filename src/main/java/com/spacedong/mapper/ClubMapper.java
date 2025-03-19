@@ -72,7 +72,7 @@ public interface ClubMapper {
     List<CategoryBean> countCategory();
 
     //클럽별 인원수 순서
-    @Select("select cm.club_id, c.club_name , count(*) as club_count from club_member cm join club c on c.club_id = cm.club_id group by cm.club_id, c.club_name order by cm.club_id")
+    @Select("select cm.club_id, c.club_name , c.club_profile,count(*) as club_count from club_member cm join club c on c.club_id = cm.club_id group by cm.club_id, c.club_name, c.club_profile order by cm.club_id")
     List<ClubBean> countClub();
 
     //이미 해당 클럽에 가입했는지 확인

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>아이템 상세 정보</title>
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+  <link rel="stylesheet" th:href="@{/css/item_info.css}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="item-container">
+  <div class="item-header">
+    <h1 class="item-title" th:text="${item.item_title}">아이템 제목</h1>
+    <div class="item-category" th:text="'카테고리: ' + ${item.item_category}">카테고리: 카테고리명</div>
+  </div>
+
+  <div class="item-content">
+    <div class="item-image-container">
+      <img th:if="${item.item_img != null}"
+           th:src="@{/image/itemImage/{img}(img=${item.item_img})}"
+           alt="아이템 이미지"
+           class="item-image">
+      <img th:unless="${item.item_img != null}"
+           th:src="@{/sources/picture/기본이미지.png}"
+           alt="기본 이미지"
+           class="item-image">
+    </div>
+
+    <div class="item-details">
+      <div class="item-price">
+        <span class="label">가격:</span>
+        <span class="value" th:text="${#numbers.formatInteger(item.item_price, 0, 'COMMA') + '원 / 시간'}">10,000원 / 시간</span>
+      </div>
+
+      <div class="item-business">
+        <span class="label">판매자:</span>
+        <span class="value" th:text="${businessInfo.business_name}">판매자명</span>
+      </div>
+
+      <div class="item-hours">
+        <span class="label">운영 시간:</span>
+        <span class="value" th:text="${item.item_starttime} + ':00 ~ ' + ${item.item_endtime} + ':00'">09:00 ~ 18:00</span>
+      </div>
+
+      <div class="item-description">
+        <h3>아이템 설명</h3>
+        <p th:text="${item.item_text}">아이템에 대한 상세 설명입니다.</p>
+      </div>
+
+      <!-- 예약된 시간 표시 영역 추가 -->
+      <div class="reserved-times-container">
+        <h4>이미 예약된 시간</h4>
+        <div id="reservedTimesList" class="reserved-times-list">
+          <p class="loading-message">날짜를 선택하면 예약된 시간이 표시됩니다.</p>
+        </div>
+      </div>
+
+      <form th:action="@{/reservation/create}" method="post" class="reservation-form" id="reservationForm">
+        <input type="hidden" name="item_id" id="item_id" th:value="${item.item_id}">
+        <input type="hidden" id="hourlyPrice" th:value="${item.item_price}">
+
+        <!-- 날짜 선택 -->
+        <div class="form-group">
+          <label for="reservation_date">예약 날짜</label>
+          <input type="date" id="reservation_date" name="reservation_date" class="form-control" required
+                 th:min="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"
+                 th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+        </div>
+
+          <!-- 시간 선택 섹션 수정 -->
+          <div class="form-group">
+            <label>예약 시간 범위</label>
+            <div class="time-range-container">
+              <div class="time-select">
+                <label for="start_time">시작 시간</label>
+                <select id="start_time" name="start_time" class="form-control" required>
+                  <option value="">시작 시간 선택</option>
+                  <option th:each="hour : ${#numbers.sequence(item.item_starttime, item.item_endtime - 1)}"
+                          th:value="${hour}"
+                          th:text="${hour} + ':00'">
+                    09:00
+                  </option>
+                </select>
+              </div>
+              <div class="time-separator">~</div>
+              <div class="time-select">
+                <label for="end_time">종료 시간</label>
+                <select id="end_time" name="end_time" class="form-control" required>
+                  <option value="">종료 시간 선택</option>
+                  <option th:each="hour : ${#numbers.sequence(item.item_starttime + 1, item.item_endtime)}"
+                          th:value="${hour}"
+                          th:text="${hour} + ':00'">
+                    10:00
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 예약 인원 (필요한 경우) -->
+          <div class="form-group">
+            <label for="reservation_people">예약 인원</label>
+            <input type="number" id="reservation_people" name="reservation_people" class="form-control" required min="1" value="1">
+          </div>
+
+          <div class="reservation-summary">
+            <div class="summary-item">
+              <span class="label">예약 시간:</span>
+              <span class="value" id="reservationHours">0시간</span>
+            </div>
+
+            <div class="summary-item">
+              <span class="label">예약 가격:</span>
+              <span class="value" id="totalPrice">0원</span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="reserveButton" disabled>예약하기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<script th:src="@{/js/top.js}"></script>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('reservation_date');
+    const startTimeSelect = document.getElementById('start_time');
+    const endTimeSelect = document.getElementById('end_time');
+    const reservationHoursElement = document.getElementById('reservationHours');
+    const totalPriceElement = document.getElementById('totalPrice');
+    const reserveButton = document.getElementById('reserveButton');
+    const itemId = document.getElementById('item_id').value;
+    const hourlyPrice = parseInt(document.getElementById('hourlyPrice').value);
+    const reservationForm = document.getElementById('reservationForm');
+    const reservedTimesList = document.getElementById('reservedTimesList');
+
+    // 이미 예약된 시간대를 저장할 배열
+    let reservedTimeRanges = [];
+
+    // 날짜 변경 시 예약 가능 시간 업데이트
+    dateInput.addEventListener('change', function() {
+      updateAvailableTimes();
+    });
+
+    // 시작 시간 변경 시 종료 시간 옵션 업데이트
+    startTimeSelect.addEventListener('change', function() {
+      updateEndTimeOptions();
+      calculatePrice();
+    });
+
+    // 종료 시간 변경 시 가격 계산
+    endTimeSelect.addEventListener('change', function() {
+      calculatePrice();
+    });
+
+    // 페이지 로드 시 현재 날짜를 yyyy-MM-dd 형식으로 설정하고 예약 정보 불러오기
+    function setInitialDate() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+
+      dateInput.value = `${year}-${month}-${day}`;
+
+      // 초기 날짜에 대한 예약 정보 불러오기
+      updateAvailableTimes();
+    }
+
+    // 예약 가능 시간 업데이트 함수
+    function updateAvailableTimes() {
+      // 날짜 입력값을 가져와 정확한 형식으로 변환
+      const rawDate = dateInput.value;
+      const dateObj = new Date(rawDate);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+
+      console.log("서버에 보내는 날짜:", formattedDate); // 디버깅용
+
+      // 예약된 시간 표시 영역 초기화
+      reservedTimesList.innerHTML = '<p class="loading-message">예약된 시간을 불러오는 중...</p>';
+
+      // 모든 시간 옵션 초기화
+      resetTimeOptions(startTimeSelect);
+      resetTimeOptions(endTimeSelect);
+
+      // 예약 버튼 비활성화
+      reserveButton.disabled = true;
+
+      // 로딩 중 표시
+      startTimeSelect.disabled = true;
+      endTimeSelect.disabled = true;
+
+      // API 호출
+      fetch(`/reservation/check-availability?item_id=${itemId}&date=${encodeURIComponent(formattedDate)}`)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+              })
+              .then(data => {
+                // 응답 데이터 로깅 (디버깅용)
+                console.log('API 응답:', data);
+
+                startTimeSelect.disabled = false;
+
+                if (data.success) {
+                  // 데이터 구조 확인 및 저장
+                  reservedTimeRanges = Array.isArray(data.reservedTimeRanges) ? data.reservedTimeRanges : [];
+
+                  // 예약된 시간이 없으면 빈 배열로 처리
+                  if (reservedTimeRanges.length === 0) {
+                    console.log('예약된 시간이 없습니다.');
+                  } else {
+                    console.log('예약된 시간 범위:', reservedTimeRanges);
+                  }
+
+                  // 예약된 시간 목록 표시
+                  displayReservedTimes(reservedTimeRanges, formattedDate);
+
+                  // 예약된 시간 범위에 따라 시간 옵션 설정
+                  updateTimeOptions();
+                } else {
+                  console.error('예약 가능 시간 확인 실패:', data.error);
+                  alert('예약 가능 시간을 불러오는데 실패했습니다: ' + (data.error || '알 수 없는 오류'));
+                  reservedTimesList.innerHTML = '<p class="error-message">예약 정보를 불러오는데 실패했습니다.</p>';
+                }
+              })
+              .catch(error => {
+                console.error('예약 가능 시간 확인 중 오류 발생:', error);
+                alert('서버와 통신 중 오류가 발생했습니다: ' + error.message);
+                reservedTimesList.innerHTML = '<p class="error-message">서버와 통신 중 오류가 발생했습니다.</p>';
+                startTimeSelect.disabled = false;
+              });
+    }
+
+    // 예약된 시간 목록 표시 함수
+    function displayReservedTimes(reservedTimeRanges, date) {
+      // 날짜 형식화 (YYYY-MM-DD → YYYY년 MM월 DD일)
+      const [year, month, day] = date.split('-');
+      const formattedDate = `${year}년 ${parseInt(month)}월 ${parseInt(day)}일`;
+
+      if (!Array.isArray(reservedTimeRanges) || reservedTimeRanges.length === 0) {
+        reservedTimesList.innerHTML = `<p class="no-reservations">${formattedDate}에는 예약된 시간이 없습니다.</p>`;
+        return;
+      }
+
+      // API 응답 로깅
+      console.log("원본 API 응답 데이터:", JSON.stringify(reservedTimeRanges));
+
+      // 시간별로 정렬
+      const sortedRanges = [...reservedTimeRanges].sort((a, b) => {
+        // 오라클 DB에서 반환되는 컬럼명을 그대로 확인
+        const startTimeA = a.START_TIME || a.start_time || a.startTime || 0;
+        const startTimeB = b.START_TIME || b.start_time || b.startTime || 0;
+        return startTimeA - startTimeB;
+      });
+
+      // HTML 생성
+      let html = `<h5>${formattedDate} 예약 현황</h5>`;
+      html += '<ul class="reserved-times">';
+
+      // 디버깅용 로그
+      console.log("표시할 예약 범위 (정렬 후):", sortedRanges);
+
+      sortedRanges.forEach(range => {
+        // 오라클 DB에서 반환되는 컬럼명을 고려한 처리 (대문자일 수 있음)
+        const startTime = range.START_TIME || range.start_time || range.startTime;
+        const endTime = range.END_TIME || range.end_time || range.endTime;
+
+        console.log(`범위 처리 중: startTime=${startTime}, endTime=${endTime}`);
+
+        if (startTime !== undefined && endTime !== undefined) {
+          html += `<li class="reserved-time-item">
+              <span class="reserved-time-range">${startTime}:00 ~ ${endTime}:00</span>
+              <span class="reserved-time-status">예약됨</span>
+            </li>`;
+        } else {
+          console.warn("유효하지 않은 시간 범위 데이터:", range);
+        }
+      });
+
+      html += '</ul>';
+      reservedTimesList.innerHTML = html;
+    }
+
+    // 시간 옵션 초기화 함수
+    function resetTimeOptions(selectElement) {
+      // 첫 번째 옵션(라벨)을 제외한 모든 옵션 활성화
+      for (let i = 1; i < selectElement.options.length; i++) {
+        selectElement.options[i].disabled = false;
+      }
+
+      // 기본 옵션(첫 번째) 선택
+      selectElement.selectedIndex = 0;
+    }
+
+    // 예약된 시간에 따라 옵션 업데이트
+    function updateTimeOptions() {
+      console.log('시간 옵션 업데이트 시작');
+
+      // 모든 시작 시간 옵션 초기화 (활성화)
+      for (let i = 1; i < startTimeSelect.options.length; i++) {
+        startTimeSelect.options[i].disabled = false;
+      }
+
+      // 예약된 시간 범위에 따라 시작 시간 옵션 비활성화
+      if (Array.isArray(reservedTimeRanges) && reservedTimeRanges.length > 0) {
+        reservedTimeRanges.forEach(range => {
+          console.log('처리 중인 예약 범위:', range);
+
+          // 다양한 속성 이름 처리
+          const startTime = typeof range.start_time !== 'undefined' ? range.start_time :
+                  (typeof range.startTime !== 'undefined' ? range.startTime : null);
+          const endTime = typeof range.end_time !== 'undefined' ? range.end_time :
+                  (typeof range.endTime !== 'undefined' ? range.endTime : null);
+
+          if (startTime !== null && endTime !== null) {
+            console.log(`범위 ${startTime}:00 ~ ${endTime}:00 처리 중`);
+
+            // 시작 시간 옵션 중에서 예약된 범위에 포함되는 시간 비활성화
+            for (let i = 1; i < startTimeSelect.options.length; i++) {
+              const optionValue = parseInt(startTimeSelect.options[i].value);
+              if (optionValue >= startTime && optionValue < endTime) {
+                console.log(`${optionValue}:00 시작 시간 비활성화`);
+                startTimeSelect.options[i].disabled = true;
+              }
+            }
+          } else {
+            console.warn('시간 범위에 유효한 시작/종료 시간이 없습니다:', range);
+          }
+        });
+      }
+
+      // 종료 시간 업데이트 (시작 시간이 이미 선택되어 있는 경우)
+      if (startTimeSelect.value) {
+        updateEndTimeOptions();
+      }
+
+      console.log('시간 옵션 업데이트 완료');
+    }
+
+    // 종료 시간 옵션 업데이트 함수
+    function updateEndTimeOptions() {
+      // 시작 시간이 선택되지 않았으면 종료 시간 옵션 비활성화
+      if (!startTimeSelect.value) {
+        endTimeSelect.disabled = true;
+        resetTimeOptions(endTimeSelect);
+        return;
+      }
+
+      // 종료 시간 선택 활성화
+      endTimeSelect.disabled = false;
+      // 종료 시간 옵션 초기화
+      resetTimeOptions(endTimeSelect);
+
+      const startTime = parseInt(startTimeSelect.value);
+
+      // 다음 예약까지 가능한 최대 종료 시간 찾기
+      let maxEndTime = null;
+
+      if (Array.isArray(reservedTimeRanges) && reservedTimeRanges.length > 0) {
+        reservedTimeRanges.forEach(range => {
+          // 오라클 DB에서 반환되는 컬럼명을 고려한 처리 (대문자일 수 있음)
+          const rangeStartTime = range.START_TIME || range.start_time || range.startTime;
+
+          if (rangeStartTime !== undefined && rangeStartTime > startTime && (maxEndTime === null || rangeStartTime < maxEndTime)) {
+            maxEndTime = rangeStartTime;
+          }
+        });
+      }
+
+      // 종료 시간 옵션 설정
+      for (let i = 1; i < endTimeSelect.options.length; i++) {
+        const optionValue = parseInt(endTimeSelect.options[i].value);
+
+        // 시작 시간보다 작거나 같으면 비활성화
+        if (optionValue <= startTime) {
+          endTimeSelect.options[i].disabled = true;
+        }
+
+        // 다음 예약 시간 이후면 비활성화
+        if (maxEndTime !== null && optionValue > maxEndTime) {
+          endTimeSelect.options[i].disabled = true;
+        }
+      }
+
+      // 기본값으로 시작 시간 + 1 선택
+      let defaultOptionFound = false;
+      for (let i = 1; i < endTimeSelect.options.length; i++) {
+        const optionValue = parseInt(endTimeSelect.options[i].value);
+        if (optionValue === startTime + 1 && !endTimeSelect.options[i].disabled) {
+          endTimeSelect.options[i].selected = true;
+          defaultOptionFound = true;
+          break;
+        }
+      }
+
+      // 기본 옵션을 찾지 못했다면 첫 번째 활성화된 옵션 선택
+      if (!defaultOptionFound) {
+        for (let i = 1; i < endTimeSelect.options.length; i++) {
+          if (!endTimeSelect.options[i].disabled) {
+            endTimeSelect.options[i].selected = true;
+            break;
+          }
+        }
+      }
+
+      // 가격 계산
+      calculatePrice();
+    }
+
+    // 가격 계산 함수
+    function calculatePrice() {
+      if (!startTimeSelect.value || !endTimeSelect.value) {
+        reservationHoursElement.textContent = "0시간";
+        totalPriceElement.textContent = "0원";
+        reserveButton.disabled = true;
+        return;
+      }
+
+      const startTime = parseInt(startTimeSelect.value);
+      const endTime = parseInt(endTimeSelect.value);
+      const hours = endTime - startTime;
+
+      if (hours <= 0) {
+        reservationHoursElement.textContent = "0시간";
+        totalPriceElement.textContent = "0원";
+        reserveButton.disabled = true;
+        return;
+      }
+
+      const totalPrice = hours * hourlyPrice;
+
+      reservationHoursElement.textContent = hours + "시간";
+      totalPriceElement.textContent = totalPrice.toLocaleString() + "원";
+
+      // 유효한 시간 범위와 가격이 있으면 예약 버튼 활성화
+      reserveButton.disabled = false;
+    }
+
+    // 초기화 함수 호출
+    setInitialDate();
+  });
+</script>
+
+<style>
+  /* 시간 선택 스타일 */
+  .time-range-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .time-select {
+    flex: 1;
+  }
+
+  .time-separator {
+    font-weight: bold;
+    margin: 0 5px;
+    padding-top: 20px;
+  }
+
+  /* 예약 요약 스타일 */
+  .reservation-summary {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+  }
+
+  .summary-item {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .summary-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .summary-item .label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+
+  .summary-item .value {
+    font-weight: bold;
+    color: #007bff;
+  }
+
+  /* 비활성화된 옵션 스타일 */
+  select option:disabled {
+    color: #ccc;
+    background-color: #f8f8f8;
+  }
+
+  /* 비활성화된 버튼 스타일 */
+  .btn-primary:disabled {
+    background-color: #b9d4f2;
+    cursor: not-allowed;
+  }
+
+  /* 아이템 정보 페이지 스타일 */
+  .item-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .item-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+  }
+
+  .item-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .item-category {
+    color: #666;
+    font-size: 1rem;
+  }
+
+  .item-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  .item-image-container {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .item-image {
+    width: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+    max-height: 500px;
+  }
+
+  .item-details {
+    flex: 2;
+    min-width: 300px;
+  }
+
+  .item-price, .item-business, .item-hours {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+
+  .label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+
+  .item-description {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+
+  .reservation-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: #0069d9;
+  }
+
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+
+  /* 모바일 반응형 */
+  @media (max-width: 768px) {
+    .item-content {
+      flex-direction: column;
+    }
+
+    .item-image-container, .item-details {
+      flex: 1 1 100%;
+    }
+  }
+  /* 예약된 시간 표시 영역 스타일 */
+  .reserved-times-container {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #f0f8ff;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+  }
+
+  .reserved-times-container h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #0056b3;
+    font-size: 1.1rem;
+  }
+
+  .reserved-times-container h5 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 1rem;
+  }
+
+  .loading-message {
+    color: #666;
+    font-style: italic;
+  }
+
+  .error-message {
+    color: #dc3545;
+    font-style: italic;
+  }
+
+  .no-reservations {
+    color: #28a745;
+    font-weight: bold;
+  }
+
+  .reserved-times {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .reserved-time-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background-color: #e6f2ff;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .reserved-time-item:hover {
+    background-color: #d1e7ff;
+  }
+
+  .reserved-time-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .reserved-time-range {
+    font-weight: 500;
+  }
+
+  .reserved-time-status {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #dc3545;
+    background-color: #ffeaea;
+    padding: 4px 8px;
+    border-radius: 12px;
+  }
+</style>
+
+</body>
+</html>

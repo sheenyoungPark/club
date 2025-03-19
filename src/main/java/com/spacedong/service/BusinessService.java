@@ -3,8 +3,10 @@ package com.spacedong.service;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.BoardBean;
 import com.spacedong.beans.BusinessItemBean;
+import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.repository.BusinessRepository;
 import jakarta.annotation.Resource;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -61,7 +63,17 @@ public class BusinessService {
 
             loginBusiness.setBusiness_point(temp.getBusiness_point());
 
+            loginBusiness.setBusiness_pw(temp.getBusiness_pw());
             logger.info("비지니스 서비스 로그인: {}", loginBusiness.getBusiness_name());
+            loginBusiness.setBusiness_address(temp.getBusiness_address());
+            loginBusiness.setBusiness_email(temp.getBusiness_email());
+            loginBusiness.setBusiness_info(temp.getBusiness_info());
+            loginBusiness.setBusiness_phone(temp.getBusiness_phone());
+            loginBusiness.setBusiness_point(temp.getBusiness_point());
+            loginBusiness.setBusiness_joindate(temp.getBusiness_joindate());
+            loginBusiness.setBusiness_profile(temp.getBusiness_profile());
+            loginBusiness.setBusiness_public(temp.getBusiness_public());
+            loginBusiness.setBusiness_number(temp.getBusiness_number());
             loginBusiness.setLogin(true);
             return true;
         }
@@ -201,6 +213,42 @@ public class BusinessService {
 
     public boolean deleteBoard(int boardId) {
         return businessRepository.deleteBoard(boardId) > 0;
+    }
+
+
+    //아이템 등록
+    public void create_item(BusinessItemBean businessItemBean){
+        businessRepository.create_item(businessItemBean);
+    }
+
+    //모든 아이템 리스트
+    public List<BusinessItemBean> allItem(){
+        return businessRepository.allItem();
+    }
+
+    // 아이템 ID로 아이템 정보 가져오기
+    public BusinessItemBean getItemById(@Param("item_id") String item_id){
+        return businessRepository.getItemById(item_id);
+    }
+
+    //판매자 정보 가져오기
+    public BusinessBean getBusinessById(String business_id){
+        return businessRepository.getBusinessById(business_id);
+    }
+
+    // 특정 날짜에 예약된 시간대 조회
+    public List<Integer> getReservedTimesByItemIdAndDate(@Param("itemId") String itemId, @Param("date") String date){
+        return businessRepository.getReservedTimesByItemIdAndDate(itemId, date) ;
+    }
+
+    // 아이템 삭제
+   public void deleteItem(@Param("itemId") String item_id){
+        businessRepository.deleteItem(item_id);
+    }
+
+    //아이템 정보 업데이트
+    public void updateItem(BusinessItemBean businessItemBean){
+        businessRepository.updateItem(businessItemBean);
     }
 
 }
