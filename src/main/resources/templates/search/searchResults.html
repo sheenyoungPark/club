@@ -237,7 +237,7 @@
 
             <!-- 변경: searchedBusinesses를 searchedBusinessItems로 변경하고 필드 이름 수정 -->
             <div th:each="item : ${searchedBusinessItems}" class="business-card">
-                <a th:href="@{/business/business_item(business_id=${item.business_id}, item_id=${item.item_id})}" class="business-link">
+                <a th:href="@{/business/item_info?item_id=${item.item_id}}" class="business-link">
                     <h3 class="business-title" th:text="${item.item_title}">대여 아이템 제목</h3>
                     <p class="business-info" th:text="${item.item_text}">대여 아이템 설명</p>
                     <div class="business-meta business">

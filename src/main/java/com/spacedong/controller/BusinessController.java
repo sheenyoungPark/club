@@ -172,7 +172,7 @@ public class BusinessController {
         System.out.println("business_id : " + businessItemBean.getBusiness_id());
 
         // ✅ 디렉토리 생성 (상수로 정의된 업로드 디렉토리 경로 사용)
-        final String UPLOAD_DIR = "src/main/resources/static/upload/item/"; // 적절한 경로로 수정하세요
+        final String UPLOAD_DIR = "C:/upload/image/businessitem/"; // 적절한 경로로 수정하세요
         File uploadDir = new File(UPLOAD_DIR);
         if (!uploadDir.exists()) {
             boolean dirCreated = uploadDir.mkdirs();
@@ -287,7 +287,7 @@ public class BusinessController {
         if (itemImage != null && !itemImage.isEmpty()) {
             try {
                 // 파일 저장 경로 설정
-                String uploadPath = "src/main/resources/static/image/itemImage/";
+                String uploadPath = "C:/upload/image/businessitem/";
                 File uploadDir = new File(uploadPath);
 
                 if (!uploadDir.exists()) {
@@ -340,7 +340,7 @@ public class BusinessController {
         if (item.getBusiness_id().equals(loginBusiness.getBusiness_id())) {
             // 이미지 파일 삭제
             if (item.getItem_img() != null) {
-                String uploadPath = "src/main/resources/static/image/itemImage/";
+                String uploadPath = "C:/upload/image/businessitem";
                 File imageFile = new File(uploadPath + item.getItem_img());
                 if (imageFile.exists()) {
                     imageFile.delete();
