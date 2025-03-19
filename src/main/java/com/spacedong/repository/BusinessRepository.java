@@ -98,8 +98,6 @@ public class BusinessRepository {
     }
 
 
-
-}
     // 포인트 관련 메서드
     public void updateBusinessPoint(String businessId, int pointChange) {
         businessMapper.updateBusinessPoint(businessId, pointChange);
