@@ -23,13 +23,18 @@ public class ReservationService {
         return reservationRepository.getReservedTimeRangesByItemIdAndDate(itemId, date);
     }
 
+    //예약번호 조회
+    public int getReservationId(String member_id, String item_id, int start_time, Date date){
+        return reservationRepository.getReservationId(member_id, item_id, start_time, date);
+    }
+
     public int checkTimeRangeOverlap(@Param("itemId") String itemId, @Param("date") Date date, @Param("startTime") int startTime, @Param("endTime") int endTime){
         return reservationRepository.checkTimeRangeOverlap(itemId, date, startTime, endTime);
     }
 
     //예약생성
-    public int createReservation(ReservationBean reservationBean){
-        return reservationRepository.createReservation(reservationBean);
+    public void createReservation(ReservationBean reservationBean){
+        reservationRepository.createReservation(reservationBean);
     }
 
     //예약정보 가져오기

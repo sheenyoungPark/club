@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class BusinessService {
@@ -93,6 +94,10 @@ public class BusinessService {
     //아이템 정보 업데이트
     public void updateItem(BusinessItemBean businessItemBean){
         businessRepository.updateItem(businessItemBean);
+    }
+
+   public Map<String, String> getItemInfo(@Param("itemId") String itemId){
+        return businessRepository.getItemInfo(itemId);
     }
 
 }

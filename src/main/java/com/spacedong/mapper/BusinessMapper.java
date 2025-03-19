@@ -6,6 +6,7 @@ import com.spacedong.beans.ReservationBean;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Mapper
@@ -79,6 +80,12 @@ public interface BusinessMapper {
             "JOIN business b ON i.business_id = b.business_id " +
             "WHERE r.reservation_id = #{reservationId}")
     ReservationBean getReservationById(@Param("reservationId") int reservationId);
+
+    @Select("SELECT i.item_title, b.business_name " +
+            "FROM business_item i " +
+            "JOIN business b ON i.business_id = b.business_id " +
+            "WHERE i.item_id = #{itemId}")
+    Map<String, String> getItemInfo(@Param("itemId") String itemId);
 
 
 

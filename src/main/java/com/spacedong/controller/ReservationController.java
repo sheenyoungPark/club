@@ -140,17 +140,17 @@ public class ReservationController {
         reservation.setStart_time(startTime);
         reservation.setEnd_time(endTime);
         reservation.setTotal_price(totalPrice);
-        reservation.setStatus("PENDING"); // 초기 상태: 대기 중
+        reservation.setStatus("CONFIRMED"); // 초기 상태: 대기 중
         reservation.setCreated_at(new Date()); // 현재 시간
 
-        int reservationId = reservationService.createReservation(reservation);
 
-        if (reservationId > 0) {
+
+        reservationService.createReservation(reservation);
+        int reservationId = reservationService.getReservationId(reservation.getMember_id(), reservation.getItem_id(), reservation.getStart_time(),reservation.getReservation_date());
+
+
             return "redirect:/reservation/confirmation?reservation_id=" + reservationId;
-        } else {
-            model.addAttribute("error", "예약 생성에 실패했습니다.");
-            return "redirect:/business/item_info?item_id=" + itemId + "&error=reservation_failed";
-        }
+
     }
 
     // 예약 확인 페이지
@@ -158,6 +158,8 @@ public class ReservationController {
     public String reservationConfirmation(
             @RequestParam("reservation_id") int reservationId,
             Model model) {
+
+        System.out.println("Res" + reservationId);
 
         // 로그인 확인
         if (loginMember.getMember_id() == null) {
@@ -167,8 +169,12 @@ public class ReservationController {
         // 예약 정보 가져오기
         ReservationBean reservation = reservationService.getReservationById(reservationId);
 
+        System.out.println(reservation.getReservation_id());
+        System.out.println(reservation.getMember_id());
+
+
         if (reservation == null || !reservation.getMember_id().equals(loginMember.getMember_id())) {
-            return "redirect:/member/mypage";
+            return "redirect:/member/memberinfo";
         }
 
         // 아이템 정보 가져오기
@@ -188,8 +194,15 @@ public class ReservationController {
             return "redirect:/member/login";
         }
 
+
+
+
         // 예약 목록 가져오기
         List<ReservationBean> reservations = reservationService.getReservationsByMemberId(loginMember.getMember_id());
+
+        for (ReservationBean r : reservations){
+            System.out.println(r.getItem_title());
+        }
 
         model.addAttribute("reservations", reservations);
 
@@ -210,7 +223,7 @@ public class ReservationController {
         ReservationBean reservation = reservationService.getReservationById(reservationId);
 
         if (reservation == null || !reservation.getMember_id().equals(loginMember.getMember_id())) {
-            return "redirect:/member/mypage";
+            return "redirect:/member/memberinfo";
         }
 
         // 예약 취소 (상태 변경)
