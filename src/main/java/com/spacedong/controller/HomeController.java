@@ -30,7 +30,7 @@ public class HomeController {
         for (ClubBean c : clubCount){
             System.out.println("id : " + c.getClub_id() + "name" + c.getClub_name());
         }
-        model.addAttribute("categortCount", categoryCount);
+        model.addAttribute("categoryCount", categoryCount);
         model.addAttribute("clubCount", clubCount);
 
 

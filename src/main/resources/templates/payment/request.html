@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>결제 요청</title>
+  <script src="https://js.tosspayments.com/v1/payment"></script>
+</head>
+<body>
+<h2>결제 요청</h2>
+<p>결제 금액: <span th:text="${amount}"></span>원</p>
+<button id="payButton">결제하기</button>
+
+<script>
+  document.getElementById("payButton").addEventListener("click", function () {
+    var clientKey = "test_ck_DnyRpQWGrN5BYwJnKKbyVKwv1M9E"; // 🔹 클라이언트 키 확인
+    var orderId = "[[${orderId}]]";
+    var orderName = "[[${orderName}]]";
+    var amount = "[[${amount}]]";
+    var successUrl = "[[${successUrl}]]";
+    var failUrl = "[[${failUrl}]]";
+
+    var tossPayments = TossPayments(clientKey);
+    tossPayments.requestPayment("카드", {
+      amount: amount,
+      orderId: orderId,
+      orderName: orderName,
+      successUrl: successUrl,
+      failUrl: failUrl
+    }).catch(function (error) {
+      alert("결제 요청 실패: " + error.message);
+    });
+  });
+</script>
+</body>
+</html>

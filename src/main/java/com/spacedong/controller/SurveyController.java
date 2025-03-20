@@ -240,6 +240,7 @@ public class SurveyController {
         if(loginMember.isLogin()==true){
             memberService.savePersonality(member_personality, loginMember.getMember_id());
             model.addAttribute("check", true);
+            loginMember.setMember_personality(member_personality);
             return "survey/save_success";
         }else{
             session.setAttribute("member_personality", member_personality);

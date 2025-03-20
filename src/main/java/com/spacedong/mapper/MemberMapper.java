@@ -59,8 +59,9 @@ public interface MemberMapper {
     void updatePassword(@Param("member_id") String memberId, @Param("newPassword") String newPassword);
 
 
-    @Update("update member set member_personality=#{member_personality} where member_id = #{member_id}")
-    public void savePersonality(@Param("member_personality") int member_personality, @Param("member_id") String member_id);
+    // 🔹 회원 성격 유형 업데이트 (member_personality 변경)
+    @Update("UPDATE member SET member_personality = #{personality} WHERE member_id = #{memberId}")
+    void savePersonality(@Param("personality") int personality, @Param("memberId") String memberId);
 
     @Delete("DELETE FROM member WHERE member_id = #{member_id}")
     void deleteMember(String member_id);
@@ -78,7 +79,7 @@ public interface MemberMapper {
     @Select("SELECT * FROM member_board WHERE board_writer_id = #{memberId} ORDER BY create_date DESC")
     List<BoardBean> getUserPosts(String memberId);
 
-    @Select("SELECT member_id, member_pw, member_nickname, member_phone, member_email, member_profile, member_address " +
+    @Select("SELECT * " +
             "FROM member " +
             "WHERE member_id = #{memberId}")
     MemberBean selectMemberById(String memberId);

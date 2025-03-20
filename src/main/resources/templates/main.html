@@ -44,23 +44,95 @@
   </div>
 </div>
 
-
+<!--추천 카테고리-->
 <section class="categories">
   <h2>추천 카테고리</h2>
   <div class="category-icons">
-    <!-- count 리스트의 항목들을 최대 5개까지만 순서대로 표시 -->
-    <div class="category" th:each="category, iterStat : ${categortCount}" th:if="${iterStat.index < 5}">
-      <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category.category_type})}'|">
-        <!-- 기존 이미지 경로를 사용하거나 동적으로 처리할 수 있습니다 -->
-        <img th:src="@{'/sources/picture/' + ${category.category_type} + '.png'}"
-             th:alt="${category.category_type} + ' 아이콘'"
-             onerror="this.src='/sources/picture/default.png'">
-      </button>
-      <span class="category-name" th:text="${category.category_type}">카테고리명</span>
-    </div>
+    <!-- ✅ 로그인하지 않았거나 member_personality가 0일 경우 기존 추천 카테고리 유지 -->
+    <th:block th:if="${loginMember.isLogin == false || loginMember.member_personality == 0}">
+      <div class="category" th:each="category, iterStat : ${categoryCount}" th:if="${iterStat.index < 5}">
+        <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category.category_type})}'|">
+          <img th:src="@{'/sources/picture/' + ${category.category_type} + '.png'}"
+               th:alt="${category.category_type} + ' 아이콘'"
+               onerror="this.src='/sources/picture/default.png'">
+        </button>
+        <span class="category-name" th:text="${category.category_type}">카테고리명</span>
+      </div>
+    </th:block>
+
+    <!-- ✅ 로그인한 상태에서 member_personality 값에 따라 맞춤 추천 -->
+    <th:block th:if="${loginMember.isLogin != false && loginMember.member_personality > 0}">
+      <th:block th:switch="${loginMember.member_personality}">
+        <!-- 🔹 탐험가 (1) -->
+        <th:block th:case="1">
+          <th:block th:with="categories=${'아웃도어,스포츠관람,자동차,게임,댄스'.split(',')}">
+            <div class="category" th:each="category : ${categories}">
+              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
+                <img th:src="@{'/sources/picture/' + ${category} + '.png'}"
+                     th:alt="${category} + ' 아이콘'"
+                     onerror="this.src='/sources/picture/default.png'">
+              </button>
+              <span class="category-name" th:text="${category}">카테고리명</span>
+            </div>
+          </th:block>
+        </th:block>
+
+        <!-- 🔹 관리자 (2) -->
+        <th:block th:case="2">
+          <th:block th:with="categories=${'운동,요리,자기계발,봉사활동,업종'.split(',')}">
+            <div class="category" th:each="category : ${categories}">
+              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
+                <img th:src="@{'/sources/picture/' + ${category} + '.png'}"
+                     th:alt="${category} + ' 아이콘'"
+                     onerror="this.src='/sources/picture/default.png'">
+              </button>
+              <span class="category-name" th:text="${category}">카테고리명</span>
+            </div>
+          </th:block>
+        </th:block>
+
+        <!-- 🔹 교류가 (3) -->
+        <th:block th:case="3">
+          <th:block th:with="categories=${'사교,언어,문화,반려동물,음악'.split(',')}">
+            <div class="category" th:each="category : ${categories}">
+              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
+                <img th:src="@{'/sources/picture/' + ${category} + '.png'}"
+                     th:alt="${category} + ' 아이콘'"
+                     onerror="this.src='/sources/picture/default.png'">
+              </button>
+              <span class="category-name" th:text="${category}">카테고리명</span>
+            </div>
+          </th:block>
+        </th:block>
+
+        <!-- 🔹 분석가 (4) -->
+        <th:block th:case="4">
+          <th:block th:with="categories=${'인문학,공예,사진,스포츠관람'.split(',')}">
+            <div class="category" th:each="category : ${categories}">
+              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
+                <img th:src="@{'/sources/picture/' + ${category} + '.png'}"
+                     th:alt="${category} + ' 아이콘'"
+                     onerror="this.src='/sources/picture/default.png'">
+              </button>
+              <span class="category-name" th:text="${category}">카테고리명</span>
+            </div>
+          </th:block>
+        </th:block>
+
+        <!-- 기본값 (예외 처리) -->
+        <th:block th:case="*">
+          <p>회원님의 성격 유형을 설정해주세요!</p>
+        </th:block>
+      </th:block>
+    </th:block>
   </div>
 </section>
 
+
+
+
+
+<!--인기 동호회-->
 <section class="recommended-clubs" id="recommended-clubs">
   <h2>인기 동호회</h2>
   <div class="club-container">
@@ -86,7 +158,6 @@
     </button>
   </div>
 </section>
-
 
 <!-- 하단 정보바 -->
 <a th:href="@{/admin/login}">관리자페이지</a>

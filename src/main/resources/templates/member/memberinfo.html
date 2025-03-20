@@ -42,6 +42,17 @@
         <div class="profile-phone">휴대폰 : <span th:text="${maskedPhone}"></span></div>
         <div class="profile-email">이메일 : <span th:text="${loginMember.member_email}"></span></div>
         <div class="profile-address">주소 : <span th:text="${loginMember.member_address}"></span></div>
+        <div class="profile-address">
+            성격유형 :
+            <span th:if="${loginMember.member_personality == 0}">유형검사를 해주세요</span>
+            <span th:if="${loginMember.member_personality == 1}">탐험가</span>
+            <span th:if="${loginMember.member_personality == 2}">교류가</span>
+            <span th:if="${loginMember.member_personality == 3}">분석가</span>
+            <span th:if="${loginMember.member_personality == 4}">관리자</span>
+        </div>
+
+        <div class="profile-address">포인트 : <span th:text="${loginMember.member_point}"></span>
+            <button class="charge-button" onclick="location.href='/payment/charge'">충전하기</button></div>
 
         <div class="extra-actions">
             <a th:href="@{/member/edit}" class="button">회원정보 관리</a>
@@ -113,5 +124,6 @@
 </script>
 
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<script th:src="@{/js/top.js}"></script>
 </body>
 </html>
