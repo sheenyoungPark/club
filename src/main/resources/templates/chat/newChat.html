@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>새 채팅</title>
+  <!-- 추가: Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- 추가: Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    .search-item {
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+    .search-item:hover {
+      background-color: #f5f5f5;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-type-badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+    }
+    .member-badge {
+      background-color: #e3f2fd;
+      color: #0d6efd;
+    }
+    .business-badge {
+      background-color: #fff3cd;
+      color: #ffc107;
+    }
+    .admin-badge {
+      background-color: #f8d7da;
+      color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container mt-4">
+  <div class="row mb-3">
+    <div class="col">
+      <h2>새 채팅</h2>
+    </div>
+    <div class="col-auto">
+      <a th:href="@{/chat/view/rooms}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> 채팅 목록으로
+      </a>
+    </div>
+  </div>
+
+  <!-- 검색 영역 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="input-group mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="이름으로 검색...">
+        <button id="searchBtn" class="btn btn-primary" type="button">
+          <i class="fas fa-search"></i> 검색
+        </button>
+      </div>
+
+      <ul class="nav nav-tabs" id="userTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">모든 사용자</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="member-tab" data-bs-toggle="tab" data-bs-target="#member" type="button" role="tab">일반 회원</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="business-tab" data-bs-toggle="tab" data-bs-target="#business" type="button" role="tab">판매자</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab">관리자</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="club-tab" data-bs-toggle="tab" data-bs-target="#club" type="button" role="tab">동호회</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 검색 결과 -->
+  <div class="tab-content" id="userTabContent">
+    <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+      <div class="card">
+        <div class="list-group list-group-flush" id="allSearchResults">
+          <!-- 검색 결과가 여기에 표시됩니다 -->
+          <div class="list-group-item text-center text-muted py-5">
+            <i class="fas fa-search fa-3x mb-3"></i>
+            <p>사용자를 검색해 보세요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="member" role="tabpanel" aria-labelledby="member-tab">
+      <div class="card">
+        <div class="list-group list-group-flush" id="memberSearchResults">
+          <!-- 회원 검색 결과가 여기에 표시됩니다 -->
+          <div class="list-group-item text-center text-muted py-5">
+            <i class="fas fa-users fa-3x mb-3"></i>
+            <p>일반 회원을 검색해 보세요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="business" role="tabpanel" aria-labelledby="business-tab">
+      <div class="card">
+        <div class="list-group list-group-flush" id="businessSearchResults">
+          <!-- 판매자 검색 결과가 여기에 표시됩니다 -->
+          <div class="list-group-item text-center text-muted py-5">
+            <i class="fas fa-store fa-3x mb-3"></i>
+            <p>판매자를 검색해 보세요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="admin" role="tabpanel" aria-labelledby="admin-tab">
+      <div class="card">
+        <div class="list-group list-group-flush" id="adminSearchResults">
+          <!-- 관리자 검색 결과가 여기에 표시됩니다 -->
+          <div class="list-group-item text-center text-muted py-5">
+            <i class="fas fa-user-shield fa-3x mb-3"></i>
+            <p>관리자를 검색해 보세요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="club" role="tabpanel" aria-labelledby="club-tab">
+      <div class="card">
+        <div class="list-group list-group-flush" id="clubSearchResults">
+          <!-- 동호회 검색 결과가 여기에 표시됩니다 -->
+          <div class="list-group-item text-center text-muted py-5">
+            <i class="fas fa-users-cog fa-3x mb-3"></i>
+            <p>동호회를 검색해 보세요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+  // 사용자 정보
+  const userId = [[${loginMember.member_id}]];
+
+  // 페이지 로드 시 실행
+  document.addEventListener('DOMContentLoaded', function() {
+    // 이벤트 리스너 설정
+    document.getElementById('searchBtn').addEventListener('click', search);
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        search();
+      }
+    });
+
+    // 검색 결과에 대한 전역 이벤트 리스너 추가
+    document.addEventListener('click', function(e) {
+      let target = e.target;
+
+      // 클릭된 요소 또는 그 부모가 search-item 클래스를 가지고 있는지 확인
+      while (target && !target.classList?.contains('search-item')) {
+        target = target.parentElement;
+      }
+
+      // search-item 클래스를 가진 요소를 찾았다면
+      if (target && target.dataset) {
+        if (target.dataset.userId && target.dataset.userType) {
+          // 개인 채팅 시작
+          startPersonalChat(target.dataset.userId, target.dataset.userType);
+        } else if (target.dataset.clubId && target.dataset.clubName) {
+          // 클럽 채팅 시작
+          startClubChat(target.dataset.clubId, target.dataset.clubName);
+        }
+      }
+    });
+  });
+
+  // 검색 기능
+  function search() {
+    const keyword = document.getElementById('searchInput').value.trim();
+    if (keyword) {
+      // 로딩 상태 표시
+      document.getElementById('allSearchResults').innerHTML = '<div class="list-group-item text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+      document.getElementById('memberSearchResults').innerHTML = '<div class="list-group-item text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+      document.getElementById('businessSearchResults').innerHTML = '<div class="list-group-item text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+      document.getElementById('adminSearchResults').innerHTML = '<div class="list-group-item text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+      document.getElementById('clubSearchResults').innerHTML = '<div class="list-group-item text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+      // 사용자 검색 API 호출
+      fetch('/chat/users/search?keyword=' + encodeURIComponent(keyword))
+              .then(response => response.json())
+              .then(users => {
+                displaySearchResults(users);
+              })
+              .catch(error => {
+                console.error('사용자 검색 실패: ', error);
+                document.getElementById('allSearchResults').innerHTML = '<div class="list-group-item text-center text-danger py-3">검색 중 오류가 발생했습니다.</div>';
+                document.getElementById('memberSearchResults').innerHTML = '<div class="list-group-item text-center text-danger py-3">검색 중 오류가 발생했습니다.</div>';
+                document.getElementById('businessSearchResults').innerHTML = '<div class="list-group-item text-center text-danger py-3">검색 중 오류가 발생했습니다.</div>';
+                document.getElementById('adminSearchResults').innerHTML = '<div class="list-group-item text-center text-danger py-3">검색 중 오류가 발생했습니다.</div>';
+              });
+
+      // 클럽 검색 API 호출
+      fetch('/chat/clubs/search?keyword=' + encodeURIComponent(keyword))
+              .then(response => response.json())
+              .then(clubs => {
+                displayClubSearchResults(clubs);
+              })
+              .catch(error => {
+                console.error('클럽 검색 실패: ', error);
+                document.getElementById('clubSearchResults').innerHTML = '<div class="list-group-item text-center text-danger py-3">검색 중 오류가 발생했습니다.</div>';
+              });
+    }
+  }
+
+  // 검색 결과 표시
+  function displaySearchResults(users) {
+    const allResults = document.getElementById('allSearchResults');
+    const memberResults = document.getElementById('memberSearchResults');
+    const businessResults = document.getElementById('businessSearchResults');
+    const adminResults = document.getElementById('adminSearchResults');
+
+    // 결과 초기화
+    allResults.innerHTML = '';
+    memberResults.innerHTML = '';
+    businessResults.innerHTML = '';
+    adminResults.innerHTML = '';
+
+    if (users.length === 0) {
+      allResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색 결과가 없습니다.</div>';
+      memberResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색 결과가 없습니다.</div>';
+      businessResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색 결과가 없습니다.</div>';
+      adminResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색 결과가 없습니다.</div>';
+    } else {
+      const memberList = [];
+      const businessList = [];
+      const adminList = [];
+
+      // 중복 제거를 위한 사용자 ID 세트
+      const processedUserIds = new Set();
+
+      users.forEach(user => {
+        // 자기 자신은 제외
+        if (user.user_id === userId) {
+          return;
+        }
+
+        // 이미 처리된 사용자 ID는 건너뛰기 (중복 제거)
+        if (processedUserIds.has(user.user_id)) {
+          return;
+        }
+
+        // 처리된 사용자 ID 목록에 추가
+        processedUserIds.add(user.user_id);
+
+        const userElement = createUserElement(user);
+
+        // '모든 사용자' 탭에 추가
+        allResults.appendChild(userElement.cloneNode(true));
+
+        // 사용자 타입에 따라 분류
+        if (user.user_type === 'MEMBER') {
+          memberList.push(userElement.cloneNode(true));
+        } else if (user.user_type === 'BUSINESS') {
+          businessList.push(userElement.cloneNode(true));
+        } else if (user.user_type === 'ADMIN') {
+          adminList.push(userElement.cloneNode(true));
+        }
+      });
+
+      // 회원 목록
+      if (memberList.length === 0) {
+        memberResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색된 일반 회원이 없습니다.</div>';
+      } else {
+        memberList.forEach(element => memberResults.appendChild(element));
+      }
+
+      // 판매자 목록
+      if (businessList.length === 0) {
+        businessResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색된 판매자가 없습니다.</div>';
+      } else {
+        businessList.forEach(element => businessResults.appendChild(element));
+      }
+
+      // 관리자 목록
+      if (adminList.length === 0) {
+        adminResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색된 관리자가 없습니다.</div>';
+      } else {
+        adminList.forEach(element => adminResults.appendChild(element));
+      }
+    }
+  }
+
+  // 클럽 검색 결과 표시
+  function displayClubSearchResults(clubs) {
+    const clubResults = document.getElementById('clubSearchResults');
+    clubResults.innerHTML = '';
+
+    if (clubs.length === 0) {
+      clubResults.innerHTML = '<div class="list-group-item text-center text-muted py-3">검색된 동호회가 없습니다.</div>';
+    } else {
+      clubs.forEach(club => {
+        const clubElement = document.createElement('div');
+        clubElement.className = 'list-group-item search-item';
+        // 데이터 속성 추가
+        clubElement.dataset.clubId = club.clubId;
+        clubElement.dataset.clubName = club.clubName;
+
+        clubElement.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <img src="${club.clubProfile || '/images/default-club.png'}" alt="Club" class="user-avatar">
+                            </div>
+                            <div>
+                                <h6 class="mb-0">${club.clubName}</h6>
+                                <small class="text-muted">${club.clubCategory} | ${club.clubRegion}</small>
+                            </div>
+                        </div>
+                    `;
+
+        clubResults.appendChild(clubElement);
+      });
+    }
+  }
+
+  // 사용자 요소 생성
+  function createUserElement(user) {
+    const userElement = document.createElement('div');
+    userElement.className = 'list-group-item search-item';
+
+    // 데이터 속성 추가
+    userElement.dataset.userId = user.user_id;
+    userElement.dataset.userType = user.user_type;
+
+    console.log("Creating element for:", user.user_type + ', ' + user.user_id);
+
+    // 사용자 타입에 따른 배지 스타일
+    let badgeClass = '';
+    let userTypeText = '';
+
+    if (user.user_type === 'MEMBER') {
+      badgeClass = 'member-badge';
+      userTypeText = '일반 회원';
+    } else if (user.user_type === 'BUSINESS') {
+      badgeClass = 'business-badge';
+      userTypeText = '판매자';
+    } else if (user.user_type === 'ADMIN') {
+      badgeClass = 'admin-badge';
+      userTypeText = '관리자';
+    }
+
+    userElement.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <img src="${user.profileImage || '/images/default-user.png'}" alt="User" class="user-avatar">
+                    </div>
+                    <div>
+                        <h6 class="mb-0">${user.nickname || user.user_id}</h6>
+                        <span class="user-type-badge ${badgeClass}">${userTypeText}</span>
+                    </div>
+                </div>
+            `;
+
+    return userElement;
+  }
+
+  // 개인 채팅 시작
+  function startPersonalChat(targetUserId, targetUserType) {
+    // 개인 채팅방 생성/조회 API 호출
+    console.log('Starting chat with: ' + targetUserId + ', ' + targetUserType);
+    fetch('/chat/room/personal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        targetUserId: targetUserId,
+        targetUserType: targetUserType
+      })
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+              }
+              return response.json();
+            })
+            .then(room => {
+              // 채팅방으로 이동
+              console.log('Created/Found room:', room);
+              window.location.href = `/chat/view/room/${room.room_id}`;
+            })
+            .catch(error => {
+              console.error('채팅방 생성 실패: ', error);
+              alert('채팅방 생성에 실패했습니다. 다시 시도해주세요.');
+            });
+  }
+
+  // 클럽 채팅 시작
+  function startClubChat(clubId, clubName) {
+    // 클럽 채팅방 생성/조회 API 호출
+    console.log('Starting club chat with: ' + clubId + ', ' + clubName);
+    fetch('/chat/room/club', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        clubId: clubId
+      })
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+              }
+              return response.json();
+            })
+            .then(room => {
+              // 채팅방으로 이동
+              console.log('Created/Found club room:', room);
+              window.location.href = `/chat/view/room/${room.room_id}`;
+            })
+            .catch(error => {
+              console.error('채팅방 생성 실패: ', error);
+              alert('채팅방 생성에 실패했습니다. 다시 시도해주세요.');
+            });
+  }
+</script>
+</body>
+</html>

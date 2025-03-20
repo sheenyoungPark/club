@@ -1,73 +1,238 @@
-// src/main/java/com/spacedong/service/ChatService.java
 package com.spacedong.service;
 
-import com.spacedong.beans.ChatMessage;
-import com.spacedong.beans.ChatRoom;
-import com.spacedong.documents.ChatMessageDocument;
-import com.spacedong.documents.ChatReadDocument;
-import com.spacedong.documents.ChatRoomDocument;
-import com.spacedong.repository.ChatMessageRepository;
-import com.spacedong.repository.ChatReadRepository;
-import com.spacedong.repository.ChatRoomRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.spacedong.repository.AdminRepository;
+import com.spacedong.repository.BusinessRepository;
+import com.spacedong.repository.MemberRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.spacedong.beans.ChatMessageBean;
+import com.spacedong.beans.ChatParticipantBean;
+import com.spacedong.beans.ChatReadReceiptBean;
+import com.spacedong.beans.ChatRoomBean;
+import com.spacedong.beans.ChatUserBean;
+import com.spacedong.beans.ClubBean;
+import com.spacedong.beans.MemberBean;
+import com.spacedong.repository.ChatRepository;
+
+import jakarta.annotation.Resource;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class ChatService {
 
-    private final ChatMessageRepository chatMessageRepository;
-    private final ChatRoomRepository chatRoomRepository;
-    private final ChatReadRepository chatReadRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final SimpMessagingTemplate messagingTemplate;
+    @Resource(name = "loginMember")
+    private MemberBean loginMember;
 
-    /**
-     * 채팅 메시지 전송
-     * @param message 전송할 채팅 메시지
-     * @return 저장된 메시지
-     */
-    public ChatMessage sendMessage(ChatMessage message) {
-        // 타임스탬프 설정
-        message.setTimestamp(LocalDateTime.now());
+    @Autowired
+    private ChatRepository chatRepository;
 
-        // 채팅방 타입 확인
-        Optional<ChatRoomDocument> roomOpt = chatRoomRepository.findById(message.getChatRoomId());
-        if (roomOpt.isEmpty()) {
-            throw new RuntimeException("채팅방을 찾을 수 없습니다.");
+    @Autowired
+    private ClubService clubService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
+    private BusinessRepository businessRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
+    // 채팅방 관련 메서드
+    @Transactional
+    public ChatRoomBean createChatRoom(ChatRoomBean chatRoom, List<ChatParticipantBean> participants) {
+        // For personal chats, make sure club_id is null
+        if ("PERSONAL".equals(chatRoom.getRoom_type())) {
+            chatRoom.setClub_id(null);
         }
 
-        ChatRoomDocument room = roomOpt.get();
+        chatRepository.createChatRoom(chatRoom);
 
-        // 클럽 채팅은 바로 MongoDB에 저장, 개인 채팅은 Redis에 임시 저장
-        if ("CLUB".equals(room.getRoomType())) {
-            saveChatMessageToMongoDB(message);
-        } else {
-            saveMessageToRedis(message);
+        for (ChatParticipantBean participant : participants) {
+            participant.setRoom_id(chatRoom.getRoom_id());
+            chatRepository.addParticipant(participant);
         }
 
-        // 채팅방 최신 메시지 정보 업데이트
-        updateChatRoomLastMessage(message);
+        return chatRoom;
+    }
 
-        // WebSocket으로 메시지 전송
-        if ("CLUB".equals(room.getRoomType())) {
-            // 클럽 채팅은 토픽으로 전송
-            messagingTemplate.convertAndSend("/topic/club/" + message.getChatRoomId(), message);
+    public ChatRoomBean getChatRoomById(Long roomId) {
+        return chatRepository.getChatRoomById(roomId);
+    }
+
+    public List<ChatRoomBean> getChatRoomsByUserId(String userId) {
+        return chatRepository.getChatRoomsByUserId(userId);
+    }
+
+    public List<ChatRoomBean> getChatRoomsByClubId(Long clubId) {
+        return chatRepository.getChatRoomsByClubId(clubId);
+    }
+
+    // 현재 로그인한 사용자의 채팅방 목록 조회
+    public List<ChatRoomBean> getMyRooms() {
+        if(loginMember != null && loginMember.isLogin()) {
+            return getChatRoomsByUserId(loginMember.getMember_id());
+        }
+        return new ArrayList<>();
+    }
+
+    // 1:1 채팅방 찾기 또는 생성하기
+    @Transactional
+    public ChatRoomBean getOrCreatePersonalChatRoom(String userId1, String userType1, String userId2, String userType2) {
+        ChatRoomBean chatRoom = chatRepository.getPersonalChatRoom(userId1, userType1, userId2, userType2);
+
+
+        if (chatRoom == null) {
+            chatRoom = new ChatRoomBean();
+            chatRoom.setRoom_type("PERSONAL");
+
+            // 상대방의 닉네임이나 이름을 가져와서 채팅방 이름으로 설정
+            String roomName = "";
+            if(userType2.equals("MEMBER")) {
+                //회원의 정보 가져오기
+                MemberBean mem1 = memberRepository.getMemberById(userId1);
+                MemberBean mem2 = memberRepository.getMemberById(userId2);
+
+                roomName = mem1.getMember_nickname() + mem2.getMember_nickname()+"의 대화";
+                // 모든 채팅 참여자 정보 조회 후 설정할 수도 있음
+            } else if(userType2.equals("BUSINESS")) {
+
+
+                roomName = "판매자와의 대화";
+            } else if(userType2.equals("ADMIN")) {
+                roomName = "관리자와의 대화";
+            }
+
+            chatRoom.setRoom_name(roomName);
+
+            chatRepository.createChatRoom(chatRoom);
+
+            // 참여자 추가
+            ChatParticipantBean participant1 = new ChatParticipantBean();
+            participant1.setRoom_id(chatRoom.getRoom_id());
+            participant1.setUser_id(userId1);
+            participant1.setUser_type(userType1);
+            chatRepository.addParticipant(participant1);
+
+            ChatParticipantBean participant2 = new ChatParticipantBean();
+            participant2.setRoom_id(chatRoom.getRoom_id());
+            participant2.setUser_id(userId2);
+            participant2.setUser_type(userType2);
+            chatRepository.addParticipant(participant2);
+        }
+
+        return chatRoom;
+    }
+
+    // 클럽 채팅방 찾기 또는 생성하기
+    @Transactional
+    public ChatRoomBean getOrCreateClubChatRoom(int clubId, String userId, String userType) {
+        // 클럽 존재 여부 확인 (클럽 회원인지도 확인)
+        boolean isClubMember = false;
+        if (userType.equals("MEMBER")) {
+            // 클럽 회원인지 확인
+            isClubMember = clubService.isMemberOfClub(clubId, userId);
+        } else if (userType.equals("ADMIN")) {
+            // 관리자는 항상 모든 클럽에 접근 가능
+            isClubMember = true;
+        }
+
+        if (!isClubMember) {
+            throw new RuntimeException("클럽 회원이 아닙니다.");
+        }
+
+        // 클럽 정보 가져오기
+        ClubBean clubInfo = clubService.oneClubInfo(clubId);
+        if (clubInfo == null) {
+            throw new RuntimeException("존재하지 않는 클럽입니다.");
+        }
+
+        // 클럽 채팅방 찾기
+        List<ChatRoomBean> clubRooms = chatRepository.getChatRoomsByClubId((long)clubId);
+        ChatRoomBean chatRoom = null;
+
+        // 기존 클럽 채팅방이 있는 경우
+        if (!clubRooms.isEmpty()) {
+            chatRoom = clubRooms.get(0);
+
+            // 사용자가 이미 참여자인지 확인
+            ChatParticipantBean participant = chatRepository.getParticipant(chatRoom.getRoom_id(), userId);
+            if (participant == null) {
+                // 참여자가 아니면 추가
+                participant = new ChatParticipantBean();
+                participant.setRoom_id(chatRoom.getRoom_id());
+                participant.setUser_id(userId);
+                participant.setUser_type(userType);
+                chatRepository.addParticipant(participant);
+            }
         } else {
-            // 개인 채팅은 개별 사용자에게 전송
-            for (String participantId : room.getParticipants()) {
+            // 채팅방이 없으면 생성
+            chatRoom = new ChatRoomBean();
+            chatRoom.setRoom_type("CLUB");
+            chatRoom.setClub_id(clubId);
+
+            // 클럽 이름 설정
+            chatRoom.setRoom_name(clubInfo.getClub_name() + " 채팅");
+
+            chatRepository.createChatRoom(chatRoom);
+
+            // 현재 사용자를 참여자로 추가
+            ChatParticipantBean participant = new ChatParticipantBean();
+            participant.setRoom_id(chatRoom.getRoom_id());
+            participant.setUser_id(userId);
+            participant.setUser_type(userType);
+            chatRepository.addParticipant(participant);
+
+            // 모든 클럽 회원을 참여자로 추가
+            List<ChatUserBean> clubMembers = chatRepository.getClubMembers((long)clubId);
+            for (ChatUserBean member : clubMembers) {
+                if (!member.getUser_id().equals(userId)) {  // 현재 사용자는 이미 추가했으므로 제외
+                    ChatParticipantBean memberParticipant = new ChatParticipantBean();
+                    memberParticipant.setRoom_id(chatRoom.getRoom_id());
+                    memberParticipant.setUser_id(member.getUser_id());
+                    memberParticipant.setUser_type("MEMBER");
+                    chatRepository.addParticipant(memberParticipant);
+                }
+            }
+        }
+
+        return chatRoom;
+    }
+
+    // 채팅 참여자 관련 메서드
+    public List<ChatParticipantBean> getRoomParticipants(Long roomId) {
+        return chatRepository.getParticipantsByRoomId(roomId);
+    }
+
+    public int leaveRoom(Long roomId, String userId) {
+        return chatRepository.leaveRoom(roomId, userId);
+    }
+
+    // 메시지 관련 메서드
+    @Transactional
+    public ChatMessageBean sendMessage(ChatMessageBean message) {
+        chatRepository.sendMessage(message);
+
+        // 실시간으로 메시지 전송
+        messagingTemplate.convertAndSend("/topic/room/" + message.getRoomId(), message);
+
+        // 참여자들에게 알림 전송
+        List<ChatParticipantBean> participants = chatRepository.getParticipantsByRoomId(message.getRoomId());
+        for (ChatParticipantBean participant : participants) {
+            if (!participant.getUser_id().equals(message.getSenderId())) {
                 messagingTemplate.convertAndSendToUser(
-                        participantId,
-                        "/queue/messages",
+                        participant.getUser_id(),
+                        "/queue/notifications",
                         message
                 );
             }
@@ -76,325 +241,74 @@ public class ChatService {
         return message;
     }
 
-    /**
-     * Redis에 메시지 임시 저장
-     */
-    private void saveMessageToRedis(ChatMessage message) {
-        String redisKey = "chat:messages:" + message.getChatRoomId();
-        redisTemplate.opsForList().rightPush(redisKey, message);
+    public List<ChatMessageBean> getRoomMessages(Long roomId, String currentUserId) {
+        return chatRepository.getMessagesByRoomId(roomId, currentUserId);
     }
 
-    /**
-     * MongoDB에 채팅 메시지 저장
-     */
-    private ChatMessageDocument saveChatMessageToMongoDB(ChatMessage message) {
-        ChatMessageDocument document = ChatMessageDocument.builder()
-                .id(UUID.randomUUID().toString())
-                .chatRoomId(message.getChatRoomId())
-                .senderId(message.getSenderId())
-                .senderName(message.getSenderName())
-                .senderType(message.getSenderType())
-                .message(message.getMessage())
-                .messageType(message.getMessageType())
-                .attachmentUrl(message.getAttachmentUrl())
-                .timestamp(message.getTimestamp())
-                .read(message.isRead())
-                .build();
+    // 읽음 확인 관련 메서드
+    @Transactional
+    public void markAsRead(Long roomId, String userId, Long messageId) {
+        // 이미 읽은 메시지인지 확인
+        if (!chatRepository.checkIfRead(messageId, userId)) {
+            ChatReadReceiptBean readReceipt = new ChatReadReceiptBean();
+            readReceipt.setMessageId(messageId);
+            readReceipt.setReaderId(userId);
 
-        return chatMessageRepository.save(document);
-    }
+            chatRepository.markAsRead(readReceipt);
+            chatRepository.incrementReadCount(messageId);
 
-    /**
-     * 채팅방의 마지막 메시지 정보 업데이트
-     */
-    private void updateChatRoomLastMessage(ChatMessage message) {
-        Optional<ChatRoomDocument> roomOpt = chatRoomRepository.findById(message.getChatRoomId());
+            // 참가자의 마지막으로 읽은 메시지 ID 업데이트
+            chatRepository.updateLastReadMsgId(roomId, userId, messageId);
 
-        if (roomOpt.isPresent()) {
-            ChatRoomDocument room = roomOpt.get();
-            room.setLastMessage(message.getMessage());
-            room.setLastMessageTime(message.getTimestamp());
-            chatRoomRepository.save(room);
-        }
-    }
-
-    /**
-     * 10분마다 Redis의 임시 메시지를 MongoDB로 이동
-     */
-    @Scheduled(fixedRate = 600000) // 10분마다
-    public void moveMessagesFromRedisToMongoDB() {
-        Set<String> keys = redisTemplate.keys("chat:messages:*");
-        if (keys == null || keys.isEmpty()) {
-            return;
-        }
-
-        log.info("Scheduled job: Moving messages from Redis to MongoDB. Keys found: {}", keys.size());
-
-        for (String key : keys) {
-            Long size = redisTemplate.opsForList().size(key);
-            if (size == null || size == 0) {
-                continue;
-            }
-
-            List<Object> messages = redisTemplate.opsForList().range(key, 0, size - 1);
-            for (Object obj : messages) {
-                if (obj instanceof ChatMessage) {
-                    saveChatMessageToMongoDB((ChatMessage) obj);
-                }
-            }
-
-            // Redis에서 처리된 메시지 삭제
-            redisTemplate.delete(key);
-        }
-    }
-
-    /**
-     * 새 채팅방 생성
-     */
-    public ChatRoom createChatRoom(String roomName, String roomType, List<String> participants, Integer clubId) {
-        if (participants.size() < 2) {
-            throw new IllegalArgumentException("채팅방에는 최소 2명의 참여자가 필요합니다.");
-        }
-
-        // 개인 채팅방 중복 확인 (같은 참여자들의 채팅방이 이미 있는지 확인)
-        if ("PERSONAL".equals(roomType) && participants.size() == 2) {
-            Optional<ChatRoomDocument> existingRoom =
-                    chatRoomRepository.findPersonalChatRoomByParticipants(participants, participants.size());
-
-            if (existingRoom.isPresent()) {
-                return convertToChatRoom(existingRoom.get());
-            }
-        }
-
-        // 클럽 채팅방 중복 확인
-        if ("CLUB".equals(roomType) && clubId != null) {
-            Optional<ChatRoomDocument> existingRoom =
-                    chatRoomRepository.findByRoomTypeAndClubId(roomType, clubId);
-
-            if (existingRoom.isPresent()) {
-                return convertToChatRoom(existingRoom.get());
-            }
-        }
-
-        // 새 채팅방 생성
-        ChatRoomDocument roomDoc = ChatRoomDocument.builder()
-                .id(UUID.randomUUID().toString())
-                .roomName(roomName)
-                .roomType(roomType)
-                .participants(participants)
-                .createdAt(LocalDateTime.now())
-                .lastMessageTime(LocalDateTime.now())
-                .clubId(clubId)
-                .build();
-
-        ChatRoomDocument savedRoom = chatRoomRepository.save(roomDoc);
-
-        return convertToChatRoom(savedRoom);
-    }
-
-    /**
-     * 특정 사용자의 모든 채팅방 목록 조회
-     */
-    public List<ChatRoom> getChatRoomsByUserId(String userId) {
-        List<ChatRoomDocument> rooms =
-                chatRoomRepository.findByParticipantsContainingOrderByLastMessageTimeDesc(userId);
-
-        return rooms.stream()
-                .map(room -> {
-                    ChatRoom chatRoom = convertToChatRoom(room);
-
-                    // 안 읽은 메시지 수 계산
-                    long unreadCount = chatMessageRepository.countByChatRoomIdAndReadFalseAndSenderIdNot(
-                            room.getId(), userId);
-                    chatRoom.setUnreadCount((int) unreadCount);
-
-                    return chatRoom;
-                })
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 특정 사용자의 특정 유형 채팅방 목록 조회
-     */
-    public List<ChatRoom> getChatRoomsByType(String userId, String roomType) {
-        List<ChatRoomDocument> rooms =
-                chatRoomRepository.findByRoomTypeAndParticipantsContainingOrderByLastMessageTimeDesc(roomType, userId);
-
-        return rooms.stream()
-                .map(room -> {
-                    ChatRoom chatRoom = convertToChatRoom(room);
-
-                    // 안 읽은 메시지 수 계산
-                    long unreadCount = chatMessageRepository.countByChatRoomIdAndReadFalseAndSenderIdNot(
-                            room.getId(), userId);
-                    chatRoom.setUnreadCount((int) unreadCount);
-
-                    return chatRoom;
-                })
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 채팅방 ID로 채팅방 조회
-     */
-    public ChatRoom getChatRoomById(String roomId, String userId) {
-        Optional<ChatRoomDocument> roomOpt = chatRoomRepository.findById(roomId);
-        if (roomOpt.isEmpty()) {
-            return null;
-        }
-
-        ChatRoomDocument room = roomOpt.get();
-        ChatRoom chatRoom = convertToChatRoom(room);
-
-        // 안 읽은 메시지 수 계산
-        long unreadCount = chatMessageRepository.countByChatRoomIdAndReadFalseAndSenderIdNot(roomId, userId);
-        chatRoom.setUnreadCount((int) unreadCount);
-
-        return chatRoom;
-    }
-
-    /**
-     * 채팅방 참여자 목록 업데이트
-     */
-    public void updateChatRoomParticipants(String roomId, List<String> participants) {
-        Optional<ChatRoomDocument> roomOpt = chatRoomRepository.findById(roomId);
-        if (roomOpt.isPresent()) {
-            ChatRoomDocument room = roomOpt.get();
-            room.setParticipants(participants);
-            chatRoomRepository.save(room);
-        }
-    }
-
-    /**
-     * 특정 채팅방의 메시지 이력 조회
-     */
-    public List<ChatMessage> getChatHistory(String roomId) {
-        // MongoDB에서 저장된 메시지 조회
-        List<ChatMessageDocument> mongoMessages =
-                chatMessageRepository.findByChatRoomIdOrderByTimestampAsc(roomId);
-
-        List<ChatMessage> messages = mongoMessages.stream()
-                .map(this::convertToChatMessage)
-                .collect(Collectors.toList());
-
-        // 개인 채팅방인 경우 Redis의 임시 메시지도 조회
-        Optional<ChatRoomDocument> roomOpt = chatRoomRepository.findById(roomId);
-        if (roomOpt.isPresent() && "PERSONAL".equals(roomOpt.get().getRoomType())) {
-            String redisKey = "chat:messages:" + roomId;
-            Long size = redisTemplate.opsForList().size(redisKey);
-
-            if (size != null && size > 0) {
-                List<Object> redisMessages = redisTemplate.opsForList().range(redisKey, 0, size - 1);
-
-                for (Object obj : redisMessages) {
-                    if (obj instanceof ChatMessage) {
-                        messages.add((ChatMessage) obj);
-                    }
-                }
-            }
-        }
-
-        // 시간순 정렬
-        messages.sort(Comparator.comparing(ChatMessage::getTimestamp));
-
-        return messages;
-    }
-
-    /**
-     * 메시지 읽음 상태 업데이트
-     */
-    public void markMessagesAsRead(String roomId, String userId) {
-        // 읽지 않은 메시지 찾기
-        List<ChatMessageDocument> unreadMessages = chatMessageRepository.findUnreadMessages(roomId, userId);
-
-        // 메시지 읽음 상태 업데이트
-        for (ChatMessageDocument message : unreadMessages) {
-            // 메시지 읽음 상태 변경
-            message.setRead(true);
-            chatMessageRepository.save(message);
-
-            // 읽음 기록 저장
-            ChatReadDocument readDoc = ChatReadDocument.builder()
-                    .id(UUID.randomUUID().toString())
-                    .messageId(message.getId())
-                    .readerId(userId)
-                    .readAt(LocalDateTime.now())
-                    .build();
-
-            // 이미 있는지 확인 후 저장
-            Optional<ChatReadDocument> existingRead =
-                    chatReadRepository.findByMessageIdAndReaderId(message.getId(), userId);
-
-            if (existingRead.isEmpty()) {
-                chatReadRepository.save(readDoc);
+            // 메시지 발신자에게 읽음 상태 알림
+            ChatMessageBean message = chatRepository.getMessageById(messageId);
+            if (message != null && !message.getSenderId().equals(userId)) {
+                messagingTemplate.convertAndSendToUser(
+                        message.getSenderId(),
+                        "/queue/read-receipts",
+                        message
+                );
             }
         }
     }
 
-    /**
-     * 사용자의 안 읽은 메시지 총 개수 조회
-     */
-    public int getUnreadMessageCount(String userId) {
-        // 사용자가 참여한 모든 채팅방에서 안 읽은 메시지 개수의 총합 계산
-        List<ChatRoom> chatRooms = getChatRoomsByUserId(userId);
-        return chatRooms.stream()
-                .mapToInt(ChatRoom::getUnreadCount)
-                .sum();
+    // 사용자 검색 관련 메서드
+    public List<ChatUserBean> searchUsers(String keyword) {
+        return chatRepository.searchUsers(keyword);
     }
 
-    /**
-     * 클럽 ID로 채팅방 조회
-     */
-    public ChatRoom getClubChatRoomByClubId(Integer clubId) {
-        Optional<ChatRoomDocument> roomOpt = chatRoomRepository.findByRoomTypeAndClubId("CLUB", clubId);
-        return roomOpt.map(this::convertToChatRoom).orElse(null);
+    public List<ChatUserBean> getClubMembers(Long clubId) {
+        return chatRepository.getClubMembers(clubId);
     }
 
-    /**
-     * 클럽 ID로 채팅방 조회 (없으면 생성)
-     */
-    public ChatRoom getOrCreateClubChatRoom(Integer clubId, String clubName, List<String> members) {
-        Optional<ChatRoomDocument> roomOpt =
-                chatRoomRepository.findByRoomTypeAndClubId("CLUB", clubId);
+    // 메시지 검색
+    public List<ChatMessageBean> searchMessages(Long roomId, String keyword) {
+        return chatRepository.searchMessages(roomId, keyword);
+    }
 
-        if (roomOpt.isPresent()) {
-            return convertToChatRoom(roomOpt.get());
-        } else {
-            return createChatRoom(clubName + " 채팅방", "CLUB", members, clubId);
+    // 클럽 검색
+    public List<Map<String, Object>> searchClubs(String keyword) {
+        List<ClubBean> clubs = clubService.searchClubs("name", keyword);
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        for (ClubBean club : clubs) {
+            Map<String, Object> clubMap = new HashMap<>();
+            clubMap.put("clubId", club.getClub_id());
+            clubMap.put("clubName", club.getClub_name());
+            clubMap.put("clubCategory", club.getClub_category());
+            clubMap.put("clubRegion", club.getClub_region());
+            clubMap.put("clubProfile", club.getClub_profile());
+
+            results.add(clubMap);
         }
+
+        return results;
     }
 
-    /**
-     * Document -> Bean 변환
-     */
-    private ChatRoom convertToChatRoom(ChatRoomDocument doc) {
-        return ChatRoom.builder()
-                .id(doc.getId())
-                .roomName(doc.getRoomName())
-                .roomType(doc.getRoomType())
-                .participants(doc.getParticipants())
-                .createdAt(doc.getCreatedAt())
-                .lastMessageTime(doc.getLastMessageTime())
-                .lastMessage(doc.getLastMessage())
-                .clubId(doc.getClubId())
-                .build();
-    }
-
-    /**
-     * Document -> Bean 변환
-     */
-    private ChatMessage convertToChatMessage(ChatMessageDocument doc) {
-        return ChatMessage.builder()
-                .id(doc.getId())
-                .chatRoomId(doc.getChatRoomId())
-                .senderId(doc.getSenderId())
-                .senderName(doc.getSenderName())
-                .senderType(doc.getSenderType())
-                .message(doc.getMessage())
-                .messageType(doc.getMessageType())
-                .attachmentUrl(doc.getAttachmentUrl())
-                .timestamp(doc.getTimestamp())
-                .read(doc.isRead())
-                .build();
+    // 채팅 시스템에 필요한 초기 설정
+    @Transactional
+    public void setupChatSystem() {
+        // 테이블이나 시퀀스가 없는 경우 생성하는 로직을 추가할 수 있음
+        // 이 메소드는 애플리케이션 시작 시 호출할 수 있음
     }
 }
