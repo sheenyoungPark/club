@@ -98,9 +98,17 @@ public interface ClubMapper {
     ClubBean searchClubName(String club_name);
 
 
-    // ✅ 특정 동호회의 게시글 목록 조회
-    @Select("SELECT * FROM club_board WHERE club_id = #{club_id} ORDER BY create_date DESC")
+    // ✅ 특정 동호회의 게시글 목록 조회 (작성자 닉네임 추가)
+    @Select("SELECT cb.board_id, cb.club_id, cb.board_title, cb.board_text, cb.board_writer_id, " +
+            "cb.board_img, cb.board_view, cb.board_like, cb.create_date, cb.update_date, " +
+            "m.member_nickname AS board_writer_nickname " +  // ✅ 작성자 닉네임 추가
+            "FROM club_board cb " +
+            "JOIN member m ON cb.board_writer_id = m.member_id " +  // ✅ 작성자의 닉네임 가져오기
+            "WHERE cb.club_id = #{club_id} " +
+            "ORDER BY cb.create_date DESC")
     List<ClubBoardBean> getBoardListByClubId(@Param("club_id") int club_id);
+
+
 
     /**
      * ✅ 게시글 작성 (board_id 자동 증가)

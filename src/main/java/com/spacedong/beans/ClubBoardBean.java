@@ -16,6 +16,17 @@ public class ClubBoardBean {
 	private LocalDateTime create_date;
 	private LocalDateTime update_date;
 
+	private String board_writer_nickname; // ✅ 작성자 닉네임 추가
+
+	// Getter & Setter 추가
+	public String getBoard_writer_nickname() {
+		return board_writer_nickname;
+	}
+
+	public void setBoard_writer_nickname(String board_writer_nickname) {
+		this.board_writer_nickname = board_writer_nickname;
+	}
+
 	public int getBoard_id() {
 		return board_id;
 	}

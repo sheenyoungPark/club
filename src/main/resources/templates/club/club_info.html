@@ -174,6 +174,8 @@
                                     <img th:unless="${board.board_img != null}"
                                          th:src="@{/sources/picture/기본이미지.png}"
                                          alt="기본 이미지">
+                                    <!-- ✅ 작성자 닉네임 추가 (이미지 아래) -->
+                                    <p class="post-author" th:text="'작성자: ' + ${board.board_writer_nickname}">작성자 닉네임</p>
                                 </div>
 
                                 <!-- 게시글 제목 및 날짜 -->
@@ -184,7 +186,7 @@
 
                                 <!-- ✅ 삭제 버튼 추가 (조건에 따라 보이도록 설정) -->
                                 <div class="post-actions">
-                                    <form th:if="${member_role == 'master' or (member_role == 'normal' and board.board_writer_id == loginMember.member_id)}"
+                                    <form th:if="${member_role == 'master' || (member_role == 'normal' && board.board_writer_id == loginMember.member_id)}"
                                           th:action="@{/club/board_delete}" method="post"
                                           onsubmit="return confirm('정말로 삭제하시겠습니까?');">
                                         <input type="hidden" name="board_id" th:value="${board.board_id}">
