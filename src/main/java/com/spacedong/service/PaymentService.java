@@ -27,5 +27,9 @@ public class PaymentService {
         paymentRepository.businessAddPoint(amount, business_id);
     }
 
+    public void businessCanclePoint(@Param("amount")int amount, @Param("business_id")String business_id){
+        paymentRepository.businessCanclePoint(amount, business_id);
+    }
+
 
 }

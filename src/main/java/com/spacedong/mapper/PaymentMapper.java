@@ -18,4 +18,9 @@ public interface PaymentMapper {
     @Update("UPDATE business set business_point = business_point + #{amount} where business_id = #{business_id}")
     void businessAddPoint(@Param("amount")int amount, @Param("business_id")String business_id);
 
+    @Update("UPDATE business set business_point = business_point - #{amount} where business_id = #{business_id}")
+    void businessCanclePoint(@Param("amount")int amount, @Param("business_id")String business_id);
+
+
+
 }
