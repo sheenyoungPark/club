@@ -23,7 +23,7 @@
     <h3 class="category-title">아이템 카테고리</h3>
     <ul class="category-list">
       <li class="category-item" th:classappend="${param.category_type == null || param.category_type == 'all' ? 'active' : ''}">
-        <a th:href="@{/category/category_info(category_type='all')}">
+        <a th:href="@{/business/category_info(category_type='all')}">
           <img th:src="@{/sources/picture/전체보기.png}" alt="전체보기 아이콘" class="category-icon">
           전체보기
         </a>
@@ -31,7 +31,7 @@
       <li th:each="category : ${categoryList}"
           class="category-item"
           th:classappend="${category.category_type == param.category_type ? 'active' : ''}">
-        <a th:href="@{/category/category_info(category_type=${category.category_type})}">
+        <a th:href="@{/business/category_info(category_type=${category.category_type})}">
           <img th:src="@{/sources/picture/{categoryType}.png(categoryType=${category.category_type})}"
                alt="카테고리 아이콘"
                class="category-icon">
@@ -46,12 +46,12 @@
     <h3 class="category-title">세부 카테고리</h3>
     <ul class="sub-category-list">
       <li class="sub-category-item" th:classappend="${param.sub_category == null || param.sub_category == 'all' ? 'active' : ''}">
-        <a th:href="@{/category/category_info(category_type=${param.category_type ?: 'all'}, sub_category='all')}">전체보기</a>
+        <a th:href="@{/business/category_info(category_type=${param.category_type ?: 'all'}, sub_category='all')}">전체보기</a>
       </li>
       <li th:if="${list != null}" th:each="subCategory : ${list}"
           class="sub-category-item"
           th:classappend="${subCategory.category_name == param.sub_category ? 'active' : ''}">
-        <a th:href="@{/category/category_info(category_type=${param.category_type ?: 'all'}, sub_category=${subCategory.category_name})}"
+        <a th:href="@{/business/category_info(category_type=${param.category_type ?: 'all'}, sub_category=${subCategory.category_name})}"
            th:text="${subCategory.category_name}"></a>
       </li>
     </ul>

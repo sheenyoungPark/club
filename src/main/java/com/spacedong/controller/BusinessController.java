@@ -1,24 +1,19 @@
 package com.spacedong.controller;
 
-import com.spacedong.beans.BoardBean;
-import com.spacedong.beans.BusinessBean;
-import com.spacedong.beans.CategoryBean;
-import com.spacedong.beans.BusinessItemBean;
-import com.spacedong.beans.MemberBean;
+import com.spacedong.beans.*;
 import com.spacedong.service.BusinessService;
 import com.spacedong.service.CategoryService;
+import com.spacedong.service.ItemService;
 import com.spacedong.validator.BusinessValidator;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.io.File;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Collections;
-import org.springframework.http.MediaType;
 import java.util.UUID;
-import org.apache.ibatis.annotations.Param;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/business")
@@ -45,6 +38,9 @@ public class BusinessController {
 
     @Autowired
     private BusinessService businessService;
+
+    @Autowired
+    private ItemService itemService;
 
     @Autowired
     private BusinessValidator businessValidator;
@@ -289,6 +285,39 @@ public class BusinessController {
         return "business/item_category"; // 대여 카테고리를 보여줄 HTML 페이지
     }
 
+    @GetMapping("/category_info")
+    public String getCategoryInfo(
+            @RequestParam(value = "category_type", required = false, defaultValue = "all") String categoryType,
+            @RequestParam(value = "sub_category", required = false, defaultValue = "all") String subCategory,
+            Model model) {
+
+        // 메인 카테고리 정보 가져오기
+        List<CategoryBean> categoryList = categoryService.categoryType();
+        model.addAttribute("categoryList", categoryList);
+
+        // 서브 카테고리 정보 가져오기 (categoryType이 null이면 "all"로 처리)
+        categoryType = (categoryType != null) ? categoryType : "all";
+        List<CategoryBean> subCategoryList = categoryService.categoryInfo(categoryType);
+        model.addAttribute("list", subCategoryList);
+
+        // 선택한 서브 카테고리에 해당하는 동호회 목록 가져오기
+        List<BusinessItemBean> itemList ;
+
+
+        if("all".equals(categoryType)) {
+            itemList = itemService.getAllItems();
+        }
+        else if ("all".equals(subCategory)) {
+            itemList = itemService.getItemByCategory(categoryType);
+        } else {
+            itemList = itemService.getItemBySubCategory(subCategory);
+        }
+
+        model.addAttribute("itemList", itemList);
+
+        return "business/item_category";
+    }
+
     //아이템 등록
     @GetMapping("create_item")
     public String create_item( @ModelAttribute BusinessItemBean businessItemBean, Model model){
@@ -311,11 +340,7 @@ public class BusinessController {
         return categoryService.categoryInfo(categoryType);
     }
 
-    @GetMapping("/category_info")
-    public String getItemCategoryInfo(Model model) {
 
-        return "business/category";
-    }
     // ✅ 아이템 등록 처리 + 이미지 저장
     @PostMapping("create_item_pro")
     public String create_item_pro(@Valid BusinessItemBean businessItemBean,
@@ -407,7 +432,7 @@ public class BusinessController {
         // 예약된 시간 목록 가져오기 (오늘 날짜 기준)
         List<Integer> reservedTimes = businessService.getReservedTimesByItemIdAndDate(
                 itemId,
-                java.time.LocalDate.now().toString()
+                LocalDate.now().toString()
         );
 
         model.addAttribute("item", item);
