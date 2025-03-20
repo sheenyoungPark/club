@@ -235,9 +235,18 @@ public class ReservationController {
         // 예약 정보 가져오기
         ReservationBean reservation = reservationService.getReservationById(reservationId);
 
+        BusinessItemBean businessItemBean = businessService.getItemById(reservation.getItem_id());
+
         if (reservation == null || !reservation.getMember_id().equals(loginMember.getMember_id())) {
             return "redirect:/member/memberinfo";
         }
+        //취소시 비지니스 금액 차감(회수)
+        paymentService.businessCanclePoint(reservation.getTotal_price(), businessItemBean.getBusiness_id());
+
+        paymentService.updateMemberPoint(loginMember.getMember_id(),reservation.getTotal_price());
+
+        loginMember.setMember_point(loginMember.getMember_point() + reservation.getTotal_price());
+        //==============================
 
         // 예약 취소 (상태 변경)
         reservation.setStatus("CANCELLED");
