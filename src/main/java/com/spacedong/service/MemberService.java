@@ -209,8 +209,9 @@ public class MemberService {
 	}
 
 	public List<ClubBean> getJoinedClubs(String memberId) {
-		return memberRepository.getJoinedClubs(memberId);
+		return memberRepository.getJoinedClubsWithRole(memberId);
 	}
+
 
 	public List<BoardBean> getUserPosts(String memberId) {
 		return memberRepository.getUserPosts(memberId);

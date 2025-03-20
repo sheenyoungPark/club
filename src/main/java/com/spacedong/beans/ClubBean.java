@@ -34,6 +34,15 @@ public class ClubBean {
 
 	private String club_region;
 
+	private String member_role;
+
+	public String getMember_role() {
+		return member_role;
+	}
+
+	public void setMember_role(String member_role) {
+		this.member_role = member_role;
+	}
 	public String getClub_region() {
 		return club_region;
 	}

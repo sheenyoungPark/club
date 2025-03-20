@@ -80,8 +80,9 @@ public class MemberRepository {
 	public void updateMemberProfile(String memberId, String fileName) {
 		memberMapper.updateMemberProfile(memberId, fileName);
 	}
-	public List<ClubBean> getJoinedClubs(String memberId) {
-		return memberMapper.getJoinedClubs(memberId);
+
+	public List<ClubBean> getJoinedClubsWithRole(String memberId) {
+		return memberMapper.getJoinedClubsWithRole(memberId);
 	}
 
 	public List<BoardBean> getUserPosts(String memberId) {

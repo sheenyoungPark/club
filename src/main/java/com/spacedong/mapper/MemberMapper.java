@@ -70,10 +70,14 @@ public interface MemberMapper {
     @Update("UPDATE member SET member_profile = #{fileName} WHERE member_id = #{memberId}")
     void updateMemberProfile(@Param("memberId") String memberId, @Param("fileName") String fileName);
 
-    @Select("SELECT c.* FROM club c " +
-            "JOIN club_member cm ON c.club_id = cm.club_id " +
+    /** ✅ 가입한 클럽 목록 조회 (회장 여부 포함) */
+    @Select("SELECT c.club_id, c.club_name, " +
+            "       NVL(cm.member_role, 'normal') AS member_role " +
+            "FROM club c " +
+            "LEFT JOIN club_member cm ON c.club_id = cm.club_id " +
             "WHERE cm.member_id = #{memberId}")
-    List<ClubBean> getJoinedClubs(@Param("memberId") String memberId);
+    List<ClubBean> getJoinedClubsWithRole(String memberId);
+
 
     // 사용자가 작성한 게시글 조회
     @Select("SELECT * FROM member_board WHERE board_writer_id = #{memberId} ORDER BY create_date DESC")

@@ -70,7 +70,11 @@
         <div id="clubs-content" class="activity-content">
             <ul class="club-list">
                 <li th:each="club : ${joinedClubs}">
-                    <a th:href="@{/club/club_info(club_id=${club.club_id})}" th:text="${club.club_name}"></a>
+                    <a th:href="@{/club/club_info(club_id=${club.club_id})}">
+                        <!-- ✅ 내가 회장인 클럽이면 왕관 아이콘 추가 -->
+                        <span th:if="${club.member_role == 'master'}" class="crown-icon">👑</span>
+                        <span th:text="${club.club_name}"></span>
+                    </a>
                 </li>
                 <li th:if="${#lists.isEmpty(joinedClubs)}">가입한 클럽이 없습니다.</li>
             </ul>
@@ -79,18 +83,20 @@
             </div>
         </div>
 
-        <div class="reservation-button-container">
-            <a th:href="@{'/reservation/my-reservations'}" class="reservation-button">나의 예약 확인</a>
-        </div>
-
         <div id="posts-content" class="activity-content" style="display:none;">
-            <ul class="post-list">
+            <ul class="club-list post-list">
                 <li th:each="post : ${userPosts}">
-                    <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}" th:text="${post.board_title}"></a>
-                    <span th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
+                    <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}">
+                        <span th:text="${post.board_title}"></span>
+                        <span class="post-date" th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
+                    </a>
                 </li>
                 <li th:if="${#lists.isEmpty(userPosts)}">작성한 게시글이 없습니다.</li>
             </ul>
+        </div>
+
+        <div class="reservation-button-container">
+            <a th:href="@{'/reservation/my-reservations'}" class="reservation-button">나의 예약 확인</a>
         </div>
     </div>
 </div>
