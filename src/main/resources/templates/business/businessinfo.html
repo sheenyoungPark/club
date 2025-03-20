@@ -36,7 +36,8 @@
     <div class="profile-phone">전화번호 : <span th:text="${loginBusiness.business_phone}"></span></div>
     <div class="profile-address">주소 : <span th:text="${loginBusiness.business_address}"></span></div>
     <div class="profile-info">소개 : <span th:text="${loginBusiness.business_info}"></span></div>
-    <div class="profile-point">포인트 : <span th:text="${#numbers.formatInteger(loginBusiness.business_point, 3, 'COMMA')}"></span> P</div>
+    <div class="profile-point">포인트 : <span th:text="${#numbers.formatInteger(loginBusiness.business_point, 3, 'COMMA')}"></span>
+      P<button class="charge-button" onclick="location.href='/payment/businessexchange'">환전하기</button></div>
 
     <div class="extra-actions">
       <a th:href="@{/business/edit}" class="button">회원정보 관리</a>

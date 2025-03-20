@@ -51,8 +51,9 @@
             <span th:if="${loginMember.member_personality == 4}">관리자</span>
         </div>
 
-        <div class="profile-address">포인트 : <span th:text="${loginMember.member_point}"></span>
-            <button class="charge-button" onclick="location.href='/payment/charge'">충전하기</button></div>
+        <div class="profile-address">포인트 : <span th:text="${#numbers.formatInteger(loginMember.member_point, 3, 'COMMA')}"></span>
+             P<button class="charge-button" onclick="location.href='/payment/charge'">충전하기</button>
+            <button class="charge-button" onclick="location.href='/payment/memberexchange'">환전하기</button></div>
 
         <div class="extra-actions">
             <a th:href="@{/member/edit}" class="button">회원정보 관리</a>
