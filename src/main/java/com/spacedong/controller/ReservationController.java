@@ -4,6 +4,7 @@ import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.beans.ReservationBean;
 import com.spacedong.service.BusinessService;
+import com.spacedong.service.PaymentService;
 import com.spacedong.service.ReservationService;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
@@ -30,6 +31,9 @@ public class ReservationController {
 
     @Resource(name = "loginMember")
     private MemberBean loginMember;
+
+    @Autowired
+    private PaymentService paymentService;
 
     // 예약 가능 시간 확인 API
     @GetMapping("/check-availability")
@@ -131,6 +135,15 @@ public class ReservationController {
         // 총 가격 계산 (시간당 가격 * 예약 시간)
         int hours = endTime - startTime;
         int totalPrice = item.getItem_price() * hours;
+
+        if(loginMember.getMember_point() < totalPrice){
+            model.addAttribute("error", "포인트가 부족합니다.");
+            return "redirect:/business/item_info?item_id=" + itemId + "&error=enough_point";
+        }else {
+            paymentService.payMoney(totalPrice, loginMember.getMember_id());
+            loginMember.setMember_point(loginMember.getMember_point() - totalPrice);
+            paymentService.businessAddPoint(totalPrice, item.getBusiness_id());
+        }
 
         // 예약 생성
         ReservationBean reservation = new ReservationBean();
