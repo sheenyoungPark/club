@@ -83,11 +83,11 @@
             color: #495057;
         }
 
-        /* 예약 카드 스타일 */
+        /* 예약 카드 스타일 - 세로 크기 줄임 */
         .reservations-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 1.5rem;
+            gap: 1.2rem;
         }
 
         .reservation-card {
@@ -98,63 +98,57 @@
         }
 
         .reservation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
 
         .reservation-header {
-            padding: 1rem;
+            padding: 0.7rem 1rem;
             background-color: #f8f9fa;
             border-bottom: 1px solid #e9ecef;
         }
 
         .reservation-title {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             margin: 0;
             color: #343a40;
         }
 
         .business-name {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #6c757d;
             margin-top: 0.25rem;
         }
 
         .reservation-content {
-            padding: 1rem;
-        }
-
-        .reservation-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
         }
 
         .reservation-details {
             display: grid;
             grid-template-columns: auto 1fr;
-            gap: 0.5rem 1rem;
-            margin-bottom: 1rem;
+            gap: 0.4rem 1rem;
+            margin-bottom: 0.8rem;
         }
 
         .detail-label {
             font-weight: 600;
             color: #495057;
+            font-size: 0.9rem;
         }
 
         .detail-value {
             color: #212529;
+            font-size: 0.9rem;
         }
 
         .reservation-status {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
+            padding: 0.2rem 0.6rem;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            margin-top: 0.5rem;
+            margin-top: 0.4rem;
         }
 
         .status-pending {
@@ -180,16 +174,17 @@
         .reservation-footer {
             display: flex;
             justify-content: space-between;
-            padding: 1rem;
+            padding: 0.7rem 1rem;
             background-color: #f8f9fa;
             border-top: 1px solid #e9ecef;
         }
 
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.9rem;
             border: none;
             border-radius: 4px;
             font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: background-color 0.3s;
         }
@@ -245,6 +240,7 @@
             border-radius: 4px;
             text-decoration: none;
             transition: background-color 0.3s;
+            cursor: pointer;
         }
 
         .page-link:hover {
@@ -255,6 +251,14 @@
             background-color: #0d6efd;
             color: white;
             border-color: #0d6efd;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            cursor: not-allowed;
+            background-color: #fff;
+            border-color: #dee2e6;
         }
 
         /* 모달 스타일 */
@@ -396,14 +400,11 @@
     <!-- 예약 목록 -->
     <div class="reservations-grid" th:if="${not #lists.isEmpty(reservations)}">
         <!-- 예약 카드 반복 -->
-        <div class="reservation-card" th:each="reservation : ${reservations}">
+        <div class="reservation-card" th:each="reservation : ${reservations}" th:data-page="1">
             <div class="reservation-header">
-                <div class="reservation-header">
-                    <h3 class="reservation-title" th:text="${reservation.item_title}">아이템 제목</h3>
-                </div>
+                <h3 class="reservation-title" th:text="${reservation.item_title}">아이템 제목</h3>
             </div>
             <div class="reservation-content">
-
                 <div class="reservation-details">
                     <div class="detail-label">예약 날짜:</div>
                     <div class="detail-value" th:text="${#dates.format(reservation.reservation_date, 'yyyy년 MM월 dd일')}">2023년 07월 15일</div>
@@ -455,12 +456,14 @@
 
     <!-- 페이지네이션 -->
     <div class="pagination-container" th:if="${not #lists.isEmpty(reservations)}">
-        <ul class="pagination">
-            <!-- 페이지네이션 로직은 실제 데이터와 연동 필요 -->
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">다음</a></li>
+        <ul class="pagination" id="pagination">
+            <li class="page-item disabled" id="prev-page">
+                <a class="page-link" href="#">이전</a>
+            </li>
+            <!-- 페이지 번호는 JavaScript에서 동적으로 생성됩니다. 초기 페이지 번호는 지우고 스크립트로 생성 -->
+            <li class="page-item disabled" id="next-page">
+                <a class="page-link" href="#">다음</a>
+            </li>
         </ul>
     </div>
 </div>
@@ -492,23 +495,138 @@
 <script th:src="@{/js/top.js}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // 페이지네이션 변수 설정
+        const itemsPerPage = 5;
+        let currentPage = 1;
+        let filteredCards = [];
+
         // 필터링 기능
         const statusFilter = document.getElementById('statusFilter');
         const sortFilter = document.getElementById('sortFilter');
         const searchBox = document.getElementById('searchBox');
         const reservationCards = document.querySelectorAll('.reservation-card');
+        const paginationContainer = document.querySelector('.pagination-container');
+        const paginationElement = document.getElementById('pagination');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+
+        // 페이지네이션 초기화 함수
+        function initializePagination() {
+            // 모든 페이지 아이템 제거 (이전/다음 버튼 제외)
+            const pageItems = paginationElement.querySelectorAll('.page-item:not(#prev-page):not(#next-page)');
+            pageItems.forEach(item => item.remove());
+
+            // 필터링된 카드 기준으로 총 페이지 수 계산
+            const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+
+            // 페이지가 없으면 페이지네이션 숨김
+            if (totalPages === 0) {
+                paginationContainer.style.display = 'none';
+                return;
+            } else {
+                paginationContainer.style.display = 'flex';
+            }
+
+            // 페이지 번호 생성
+            for (let i = 1; i <= totalPages; i++) {
+                const pageItem = document.createElement('li');
+                pageItem.className = 'page-item';
+                pageItem.dataset.page = i;
+                if (i === currentPage) {
+                    pageItem.classList.add('active');
+                }
+
+                const pageLink = document.createElement('a');
+                pageLink.className = 'page-link';
+                pageLink.href = '#';
+                pageLink.textContent = i;
+                pageLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goToPage(i);
+                });
+
+                pageItem.appendChild(pageLink);
+                // 기존: prevPageBtn.after(pageItem); - 이 방식은 이전 버튼 뒤에 넣기 때문에 반대 순서가 됨
+                // 수정: 다음 버튼 앞에 넣어 오른쪽으로 순차적으로 늘어나도록 함
+                nextPageBtn.before(pageItem);
+            }
+
+            // 이전/다음 버튼 활성화 상태 설정
+            prevPageBtn.classList.toggle('disabled', currentPage === 1);
+            nextPageBtn.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+
+            // 이전/다음 버튼 이벤트
+            prevPageBtn.querySelector('.page-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            });
+
+            nextPageBtn.querySelector('.page-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    goToPage(currentPage + 1);
+                }
+            });
+        }
+
+        // 특정 페이지로 이동하는 함수
+        function goToPage(page) {
+            currentPage = page;
+
+            // 활성 페이지 표시 업데이트
+            const pageItems = paginationElement.querySelectorAll('.page-item');
+            pageItems.forEach(item => {
+                if (item.dataset.page == page) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // 이전/다음 버튼 상태 업데이트
+            const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+            prevPageBtn.classList.toggle('disabled', currentPage === 1);
+            nextPageBtn.classList.toggle('disabled', currentPage === totalPages);
+
+            // 카드 표시 업데이트
+            displayCards();
+        }
+
+        // 카드 표시 함수
+        function displayCards() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+
+            // 모든 카드 숨김
+            reservationCards.forEach(card => {
+                card.style.display = 'none';
+            });
+
+            // 현재 페이지에 해당하는 카드만 표시
+            for (let i = startIndex; i < endIndex && i < filteredCards.length; i++) {
+                filteredCards[i].style.display = 'block';
+            }
+        }
 
         // 필터와 검색 적용 함수
         function applyFilters() {
             const statusValue = statusFilter.value;
             const searchValue = searchBox.value.toLowerCase();
 
+            // 필터링된 카드 배열 초기화
+            filteredCards = [];
+
+            // 모든 카드에 필터 적용
             reservationCards.forEach(card => {
-                // 상태 필터링
-                const cardStatus = card.querySelector('.reservation-status').textContent.trim();
+                // 상태 필터링 (클래스 대신 텍스트 내용으로 확인)
+                const statusSpan = card.querySelector('.status-badge');
+                const cardStatus = statusSpan ? statusSpan.textContent.trim() : '';
+
                 const statusMatch = statusValue === 'all' ||
                     (statusValue === 'PENDING' && cardStatus === '대기중') ||
-                    (statusValue === 'CONFIRMED' && cardStatus === '확정됨') ||
+                    (statusValue === 'CONFIRMED' && cardStatus === '예약완료') ||
                     (statusValue === 'CANCELLED' && cardStatus === '취소됨') ||
                     (statusValue === 'COMPLETED' && cardStatus === '완료됨');
 
@@ -516,13 +634,16 @@
                 const cardTitle = card.querySelector('.reservation-title').textContent.toLowerCase();
                 const searchMatch = cardTitle.includes(searchValue);
 
-                // 필터 적용
+                // 필터 적용하여 배열에 추가
                 if (statusMatch && searchMatch) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
+                    filteredCards.push(card);
                 }
             });
+
+            // 필터링 후 페이지네이션 초기화 및 첫 페이지 표시
+            currentPage = 1;
+            initializePagination();
+            displayCards();
 
             // 필터 적용 후 보이는 카드가 없으면 메시지 표시
             checkNoVisibleCards();
@@ -536,8 +657,8 @@
 
             cards.sort((a, b) => {
                 if (sortValue === 'date_desc' || sortValue === 'date_asc') {
-                    const dateA = new Date(a.querySelector('.detail-value').textContent.trim());
-                    const dateB = new Date(b.querySelector('.detail-value').textContent.trim());
+                    const dateA = new Date(a.querySelectorAll('.detail-value')[0].textContent.trim().replace(/[년월일]/g, ''));
+                    const dateB = new Date(b.querySelectorAll('.detail-value')[0].textContent.trim().replace(/[년월일]/g, ''));
 
                     return sortValue === 'date_asc' ? dateA - dateB : dateB - dateA;
                 } else if (sortValue === 'price_desc' || sortValue === 'price_asc') {
@@ -552,28 +673,33 @@
 
             // 정렬된 카드를 다시 컨테이너에 추가
             cards.forEach(card => container.appendChild(card));
+
+            // 정렬 후 필터 다시 적용
+            applyFilters();
         }
 
         // 보이는 카드가 없는지 확인하고 메시지 표시
         function checkNoVisibleCards() {
-            const visibleCards = document.querySelectorAll('.reservation-card[style="display: block;"]');
-            const noReservations = document.querySelector('.no-reservations');
             const grid = document.querySelector('.reservations-grid');
 
-            if (visibleCards.length === 0 && reservationCards.length > 0) {
+            if (filteredCards.length === 0 && reservationCards.length > 0) {
                 // 동적으로 "필터링된 결과 없음" 메시지 생성
-                if (!document.querySelector('.no-filtered-results')) {
-                    const noResults = document.createElement('div');
+                let noResults = document.querySelector('.no-filtered-results');
+
+                if (!noResults) {
+                    noResults = document.createElement('div');
                     noResults.className = 'no-reservations no-filtered-results';
                     noResults.innerHTML = `
-              <i class="fas fa-filter"></i>
-              <h3>검색 결과가 없습니다</h3>
-              <p>다른 검색어나 필터 조건을 사용해보세요.</p>
-            `;
+                      <i class="fas fa-filter"></i>
+                      <h3>검색 결과가 없습니다</h3>
+                      <p>다른 검색어나 필터 조건을 사용해보세요.</p>
+                    `;
                     grid.after(noResults);
+                } else {
+                    noResults.style.display = 'block';
                 }
+
                 grid.style.display = 'none';
-                document.querySelector('.no-filtered-results').style.display = 'block';
             } else {
                 grid.style.display = 'grid';
                 const noResults = document.querySelector('.no-filtered-results');
@@ -590,14 +716,13 @@
 
         sortFilter.addEventListener('change', function() {
             applySorting();
-            applyFilters(); // 정렬 후 필터도 적용
         });
 
         searchBox.addEventListener('input', function() {
             applyFilters();
         });
 
-        // 초기 필터 적용
+        // 초기 필터 및 페이지네이션 적용
         if (reservationCards.length > 0) {
             applySorting();
             applyFilters();
