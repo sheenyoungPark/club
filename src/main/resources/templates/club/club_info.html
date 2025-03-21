@@ -115,12 +115,12 @@
             </div>
 
             <div class="club-stats">
-                <div class="stat-box">
+                <div th:if="${isMember}" class="stat-box">
                     <div class="stat-value" th:text="${club.club_point}">100</div>
                     <div class="stat-label">활동 포인트</div>
                 </div>
                 <!-- ✅ 모금하기 버튼 추가 -->
-                <a th:href="@{/club/donate(clubId=${club.club_id})}" class="stat-box">
+                <a th:if="${isMember}" th:href="@{/club/donate(clubId=${club.club_id})}" class="stat-box">
                     모금하기
                 </a>
                 <div class="stat-box">
@@ -204,7 +204,7 @@
                     </div>
                 </div>
                 <!-- ✅ 최근 포인트 모금 내역 추가 -->
-                <div class="club-info-container">
+                <div th:if="${isMember}" class="club-info-container">
                     <div class="club-info-box">
                         <h3 class="club-info-title">최근 포인트 모금 내역</h3>
                         <div class="club-info-content">
