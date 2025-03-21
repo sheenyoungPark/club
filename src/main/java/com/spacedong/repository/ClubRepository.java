@@ -2,14 +2,11 @@ package com.spacedong.repository;
 
 import java.util.List;
 
-import com.spacedong.beans.CategoryBean;
-import com.spacedong.beans.ClubBoardBean;
-import com.spacedong.beans.ClubMemberBean;
+import com.spacedong.beans.*;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.spacedong.beans.ClubBean;
 import com.spacedong.mapper.ClubMapper;
 
 @Repository
@@ -118,5 +115,23 @@ public class ClubRepository {
     public void deleteBoard(int board_id) {
         clubMapper.deleteBoard(board_id);
     }
+
+
+    public void saveDonationRecord(int clubId, String memberId, int donationPoint) {
+        clubMapper.saveDonationRecord(clubId, memberId, donationPoint);
+    }
+
+    public void decreaseMemberPoint(String memberId, int donationPoint) {
+        clubMapper.decreaseMemberPoint(memberId, donationPoint);
+    }
+
+    public void updateClubPoint(int clubId, int donationPoint) {
+        clubMapper.updateClubPoint(clubId, donationPoint);
+    }
+
+    public List<ClubDonationBean> getRecentDonations(int club_id) {
+        return clubMapper.getRecentDonations(club_id);
+    }
+
 
 }

@@ -47,6 +47,10 @@ public class ClubController {
 	public String club_info(@RequestParam("club_id") int club_id, Model model) {
 		ClubBean club = clubService.oneClubInfo(club_id);
 
+		List<ClubDonationBean> donationList = clubService.getRecentDonations(club_id);
+		model.addAttribute("donationList", donationList);
+
+
 		if (loginMember.getMember_id() != null) {
 			ClubMemberBean clubMemberBean = clubMemberService.getMemberInfo(club_id, loginMember.getMember_id());
 
@@ -440,6 +444,45 @@ public class ClubController {
 		System.out.println("🗑 게시글 삭제 완료 (board_id: " + boardId + ")");
 
 		// 6️⃣ 삭제 후 동호회 상세 페이지로 이동
+		return "redirect:/club/club_info?club_id=" + clubId;
+	}
+
+	@GetMapping("/donate")
+	public String donate(@RequestParam("clubId") int clubId, Model model) {
+		// 동호회 정보 불러오기
+		ClubBean clubBean = clubService.oneClubInfo(clubId);
+
+		// 로그인된 회원의 포인트 정보 불러오기
+		int memberPoint = loginMember.getMember_point();
+
+		model.addAttribute("club", clubBean);
+		model.addAttribute("memberPoint", memberPoint);
+
+		return "club/club_donate";
+	}
+
+	@PostMapping("/donate_pro")
+	public String donate_pro(@RequestParam("club_id") int clubId,
+							 @RequestParam("donation_point") int donationPoint,
+							 RedirectAttributes redirectAttributes) {
+
+		// 로그인된 회원 정보
+		String memberId = loginMember.getMember_id();
+		int currentPoint = loginMember.getMember_point();
+
+		// 포인트 부족한 경우 예외 처리
+		if (currentPoint < donationPoint) {
+			redirectAttributes.addFlashAttribute("error", "포인트가 부족합니다.");
+			return "redirect:/club/donate?clubId=" + clubId;
+		}
+
+		// 1️⃣ 클럽 포인트 증가 + 회원 포인트 차감
+		clubService.donateToClub(clubId, memberId, donationPoint);
+
+		// 2️⃣ 세션 반영
+		loginMember.setMember_point(currentPoint - donationPoint);
+
+		// 3️⃣ 리다이렉트
 		return "redirect:/club/club_info?club_id=" + clubId;
 	}
 }

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>모금하기</title>
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <style>
+    .donate-container {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    h2 {
+      text-align: center;
+      color: #5d4b8c;
+      margin-bottom: 30px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 15px 0;
+      font-size: 16px;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .info-value {
+      color: #333;
+    }
+
+    .donate-input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .donate-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #5d4b8c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .donate-btn:hover {
+      background-color: #4b3c75;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="donate-container">
+  <h2>모금하기</h2>
+
+  <form th:action="@{/club/donate_pro}" method="post">
+    <!-- ✅ hidden input 이름 통일 -->
+    <input type="hidden" name="club_id" th:value="${club.club_id}" />
+
+    <div class="info-row">
+      <div class="info-label">보유 포인트</div>
+      <div class="info-value" th:text="${memberPoint} + 'P'"></div>
+    </div>
+
+    <div class="info-row">
+      <div class="info-label">모금할 포인트</div>
+      <input type="number" name="donation_point" min="1" class="donate-input" placeholder="포인트 입력" required/>
+    </div>
+
+    <div class="info-row">
+      <div class="info-label">남은 포인트</div>
+      <div class="info-value" id="remainingPoint">-</div>
+    </div>
+
+    <button type="submit" class="donate-btn">모금하기</button>
+  </form>
+
+  <a th:href="@{/club/club_info(club_id=${club.club_id})}" class="back-link">← 돌아가기</a>
+</div>
+
+<!-- ✅ JavaScript에서 Thymeleaf 변수 정확하게 읽기 -->
+<script th:inline="javascript">
+  const donateInput = document.querySelector("input[name='donation_point']");
+  const remainingDisplay = document.getElementById("remainingPoint");
+  const memberPoint = [[${memberPoint}]];
+
+  donateInput.addEventListener("input", () => {
+    const amount = parseInt(donateInput.value);
+    const remaining = memberPoint - (isNaN(amount) ? 0 : amount);
+    remainingDisplay.textContent = remaining + 'P';
+  });
+</script>
+
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+</body>
+</html>

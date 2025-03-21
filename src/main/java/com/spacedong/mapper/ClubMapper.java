@@ -2,12 +2,8 @@ package com.spacedong.mapper;
 
 import java.util.List;
 
-import com.spacedong.beans.CategoryBean;
-import com.spacedong.beans.ClubBoardBean;
-import com.spacedong.beans.ClubMemberBean;
+import com.spacedong.beans.*;
 import org.apache.ibatis.annotations.*;
-
-import com.spacedong.beans.ClubBean;
 
 @Mapper
 public interface ClubMapper {
@@ -144,4 +140,41 @@ public interface ClubMapper {
     //동호회 정보 수정 (업데이트)
     @Update("update club set club_name = #{club_name}, club_info = #{club_info}, club_profile = #{club_profile} where club_id = #{club_id}")
     void editClub(ClubBean clubBean);
+
+    // ✅ 1. 후원 기록 저장 (club_donation 테이블에 INSERT)
+    @Insert("INSERT INTO club_donation (donation_id, club_id, member_id, donation_point, donation_date) " +
+            "VALUES (donation_id_seq.NEXTVAL, #{clubId}, #{memberId}, #{donationPoint}, SYSDATE)")
+    void saveDonationRecord(@Param("clubId") int clubId,
+                            @Param("memberId") String memberId,
+                            @Param("donationPoint") int donationPoint);
+
+    // ✅ 2. 멤버 포인트 차감
+    @Update("UPDATE member SET member_point = member_point - #{donationPoint} " +
+            "WHERE member_id = #{memberId}")
+    void decreaseMemberPoint(@Param("memberId") String memberId,
+                             @Param("donationPoint") int donationPoint);
+
+    // ✅ 3. 동호회 포인트 증가
+    @Update("UPDATE club SET club_point = club_point + #{donationPoint} " +
+            "WHERE club_id = #{clubId}")
+    void updateClubPoint(@Param("clubId") int clubId,
+                         @Param("donationPoint") int donationPoint);
+
+
+    @Select("""
+    SELECT d.donation_id,
+           d.club_id,
+           d.member_id,
+           d.donation_point,
+           d.donation_date,
+           m.member_nickname
+    FROM club_donation d
+    JOIN member m ON d.member_id = m.member_id
+    WHERE d.club_id = #{club_id}
+    ORDER BY d.donation_date DESC
+    FETCH FIRST 5 ROWS ONLY
+""")
+    List<ClubDonationBean> getRecentDonations(@Param("club_id") int club_id);
+
+
 }

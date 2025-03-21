@@ -184,4 +184,17 @@ public class ClubService {
     }
 
 
+    public void donateToClub(int clubId, String memberId, int donationPoint) {
+        clubRepository.saveDonationRecord(clubId, memberId, donationPoint);
+
+        clubRepository.decreaseMemberPoint(memberId, donationPoint);
+
+        clubRepository.updateClubPoint(clubId, donationPoint);
+    }
+
+    public List<ClubDonationBean> getRecentDonations(int club_id) {
+        return clubRepository.getRecentDonations(club_id);
+    }
+
+
 }
