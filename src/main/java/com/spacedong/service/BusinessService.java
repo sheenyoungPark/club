@@ -264,8 +264,8 @@ public class BusinessService {
     public void cancleReservation(int price, String business_id){
         businessRepository.cancleReservation(price, business_id);
     }
-    public void cancleReservationMP(int price, String business_id){
-        businessRepository.cancleReservationMP(price, business_id);
+    public void cancleReservationMP(int price, String member_id){
+        businessRepository.cancleReservationMP(price, member_id);
     }
     //===============================================================
 }

@@ -194,7 +194,7 @@ public interface BusinessMapper {
     @Update("update business set business_point = business_point - #{price} where business_id = #{business_id}")
     void cancleReservation(int price, String business_id);
 
-    @Update("update business set business_point = business_point + #{price} where business_id = #{business_id}")
-    void cancleReservationMP(int price, String business_id);
+    @Update("update Member set Member_point = Member_point + #{price} where member_id = #{member_id}")
+    void cancleReservationMP(int price, String member_id);
     //===============================================================
 }
