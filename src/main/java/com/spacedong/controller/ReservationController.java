@@ -153,7 +153,7 @@ public class ReservationController {
         reservation.setStart_time(startTime);
         reservation.setEnd_time(endTime);
         reservation.setTotal_price(totalPrice);
-        reservation.setStatus("CONFIRMED"); // 초기 상태: 대기 중
+        reservation.setStatus("PENDING"); // 초기 상태: 대기 중
         reservation.setCreated_at(new Date()); // 현재 시간
 
 

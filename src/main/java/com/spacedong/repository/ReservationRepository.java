@@ -3,6 +3,7 @@ package com.spacedong.repository;
 import com.spacedong.beans.ReservationBean;
 import com.spacedong.mapper.ReservationMapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -55,6 +56,20 @@ public class ReservationRepository {
     // 특정 날짜에 예약된 시간대 조회
     public List<ReservationBean> getReservedTimesByItemIdAndDate(@Param("itemId") String itemId, @Param("date") String date){
         return reservationMapper.getReservedTimesByItemIdAndDate(itemId, date) ;
+    }
+
+    // 특정 상품 ID와 상태에 해당하는 예약
+    public List<ReservationBean> getReservationsByItemIdsAndStatus(@Param("item_id")List<Integer> item_id,@Param("status") String status){
+        return reservationMapper.getReservationsByItemIdsAndStatus(item_id, status);
+    }
+    //예약 상태 변경
+    public void  updateReservationStatus(@Param("status") String status, @Param("reservation_id")int reservation_id){
+        reservationMapper.updateReservationStatus(status, reservation_id);
+    }
+
+    //대기중인 예약 수
+    public int countReservationsByItemIdsAndStatus(List<Integer> business_ids){
+        return reservationMapper.countReservationsByItemIdsAndStatus(business_ids);
     }
 
 }
