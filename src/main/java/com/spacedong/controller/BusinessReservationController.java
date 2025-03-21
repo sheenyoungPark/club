@@ -5,9 +5,8 @@ import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.beans.ReservationBean;
-import com.spacedong.service.ItemService;
-import com.spacedong.service.MemberService;
-import com.spacedong.service.ReservationService;
+import com.spacedong.mapper.BusinessMapper;
+import com.spacedong.service.*;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,6 +25,9 @@ import java.util.stream.Collectors;
 public class BusinessReservationController {
 
     @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
     private ReservationService reservationService;
 
     @Autowired
@@ -36,6 +38,10 @@ public class BusinessReservationController {
 
     @Resource(name = "loginBusiness")
     private BusinessBean loginBusiness;
+    @Autowired
+    private BusinessService businessService;
+    @Autowired
+    private BusinessMapper businessMapper;
 
     /**
      * 대기 중인 예약 목록 페이지를 표시합니다.
@@ -114,6 +120,9 @@ public class BusinessReservationController {
 
         // 예약 상태 변경 (대기중 -> 확정됨)
         reservationService.updateReservationStatus("CONFIRMED", reservationId);
+        paymentService.businessAddPoint(reservation.getTotal_price(), loginBusiness.getBusiness_id());
+
+        loginBusiness.setBusiness_point(loginBusiness.getBusiness_point() + reservation.getTotal_price());
 
         return "redirect:/business/reservations/waiting?success=approved";
     }
@@ -142,6 +151,10 @@ public class BusinessReservationController {
 
         // 예약 상태 변경 (대기중 -> 취소됨)
         reservationService.updateReservationStatus("CANCELLED", reservationId);
+
+//        businessService.cancleReservation(reservation.getTotal_price(), loginBusiness.getBusiness_id());
+//        loginBusiness.setBusiness_point(loginBusiness.getBusiness_point() - reservation.getTotal_price());
+        businessMapper.cancleReservationMP(reservation.getTotal_price(), loginBusiness.getBusiness_id());
 
         return "redirect:/business/reservations/waiting?success=declined";
     }

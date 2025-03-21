@@ -160,4 +160,13 @@ public class BusinessRepository {
     public BusinessBean selectBusinessById(String businessId) {
         return businessMapper.selectBusinessById(businessId);
     }
+
+    //사업자 취소시 포인트 차감==========================================
+    public void cancleReservation(int price, String business_id){
+        businessMapper.cancleReservation(price, business_id);
+    }
+    public void cancleReservationMP(int price, String business_id){
+        businessMapper.cancleReservationMP(price, business_id);
+    }
+    //===============================================================
 }

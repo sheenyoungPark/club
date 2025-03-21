@@ -88,5 +88,6 @@ public interface MemberMapper {
             "WHERE member_id = #{memberId}")
     MemberBean selectMemberById(String memberId);
 
-    //id로 멤버
+
+
 }

@@ -142,7 +142,7 @@ public class ReservationController {
         }else {
             paymentService.payMoney(totalPrice, loginMember.getMember_id());
             loginMember.setMember_point(loginMember.getMember_point() - totalPrice);
-            paymentService.businessAddPoint(totalPrice, item.getBusiness_id());
+         //   paymentService.businessAddPoint(totalPrice, item.getBusiness_id());
         }
 
         // 예약 생성
@@ -241,10 +241,8 @@ public class ReservationController {
             return "redirect:/member/memberinfo";
         }
         //취소시 비지니스 금액 차감(회수)
-        paymentService.businessCanclePoint(reservation.getTotal_price(), businessItemBean.getBusiness_id());
-
+//        paymentService.businessCanclePoint(reservation.getTotal_price(), businessItemBean.getBusiness_id());
         paymentService.updateMemberPoint(loginMember.getMember_id(),reservation.getTotal_price());
-
         loginMember.setMember_point(loginMember.getMember_point() + reservation.getTotal_price());
         //==============================
 
