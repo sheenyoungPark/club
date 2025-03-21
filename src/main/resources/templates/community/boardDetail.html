@@ -14,9 +14,11 @@
 <div class="post-container">
     <h2 class="post-title" th:text="${post.board_title}">게시글 제목</h2>
 
-    <!-- ✅ 삭제 버튼 -->
     <div th:if="${(loginMember != null and loginMember.member_id == post.board_writer_id)
             || (loginBusiness != null and loginBusiness.business_id == post.board_writer_id)}">
+        <!-- 수정 버튼 -->
+        <a th:href="@{/community/boardEdit(id=${post.board_id}, boardType=${boardType})}" class="edit-btn">수정</a>
+        <!-- 삭제 버튼 -->
         <form th:action="@{/community/board/delete}" method="post" style="display: inline;">
             <input type="hidden" name="board_id" th:value="${post.board_id}">
             <input type="hidden" name="boardType" th:value="${boardType}">
@@ -37,12 +39,14 @@
 
     <p class="post-content" th:text="${post.board_text}">게시글 내용</p>
 
-    <!-- ✅ 좋아요 버튼 추가 -->
+    <!-- 좋아요 버튼 -->
     <button type="button"
             th:attr="data-board-id=${post.board_id}, data-board-type=${boardType}"
             class="like-btn"
-            onclick="incrementLike(this)">
-        ❤️좋아요 <span th:text="${post.board_like}">0</span>
+            id="likeButton"
+            onclick="toggleLike(this)">
+        <span class="heart-icon">❤️</span>
+        좋아요 <span class="like-count" th:text="${post.board_like}">0</span>
     </button>
 
     <!-- 댓글 섹션 -->
@@ -135,6 +139,63 @@
                     likeCount.textContent = data.newLikeCount;
                 }
             }).catch(error => console.error("🚨 오류:", error));
+    }
+    // 페이지 로드 시 좋아요 상태 확인
+    document.addEventListener('DOMContentLoaded', function() {
+        // 게시글 정보
+        const boardId = /*[[${post.board_id}]]*/ 0;
+        const boardType = /*[[${boardType}]]*/ '';
+
+        // 로컬 스토리지에서 좋아요 상태 확인
+        const likeKey = `${boardType}_${boardId}_liked`;
+        const isLiked = localStorage.getItem(likeKey) === 'true';
+
+        // 좋아요 버튼 초기 상태 설정
+        const likeButton = document.getElementById('likeButton');
+        if (isLiked) {
+            likeButton.classList.add('active');
+            likeButton.querySelector('.heart-icon').classList.add('filled');
+        }
+    });
+
+    function toggleLike(button) {
+        const boardId = button.getAttribute("data-board-id");
+        const boardType = button.getAttribute("data-board-type");
+        const likeKey = `${boardType}_${boardId}_liked`;
+        const isLiked = localStorage.getItem(likeKey) === 'true';
+
+        // 현재 상태에 따라 액션 결정
+        const action = isLiked ? 'unlike' : 'like';
+
+        fetch(`/community/like?board_id=${boardId}&boardType=${boardType}&action=${action}`, {
+            method: "POST"
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 좋아요 카운트 업데이트
+                    button.querySelector(".like-count").textContent = data.newLikeCount;
+
+                    // 로컬 스토리지 상태 토글 및 버튼 스타일 변경
+                    if (isLiked) {
+                        localStorage.removeItem(likeKey);
+                        button.classList.remove('active');
+                        button.querySelector('.heart-icon').classList.remove('filled');
+                    } else {
+                        localStorage.setItem(likeKey, 'true');
+                        button.classList.add('active');
+                        button.querySelector('.heart-icon').classList.add('filled');
+
+                        // 좋아요 애니메이션 효과
+                        const heartIcon = button.querySelector('.heart-icon');
+                        heartIcon.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            heartIcon.style.transform = 'scale(1)';
+                        }, 300);
+                    }
+                }
+            })
+            .catch(error => console.error("🚨 오류:", error));
     }
 </script>
 </body>

@@ -99,12 +99,13 @@ public interface BoardMapper {
     @Update("UPDATE ${boardType}_board SET board_like = board_like + 1 WHERE board_id = #{boardId}")
     void incrementLike(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
+    /** ✅ 게시글 좋아요 수 조회 */
     @Select("SELECT board_like FROM ${boardType}_board WHERE board_id = #{boardId}")
     int getLikeCount(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
-
-
-
+    /** ✅ 게시글 좋아요 수 감소 */
+    @Update("UPDATE ${boardType}_board SET board_like = CASE WHEN board_like > 0 THEN board_like - 1 ELSE 0 END WHERE board_id = #{boardId}")
+    void decrementLike(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
     /** ✅ 댓글 조회 **/
     /** ✅ 댓글 조회 **/
@@ -153,4 +154,15 @@ public interface BoardMapper {
     /** ✅ 게시글 삭제 (ON DELETE CASCADE로 댓글 및 이미지도 자동 삭제됨) **/
     @Delete("DELETE FROM ${boardType}_board WHERE board_id = #{boardId}")
     void deleteBoard(@Param("boardType") String boardType, @Param("boardId") int boardId);
+
+    /** ✅ 게시글 수정 */
+    @Update("UPDATE ${boardType}_board SET board_title = #{board_title}, board_text = #{board_text}, update_date = CURRENT_TIMESTAMP WHERE board_id = #{boardId}")
+    void updateBoard(@Param("boardType") String boardType,
+                     @Param("boardId") int boardId,
+                     @Param("board_title") String board_title,
+                     @Param("board_text") String board_text);
+
+    /** ✅ 특정 게시글의 특정 이미지 삭제 */
+    @Delete("DELETE FROM ${boardType}_board_image WHERE board_id = #{boardId} AND img = #{fileName}")
+    void deleteBoardImage(@Param("boardType") String boardType, @Param("boardId") int boardId, @Param("fileName") String fileName);
 }

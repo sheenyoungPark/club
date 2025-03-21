@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>게시글 작성</title>
+    <title>한마디 작성</title>
     <link rel="stylesheet" th:href="@{/css/boardWrite.css}">
     <link rel="stylesheet" th:href="@{/css/top.css}">
     <link rel="stylesheet" th:href="@{/css/bottom.css}">
@@ -13,18 +13,20 @@
 <div th:insert="~{include/top_search :: top_search}"></div>
 
 <div class="write-container">
-    <h2 class="write-title">게시글 작성</h2>
+    <h2 class="write-title">한마디 작성</h2>
 
     <!-- 글쓰기 폼 -->
     <form th:action="@{/club/board_write_pro}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="club_id" th:value="${clubBoardBean.club_id}">
         <input type="hidden" name="board_writer_id" th:value="${loginMember.member_id}">
+        <!-- 내용 필드는 숨기고 빈 문자열로 설정 -->
+        <input type="hidden" id="board_text" name="board_text" value=" "> <!-- 공백 한 칸을 값으로 설정 -->
 
-        <label for="board_title">제목:</label>
-        <input type="text" id="board_title" name="board_title" class="input-field" placeholder="제목을 입력하세요" required>
+        <label for="board_title">한마디:</label>
+        <input type="text" id="board_title" name="board_title" class="input-field" placeholder="한마디를 입력하세요" required>
 
-        <label for="board_text">내용:</label>
-        <textarea id="board_text" name="board_text" class="input-field" placeholder="내용을 입력하세요" rows="6" required></textarea>
+        <!-- 내용 필드는 숨겨서 유지하되 빈 값으로 자동 설정 -->
+        <input type="hidden" name="board_text" value="">
 
         <!-- ✅ 이미지 업로드 (1개 제한) -->
         <label for="imageUpload">이미지 업로드:</label>

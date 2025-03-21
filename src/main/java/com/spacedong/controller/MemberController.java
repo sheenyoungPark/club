@@ -50,9 +50,15 @@ public class MemberController {
 
 	@PostMapping("/login_pro")
 	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean) {
+		// 로그인 시도 전에 다른 계정 로그아웃 처리
+		loginBusiness.setLogin(false);
+		loginBusiness.setBusiness_id(null);
+		loginBusiness.setBusiness_name(null);
+		loginBusiness.setBusiness_pw(null);
+
 		// 로그인 검증 (ID와 PW로 로그인 성공 여부 판단)
 		if (memberService.getLoginMember(memberBean)) {
-			// DB에서 전체 회원 정보를 조회 (예: memberService.getMemberById)
+			// DB에서 전체 회원 정보를 조회
 			MemberBean fullMember = memberService.selectMemberById(memberBean.getMember_id());
 			if(fullMember != null && fullMember.getMember_pw().equals(memberBean.getMember_pw())){
 				// DI로 주입받은 loginMember 빈에 DB에서 조회한 전체 정보를 업데이트
@@ -63,8 +69,11 @@ public class MemberController {
 				loginMember.setMember_email(fullMember.getMember_email());
 				// 그 외 필요한 필드도 설정
 				loginMember.setLogin(true);
-				// 비즈니스 계정이 로그인되어 있다면 로그아웃 처리
-				loginBusiness.setLogin(false);
+
+				// 디버깅 로그
+				System.out.println("일반 회원 로그인 성공: " + fullMember.getMember_id());
+				System.out.println("비즈니스 로그인 상태: " + loginBusiness.isLogin());
+
 				return "member/login_success";
 			} else {
 				return "member/login_fail";

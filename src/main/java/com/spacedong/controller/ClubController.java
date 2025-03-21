@@ -235,7 +235,7 @@ public class ClubController {
 			return "redirect:/club/club_info?club_id=" + clubBoardBean.getClub_id();
 		}
 
-		// ✅ 작성자 ID 및 작성 날짜 설정
+		// ✅ 작성자 ID 및 작성 날짜 설정 (닉네임은 JOIN을 통해 자동으로 가져오므로 제거)
 		clubBoardBean.setBoard_writer_id(loginMember.getMember_id());
 		clubBoardBean.setCreate_date(java.time.LocalDateTime.now());
 

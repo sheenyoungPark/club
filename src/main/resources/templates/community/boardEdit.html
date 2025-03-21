@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+    <link rel="stylesheet" th:href="@{/css/boardWrite.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+</head>
+<body>
+
+<!-- 상단 메뉴 include -->
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="write-container">
+    <h2 class="write-title">게시글 수정</h2>
+
+    <!-- 글수정 폼 -->
+    <form th:action="@{/community/edit}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="boardType" th:value="${boardType}">
+        <input type="hidden" name="board_id" th:value="${post.board_id}">
+
+        <label>제목:</label>
+        <input type="text" name="board_title" class="input-field" th:value="${post.board_title}" required>
+
+        <label>내용:</label>
+        <textarea name="board_text" class="input-field" rows="6" required th:text="${post.board_text}"></textarea>
+
+        <!-- ✅ 기존 이미지 표시 -->
+        <div th:if="${images != null and not #lists.isEmpty(images)}">
+            <label>기존 이미지:</label>
+            <div id="existingImageContainer" class="preview-container">
+                <div th:each="img : ${images}" class="img-wrapper">
+                    <img th:src="@{/image/{boardType}BoardImg/{img}(boardType=${boardType}, img=${img})}"
+                         class="preview-image" alt="기존 이미지">
+                    <button type="button" class="delete-btn" th:data-img="${img}" onclick="removeExistingImage(this)">✖</button>
+                    <input type="hidden" name="keep_images" th:value="${img}" class="keep-img-input">
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ 새 사진 업로드 -->
+        <label>새 사진 업로드:</label>
+        <input type="file" id="imageUpload" name="images" accept="image/*" multiple class="input-file">
+        <p id="fileWarning" style="color: red; display: none;">※ 5MB 이하의 이미지만 업로드 가능합니다.</p>
+
+        <!-- ✅ 실시간 이미지 미리보기 -->
+        <div id="imagePreviewContainer" class="preview-container"></div>
+
+        <button type="submit" class="write-btn">수정 완료</button>
+    </form>
+
+    <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType=${boardType})}" class="back-btn">← 상세페이지로 돌아가기</a>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<script th:src="@{/js/top.js}"></script>
+<!-- ✅ 이미지 미리보기 및 삭제 기능 추가 -->
+<script th:inline="javascript">
+    // 기존 이미지 삭제 처리
+    function removeExistingImage(button) {
+        const imgWrapper = button.parentElement;
+        const hiddenInput = imgWrapper.querySelector('.keep-img-input');
+
+        if (confirm('정말로 이 이미지를 삭제하시겠습니까?')) {
+            hiddenInput.remove(); // hidden input 제거하여 서버에 전송되지 않도록 함
+            imgWrapper.classList.add('removed-image');
+            button.parentElement.style.opacity = "0.3"; // 시각적으로 표시
+            button.textContent = "↩"; // 복원 아이콘으로 변경
+            button.onclick = function() { restoreExistingImage(this); }; // 복원 기능으로 변경
+        }
+    }
+
+    // 삭제 표시된 이미지 복원
+    function restoreExistingImage(button) {
+        const imgWrapper = button.parentElement;
+        const imgSrc = imgWrapper.querySelector('img').getAttribute('src');
+        const imgName = imgSrc.split('/').pop(); // 파일명 추출
+
+        // 새로운 hidden input 생성하여 복원
+        const newInput = document.createElement('input');
+        newInput.type = 'hidden';
+        newInput.name = 'keep_images';
+        newInput.value = imgName;
+        newInput.className = 'keep-img-input';
+
+        imgWrapper.appendChild(newInput);
+        imgWrapper.classList.remove('removed-image');
+        button.parentElement.style.opacity = "1"; // 투명도 원복
+        button.textContent = "✖"; // 삭제 아이콘으로 복원
+        button.onclick = function() { removeExistingImage(this); }; // 삭제 기능으로 복원
+    }
+
+    // 새 이미지 미리보기 처리
+    document.getElementById('imageUpload').addEventListener('change', function(event) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const fileWarning = document.getElementById('fileWarning');
+        previewContainer.innerHTML = ''; // 기존 미리보기 초기화
+
+        Array.from(event.target.files).forEach(file => {
+            // ✅ 파일 크기 체크 (5MB 제한)
+            if (file.size > 5 * 1024 * 1024) { // 5MB 이상이면 경고
+                fileWarning.style.display = "block";
+                return;
+            } else {
+                fileWarning.style.display = "none"; // 정상 파일이면 경고 숨김
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.classList.add('img-wrapper');
+
+                const imgElement = document.createElement('img');
+                imgElement.src = e.target.result;
+                imgElement.classList.add('preview-image');
+
+                // ✅ 삭제 버튼 추가
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button'; // type을 button으로 설정하여 폼 제출 방지
+                deleteBtn.innerText = '✖';
+                deleteBtn.classList.add('delete-btn');
+                deleteBtn.onclick = function() {
+                    imgWrapper.remove(); // 이미지 삭제
+                };
+
+                imgWrapper.appendChild(imgElement);
+                imgWrapper.appendChild(deleteBtn);
+                previewContainer.appendChild(imgWrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
+</body>
+</html>
