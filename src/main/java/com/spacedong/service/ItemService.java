@@ -31,5 +31,15 @@ public class ItemService {
         return itemRepository.getItemBySubCategory(subCategoryName);
     }
 
+    //사업자의 상품 ID 목록 조회
+    public List<Integer> getItemIdsByBusinessId(String business_id){
+        return itemRepository.getItemIdsByBusinessId(business_id);
+    }
+
+    //상품 번호로 정보 조회
+    public BusinessItemBean getItemById(String item_id){
+        return itemRepository.getItemById(item_id);
+    }
+
 
 }

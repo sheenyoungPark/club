@@ -14,10 +14,12 @@ import com.spacedong.beans.BusinessItemBean;
 @Mapper
 public interface ItemMapper {
 	
+	//item 등록
 	@Insert("insert into business_items values(#{business_id}, #{business_item}, #{item_img})")
 	void additem(BusinessItemBean items);
 
 
+	//모든 아이템
 	@Select("select * from business_item")
 	List<BusinessItemBean> getAllItems();
 
@@ -35,6 +37,13 @@ public interface ItemMapper {
 	@Select("SELECT * FROM business_item, category WHERE category_Name = #{subCategoryName} and category.category_name = business_item.item_category")
 	List<BusinessItemBean> getItemBySubCategory(@Param("subCategoryName") String subCategoryName);
 
+	//사업자의 상품 ID 목록 조회
+	@Select("select item_id from business_item where business_id = #{buisness_id}")
+	List<Integer> getItemIdsByBusinessId(String business_id);
+
+	//상품 번호로 정보 조회
+	@Select("select * from business_item where item_id = #{item_id}")
+	BusinessItemBean getItemById(String item_id);
 
 
 

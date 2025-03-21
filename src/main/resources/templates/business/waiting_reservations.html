@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 대기 목록</title>
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .waiting-reservations-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-button {
+            font-size: 0.9rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: #495057;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .back-button:hover {
+            background-color: #e9ecef;
+        }
+
+        .back-button i {
+            margin-right: 5px;
+        }
+
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .search-box {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+
+        .no-reservations {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .no-reservations i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #adb5bd;
+        }
+
+        .no-reservations h3 {
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+
+        .reservations-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        .reservations-table th,
+        .reservations-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .reservations-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .reservations-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+
+        .btn-decline {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-decline:hover {
+            background-color: #c82333;
+        }
+
+        .btn-view {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: #0b5ed7;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .page-item {
+            margin: 0 0.25rem;
+        }
+
+        .page-link {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: #0d6efd;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+
+        .page-link:hover {
+            background-color: #e9ecef;
+        }
+
+        .page-item.active .page-link {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            cursor: not-allowed;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+
+        /* 모달 스타일 */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            margin: 0;
+            color: #343a40;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* 반응형 스타일 */
+        @media (max-width: 992px) {
+            .reservations-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filter-section {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .page-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="waiting-reservations-container">
+    <div class="page-title">
+        <h1>예약 대기 목록</h1>
+        <a th:href="@{/business/businessinfo}" class="back-button">
+            <i class="fas fa-arrow-left"></i> 사업자 정보로 돌아가기
+        </a>
+    </div>
+
+    <!-- 필터 섹션 -->
+    <div class="filter-section">
+        <div class="search-input">
+            <input type="text" id="searchBox" class="search-box" placeholder="예약자 이름 또는 상품명으로 검색...">
+        </div>
+    </div>
+
+    <!-- 예약 없음 메시지 (대기 중인 예약이 없을 때만 표시) -->
+    <div class="no-reservations" th:if="${#lists.isEmpty(waitingReservations)}">
+        <i class="fas fa-calendar-check"></i>
+        <h3>대기 중인 예약이 없습니다</h3>
+        <p>새로운 예약이 들어오면 이곳에서 확인하실 수 있습니다.</p>
+    </div>
+
+    <!-- 예약 목록 테이블 -->
+    <table class="reservations-table" th:if="${not #lists.isEmpty(waitingReservations)}">
+        <thead>
+        <tr>
+            <th>상품명</th>
+            <th>예약자</th>
+            <th>예약 날짜</th>
+            <th>예약 시간</th>
+            <th>금액</th>
+            <th>상태</th>
+            <th>예약일</th>
+            <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="reservation : ${waitingReservations}">
+            <td th:text="${reservation.itemTitle}">상품명</td>
+            <td th:text="${reservation.memberName}">예약자 이름</td>
+            <td th:text="${#dates.format(reservation.reservation_date, 'yyyy년 MM월 dd일')}">2023년 07월 15일</td>
+            <td th:text="${reservation.start_time} + ':00 ~ ' + ${reservation.end_time} + ':00'">10:00 ~ 12:00</td>
+            <td th:text="${#numbers.formatInteger(reservation.total_price, 0, 'COMMA') + '원'}">20,000원</td>
+            <td><span class="status-badge status-pending">대기중</span></td>
+            <td th:text="${#dates.format(reservation.created_at, 'yyyy-MM-dd')}">2023-07-10</td>
+            <td class="action-buttons">
+                <form th:action="@{/business/reservations/approve}" method="post" class="approve-form">
+                    <input type="hidden" name="reservation_id" th:value="${reservation.reservation_id}">
+                    <button type="submit" class="btn btn-approve">승인</button>
+                </form>
+                <button class="btn btn-decline" th:onclick="'openDeclineModal(' + ${reservation.reservation_id} + ')'">거절</button>
+                <a th:href="@{/reservation/detail(reservation_id=${reservation.reservation_id})}" class="btn btn-view">상세</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 페이지네이션 -->
+    <div class="pagination-container" th:if="${not #lists.isEmpty(waitingReservations)}">
+        <ul class="pagination" id="pagination">
+            <li class="page-item disabled" id="prev-page">
+                <a class="page-link" href="#">이전</a>
+            </li>
+            <!-- 페이지 번호는 JavaScript에서 동적으로 생성됩니다. -->
+            <li class="page-item disabled" id="next-page">
+                <a class="page-link" href="#">다음</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- 예약 거절 모달 -->
+<div class="modal-backdrop" id="declineModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h4 class="modal-title">예약 거절 확인</h4>
+            <button type="button" class="close-modal" onclick="closeDeclineModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>이 예약 요청을 거절하시겠습니까?</p>
+            <p>거절된 예약은 취소 상태로 변경됩니다.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeclineModal()">취소</button>
+            <form id="declineForm" th:action="@{/business/reservations/decline}" method="post">
+                <input type="hidden" id="reservationIdToDecline" name="reservation_id">
+                <button type="submit" class="btn btn-decline">예약 거절하기</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<script th:src="@{/js/top.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 페이지네이션 변수 설정
+        const itemsPerPage = 10;
+        let currentPage = 1;
+        let filteredRows = [];
+
+        // 필터링 기능
+        const searchBox = document.getElementById('searchBox');
+        const tableRows = document.querySelectorAll('.reservations-table tbody tr');
+        const paginationContainer = document.querySelector('.pagination-container');
+        const paginationElement = document.getElementById('pagination');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+
+        // 페이지네이션 초기화 함수
+        function initializePagination() {
+            // 모든 페이지 아이템 제거 (이전/다음 버튼 제외)
+            const pageItems = paginationElement.querySelectorAll('.page-item:not(#prev-page):not(#next-page)');
+            pageItems.forEach(item => item.remove());
+
+            // 필터링된 행 기준으로 총 페이지 수 계산
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+
+            // 페이지가 없으면 페이지네이션 숨김
+            if (totalPages === 0) {
+                paginationContainer.style.display = 'none';
+                return;
+            } else {
+                paginationContainer.style.display = 'flex';
+            }
+
+            // 페이지 번호 생성
+            for (let i = 1; i <= totalPages; i++) {
+                const pageItem = document.createElement('li');
+                pageItem.className = 'page-item';
+                pageItem.dataset.page = i;
+                if (i === currentPage) {
+                    pageItem.classList.add('active');
+                }
+
+                const pageLink = document.createElement('a');
+                pageLink.className = 'page-link';
+                pageLink.href = '#';
+                pageLink.textContent = i;
+                pageLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goToPage(i);
+                });
+
+                pageItem.appendChild(pageLink);
+                // 다음 버튼 앞에 넣어 오른쪽으로 순차적으로 늘어나도록 함
+                nextPageBtn.before(pageItem);
+            }
+
+            // 이전/다음 버튼 활성화 상태 설정
+            prevPageBtn.classList.toggle('disabled', currentPage === 1);
+            nextPageBtn.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+
+            // 이전/다음 버튼 이벤트
+            prevPageBtn.querySelector('.page-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            });
+
+            nextPageBtn.querySelector('.page-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    goToPage(currentPage + 1);
+                }
+            });
+        }
+
+        // 특정 페이지로 이동하는 함수
+        function goToPage(page) {
+            currentPage = page;
+
+            // 활성 페이지 표시 업데이트
+            const pageItems = paginationElement.querySelectorAll('.page-item');
+            pageItems.forEach(item => {
+                if (item.dataset.page == page) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // 이전/다음 버튼 상태 업데이트
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+            prevPageBtn.classList.toggle('disabled', currentPage === 1);
+            nextPageBtn.classList.toggle('disabled', currentPage === totalPages);
+
+            // 행 표시 업데이트
+            displayRows();
+        }
+
+        // 행 표시 함수
+        function displayRows() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+
+            // 모든 행 숨김
+            tableRows.forEach(row => {
+                row.style.display = 'none';
+            });
+
+            // 현재 페이지에 해당하는 행만 표시
+            for (let i = startIndex; i < endIndex && i < filteredRows.length; i++) {
+                filteredRows[i].style.display = '';
+            }
+        }
+
+        // 필터와 검색 적용 함수
+        function applyFilters() {
+            const searchValue = searchBox.value.toLowerCase();
+
+            // 필터링된 행 배열 초기화
+            filteredRows = [];
+
+            // 모든 행에 필터 적용
+            tableRows.forEach(row => {
+                const itemName = row.cells[0].textContent.toLowerCase();
+                const memberName = row.cells[1].textContent.toLowerCase();
+
+                // 검색어 필터링 (상품명 또는 예약자 이름)
+                const searchMatch = itemName.includes(searchValue) || memberName.includes(searchValue);
+
+                // 필터 적용하여 배열에 추가
+                if (searchMatch) {
+                    filteredRows.push(row);
+                }
+            });
+
+            // 필터링 후 페이지네이션 초기화 및 첫 페이지 표시
+            currentPage = 1;
+            initializePagination();
+            displayRows();
+
+            // 필터 적용 후 보이는 행이 없으면 메시지 표시
+            checkNoVisibleRows();
+        }
+
+        // 보이는 행이 없는지 확인하고 메시지 표시
+        function checkNoVisibleRows() {
+            const table = document.querySelector('.reservations-table');
+
+            if (filteredRows.length === 0 && tableRows.length > 0) {
+                // 동적으로 "필터링된 결과 없음" 메시지 생성
+                let noResults = document.querySelector('.no-filtered-results');
+
+                if (!noResults) {
+                    noResults = document.createElement('div');
+                    noResults.className = 'no-reservations no-filtered-results';
+                    noResults.innerHTML = `
+            <i class="fas fa-filter"></i>
+            <h3>검색 결과가 없습니다</h3>
+            <p>다른 검색어를 사용해보세요.</p>
+          `;
+                    table.after(noResults);
+                } else {
+                    noResults.style.display = 'block';
+                }
+
+                table.style.display = 'none';
+            } else {
+                table.style.display = 'table';
+                const noResults = document.querySelector('.no-filtered-results');
+                if (noResults) {
+                    noResults.style.display = 'none';
+                }
+            }
+        }
+
+        // 검색 이벤트 리스너
+        searchBox.addEventListener('input', function() {
+            applyFilters();
+        });
+
+        // 초기 필터 및 페이지네이션 적용
+        if (tableRows.length > 0) {
+            filteredRows = Array.from(tableRows);
+            initializePagination();
+            displayRows();
+        }
+    });
+
+    // 모달 관련 함수
+    function openDeclineModal(reservationId) {
+        document.getElementById('reservationIdToDecline').value = reservationId;
+        document.getElementById('declineModal').style.display = 'flex';
+    }
+
+    function closeDeclineModal() {
+        document.getElementById('declineModal').style.display = 'none';
+    }
+
+    // ESC 키로 모달 닫기
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDeclineModal();
+        }
+    });
+
+    // 모달 바깥 클릭 시 닫기
+    window.onclick = function(event) {
+        const modal = document.getElementById('declineModal');
+        if (event.target === modal) {
+            closeDeclineModal();
+        }
+    };
+</script>
+</body>
+</html>

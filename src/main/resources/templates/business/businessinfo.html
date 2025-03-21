@@ -73,11 +73,20 @@
     <div id="posts-content" class="activity-content" style="display:none;">
       <ul class="post-list">
         <li th:each="post : ${businessPosts}">
-            <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}" th:text="${post.board_title}"></a>
-            <span th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
+          <a th:href="@{/community/boardDetail(id=${post.board_id}, boardType='all')}" th:text="${post.board_title}"></a>
+          <span th:text="${#temporals.format(post.create_date, 'yyyy.MM.dd')}"></span>
         </li>
         <li th:if="${#lists.isEmpty(businessPosts)}">작성한 게시글이 없습니다.</li>
       </ul>
+    </div>
+
+    <!-- 예약 대기 목록 버튼 (오른쪽 아래) -->
+    <div class="reservation-btn-container">
+      <a th:href="@{/business/reservations/waiting}" class="reservation-waiting-btn">
+        <i class="fas fa-clock"></i> 예약 대기 목록
+        <!-- 대기 중인 예약이 있을 경우 표시할 뱃지 -->
+        <span th:if="${waitingReservations > 0}" class="notification-badge" th:text="${waitingReservations}"></span>
+      </a>
     </div>
   </div>
 </div>

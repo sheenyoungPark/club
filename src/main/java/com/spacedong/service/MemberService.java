@@ -221,6 +221,9 @@ public class MemberService {
 		return memberRepository.selectMemberById(memberId);
 	}
 
+	public MemberBean getMemberById(String member_id){
+		return memberRepository.getMemberById(member_id);
+	}
 
 
 }

@@ -17,8 +17,8 @@ public interface ReservationMapper {
             "#{start_time}, #{end_time}, #{total_price}, #{status}, #{created_at})")
     void createReservation(ReservationBean reservationBean);
 
-    //예약 번호 조회
-    @Select("select reservation_id from reservation where member_id = #{memberId} and item_id = #{itemId} and start_time = #{startTime} and reservation_date = #{reservationDate} and status = 'CONFIRMED'")
+    //대기중 예약 번호 조회
+    @Select("select reservation_id from reservation where member_id = #{memberId} and item_id = #{itemId} and start_time = #{startTime} and reservation_date = #{reservationDate} and status = 'PENDING' ")
     int getReservationId(@Param("memberId") String memberId, @Param("itemId") String itemId, @Param("startTime") int startTime, @Param("reservationDate") Date reservationDate);
 
     // 특정 날짜에 예약된 시간대 조회 - 쉼표 추가
@@ -78,6 +78,30 @@ public interface ReservationMapper {
             "status = 'CANCELLED' " +
             "WHERE reservation_id = #{reservationId}")
     void cancelReservation(@Param("reservationId") int reservationId);
+
+
+    // 특정 상품 ID와 상태에 해당하는 예약
+    @Select("<script>" +
+            "SELECT * FROM reservation WHERE item_id IN " +
+            "<foreach item='id' collection='item_id' open='(' separator=',' close=')'>" +
+            "#{id}" +
+            "</foreach>" +
+            " AND status = #{status}" +
+            "</script>")
+    List<ReservationBean> getReservationsByItemIdsAndStatus(@Param("item_id") List<Integer> item_id,@Param("status") String status);
+
+    //예약 상태 변경
+    @Update("update reservation set status = #{status} where reservation_id = #{reservation_id}")
+    void  updateReservationStatus(@Param("status") String status, @Param("reservation_id")int reservation_id);
+
+    @Select("<script>" +
+            "SELECT COUNT(*) FROM reservation WHERE item_id IN " +
+            "<foreach item='id' collection='item_id' open='(' separator=',' close=')'>" +
+            "#{id}" +
+            "</foreach>" +
+            " AND status = 'PENDING'" +
+            "</script>")
+    int countReservationsByItemIdsAndStatus(@Param("item_id") List<Integer> item_id);
 
 
 }
