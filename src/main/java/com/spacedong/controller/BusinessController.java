@@ -122,10 +122,10 @@ public class BusinessController {
         // (필요 시 session에서 loginBusiness를 제거할 수 있음)
         session.removeAttribute("loginBusiness");
         // 일반 회원 로그아웃 처리
-        MemberBean loginMember = (MemberBean) session.getAttribute("loginMember");
-        if (loginMember != null) {
-            loginMember.setLogin(false);
-            session.removeAttribute("loginMember");
+        MemberBean loginBusiness = (MemberBean) session.getAttribute("loginBusiness");
+        if (loginBusiness != null) {
+            loginBusiness.setLogin(false);
+            session.removeAttribute("loginBusiness");
         }
         return "redirect:/";
     }
@@ -172,6 +172,35 @@ public class BusinessController {
             logger.error("사업자 정보 페이지 로드 중 오류 발생: ", e);
             return "redirect:/";
         }
+    }
+
+    @GetMapping("/deleteAccount")
+    public String deleteAccountPage(Model model) {
+        if (!loginBusiness.isLogin()) {
+            return "redirect:/business/login";
+        }
+        model.addAttribute("loginBusiness", loginBusiness);
+        return "business/deleteAccount";
+    }
+
+    @PostMapping("/deleteAccount_pro")
+    public String deleteAccount(@RequestParam("password") String password, Model model) {
+        if (!loginBusiness.isLogin()) {
+            return "redirect:/business/login";
+        }
+        // 비밀번호 확인
+        boolean isCorrectPassword = businessService.checkPassword(loginBusiness.getBusiness_id(), password);
+        if (!isCorrectPassword) {
+            model.addAttribute("error", "비밀번호가 일치하지 않습니다.");
+            return "business/deleteAccount";
+        }
+        // 회원 탈퇴 처리
+        businessService.deleteBusiness(loginBusiness.getBusiness_id());
+        // DI로 주입된 loginBusiness 초기화
+        loginBusiness.setLogin(false);
+        loginBusiness.setBusiness_id(null);
+        loginBusiness.setBusiness_name(null);
+        return "business/deleteAccount_success";
     }
 
     // 프로필 업데이트

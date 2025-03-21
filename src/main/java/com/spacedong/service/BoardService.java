@@ -75,10 +75,23 @@ public class BoardService {
         boardRepository.incrementViewCount(boardType, boardId);
     }
 
+    /** ✅ 게시글 좋아요 수 조회 */
+    public int getLikeCount(String boardType, int boardId) {
+        return boardRepository.getLikeCount(boardType, boardId);
+    }
+
     /** ✅ 좋아요 증가 */
     public int incrementLike(String boardType, int boardId) {
         boardRepository.incrementLike(boardType, boardId);
         return boardRepository.getLikeCount(boardType, boardId); // 업데이트된 좋아요 수 반환
+    }
+    /** ✅ 좋아요 감소 */
+    public void decrementLike(String boardType, int boardId) {
+        // 좋아요 수가 0 미만이 되지 않도록 체크
+        int currentLikes = boardRepository.getLikeCount(boardType, boardId);
+        if (currentLikes > 0) {
+            boardRepository.decrementLike(boardType, boardId);
+        }
     }
 
 
@@ -159,6 +172,16 @@ public class BoardService {
         // 3️⃣ 게시글 DB에서 삭제 (댓글, 이미지도 같이 삭제됨 - ON DELETE CASCADE)
         boardRepository.deleteBoard(boardType, boardId);
         System.out.println("🗑 게시글 삭제 완료 (boardId: " + boardId + ")");
+    }
+
+    /** ✅ 게시글 수정 */
+    public void updateBoard(String boardType, BoardBean board) {
+        boardRepository.updateBoard(boardType, board);
+    }
+
+    /** ✅ 특정 게시글의 특정 이미지 삭제 */
+    public void deleteBoardImage(String boardType, int boardId, String fileName) {
+        boardRepository.deleteBoardImage(boardType, boardId, fileName);
     }
 
 }

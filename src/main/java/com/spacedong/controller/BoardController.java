@@ -11,10 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 @RequestMapping("/community")
@@ -103,18 +100,29 @@ public class BoardController {
 		return "community/boardDetail";
 	}
 
-	/** ✅ 게시글 좋아요 증가 API */
+	/** ✅ 게시글 좋아요 토글 API */
 	@PostMapping("/like")
 	@ResponseBody
-	public Map<String, Object> increaseLike(
+	public Map<String, Object> toggleLike(
 			@RequestParam("board_id") int boardId,
-			@RequestParam("boardType") String boardType) {
+			@RequestParam("boardType") String boardType,
+			@RequestParam(value = "action", required = false) String action) {
 
-		// 좋아요 증가 처리
-		int newLikeCount = boardService.incrementLike(boardType, boardId);
+		Map<String, Object> response = new HashMap<>();
+
+		// action 파라미터에 따라 좋아요 증가 또는 감소
+		int newLikeCount;
+		if ("unlike".equals(action)) {
+			// 좋아요 취소 (감소)
+			boardService.decrementLike(boardType, boardId);
+			newLikeCount = boardService.getLikeCount(boardType, boardId);
+		} else {
+			// 좋아요 (증가)
+			boardService.incrementLike(boardType, boardId);
+			newLikeCount = boardService.getLikeCount(boardType, boardId);
+		}
 
 		// JSON 응답 생성
-		Map<String, Object> response = new HashMap<>();
 		response.put("success", true);
 		response.put("newLikeCount", newLikeCount);
 
@@ -244,10 +252,104 @@ public class BoardController {
 		return "redirect:/community/board?boardType=" + boardType;
 	}
 
+	/** ✅ 게시글 수정 페이지 이동 */
+	@GetMapping("/boardEdit")
+	public String showBoardEditPage(@RequestParam("id") int boardId,
+									@RequestParam("boardType") String boardType,
+									Model model) {
+		// 게시글 정보 가져오기
+		BoardBean post = boardService.getBoardDetail(boardType, boardId);
 
+		// 게시글 이미지 가져오기
+		List<String> images = boardService.getBoardImages(boardType, boardId);
 
+		model.addAttribute("post", post);
+		model.addAttribute("boardType", boardType);
+		model.addAttribute("images", images);
 
+		return "community/boardEdit";
+	}
 
+	/** ✅ 게시글 수정 처리 */
+	@PostMapping("/edit")
+	public String editBoard(@RequestParam("board_id") int boardId,
+							@RequestParam("boardType") String boardType,
+							@RequestParam("board_title") String title,
+							@RequestParam("board_text") String text,
+							@RequestParam(value = "images", required = false) List<MultipartFile> newImages,
+							@RequestParam(value = "keep_images", required = false) List<String> keepImages) {
 
+		// 1. 게시글 정보 업데이트
+		BoardBean board = new BoardBean();
+		board.setBoard_id(boardId);
+		board.setBoard_title(title);
+		board.setBoard_text(text);
 
+		boardService.updateBoard(boardType, board);
+		System.out.println("📌 게시글 정보 업데이트 완료: ID " + boardId);
+
+		// 2. 유지할 이미지 처리
+		List<String> currentImages = boardService.getBoardImages(boardType, boardId);
+
+		// 삭제할 이미지 식별 (keepImages에 없는 현재 이미지)
+		List<String> imagesToDelete = new ArrayList<>();
+		for (String img : currentImages) {
+			if (keepImages == null || !keepImages.contains(img)) {
+				imagesToDelete.add(img);
+			}
+		}
+
+		// 이미지 삭제
+		if (!imagesToDelete.isEmpty()) {
+			String uploadDir = "C:/upload/image/" + boardType + "BoardImg/";
+			for (String imageName : imagesToDelete) {
+				// DB에서 이미지 정보 삭제
+				boardService.deleteBoardImage(boardType, boardId, imageName);
+
+				// 파일 시스템에서 이미지 삭제
+				File imageFile = new File(uploadDir + imageName);
+				if (imageFile.exists()) {
+					if (imageFile.delete()) {
+						System.out.println("🗑 이미지 삭제 완료: " + imageFile.getAbsolutePath());
+					} else {
+						System.out.println("🚨 이미지 삭제 실패: " + imageFile.getAbsolutePath());
+					}
+				}
+			}
+		}
+
+		// 3. 새 이미지 업로드 처리
+		String uploadDir = "C:/upload/image/" + boardType + "BoardImg/";
+		File dir = new File(uploadDir);
+		if (!dir.exists()) {
+			boolean created = dir.mkdirs();
+			if (created) {
+				System.out.println("📌 디렉토리 생성 완료: " + uploadDir);
+			} else {
+				System.out.println("🚨 디렉토리 생성 실패!");
+			}
+		}
+
+		if (newImages != null && !newImages.isEmpty()) {
+			for (MultipartFile image : newImages) {
+				if (!image.isEmpty()) {
+					try {
+						String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
+						File destFile = new File(uploadDir + fileName);
+						image.transferTo(destFile);
+
+						System.out.println("📌 이미지 저장 완료: " + destFile.getAbsolutePath());
+
+						// DB에 이미지 정보 저장
+						boardService.saveBoardImage(boardType, boardId, fileName);
+					} catch (IOException e) {
+						System.out.println("🚨 이미지 저장 실패: " + e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+
+		return "redirect:/community/boardDetail?id=" + boardId + "&boardType=" + boardType;
+	}
 }

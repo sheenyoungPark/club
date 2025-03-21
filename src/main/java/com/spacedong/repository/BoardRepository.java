@@ -80,6 +80,10 @@ public class BoardRepository {
     public int getLikeCount(String boardType, int boardId) {
         return boardMapper.getLikeCount(boardType, boardId);
     }
+    /** ✅ 게시글 좋아요 감소 */
+    public void decrementLike(String boardType, int boardId) {
+        boardMapper.decrementLike(boardType, boardId);
+    }
 
 
     /** 댓글 조회 **/
@@ -118,6 +122,16 @@ public class BoardRepository {
     public void deleteBoard(String boardType, int boardId) {
         System.out.println("🗑 Repository: 게시글 삭제 (boardType: " + boardType + ", boardId: " + boardId + ")");
         boardMapper.deleteBoard(boardType, boardId);
+    }
+
+    /** ✅ 게시글 수정 */
+    public void updateBoard(String boardType, BoardBean board) {
+        boardMapper.updateBoard(boardType, board.getBoard_id(), board.getBoard_title(), board.getBoard_text());
+    }
+
+    /** ✅ 특정 게시글의 특정 이미지 삭제 */
+    public void deleteBoardImage(String boardType, int boardId, String fileName) {
+        boardMapper.deleteBoardImage(boardType, boardId, fileName);
     }
 
 }

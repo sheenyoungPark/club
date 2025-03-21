@@ -155,69 +155,70 @@
                     </div>
                 </div>
 
-
+                <!-- 여기서 관리자 메뉴 제거 -->
 
                 <!-- 동호회 게시글 칸 -->
                 <div class="club-posts-box">
                     <div class="club-posts-header">
-                        <h3 class="club-posts-title">동호회 게시글</h3>
+                        <h3 class="club-posts-title">동호회 한마디</h3>
                         <!-- 사용자가 동호회 회원일 때만 글쓰기 버튼 표시 -->
                         <a th:if="${isMember}" th:href="@{/club/board_write(club_id=${club.club_id})}" class="btn btn-write">글쓰기</a>
                     </div>
 
                     <div class="club-posts-content">
-                        <p th:if="${#lists.isEmpty(clubBoardList)}">등록된 게시글이 없습니다.</p>
+                        <p th:if="${#lists.isEmpty(clubBoardList)}">등록된 한마디가 없습니다.</p>
 
-                        <ul th:unless="${#lists.isEmpty(clubBoardList)}" class="club-post-list">
-                            <li th:each="board : ${clubBoardList}" class="club-post-item">
-                                <div class="post-thumbnail">
-                                    <img th:if="${board.board_img != null}"
-                                         th:src="@{/image/clubBoardImg/{img}(img=${#strings.substringAfter(board.board_img, 'clubBoardImg/')})}"
-                                         alt="게시글 이미지">
+                        <div th:unless="${#lists.isEmpty(clubBoardList)}" class="club-post-sidebar">
+                            <ul class="club-post-list">
+                                <li th:each="board : ${clubBoardList}" class="club-post-item">
+                                    <div class="post-thumbnail">
+                                        <img th:if="${board.board_img != null}"
+                                             th:src="@{/image/clubBoardImg/{img}(img=${#strings.substringAfter(board.board_img, 'clubBoardImg/')})}"
+                                             alt="게시글 이미지">
 
-                                    <img th:unless="${board.board_img != null}"
-                                         th:src="@{/sources/picture/기본이미지.png}"
-                                         alt="기본 이미지">
-                                    <!-- ✅ 작성자 닉네임 추가 (이미지 아래) -->
-                                    <p class="post-author" th:text="'작성자: ' + ${board.board_writer_nickname}">작성자 닉네임</p>
-                                </div>
+                                        <img th:unless="${board.board_img != null}"
+                                             th:src="@{/sources/picture/기본이미지.png}"
+                                             alt="기본 이미지">
+                                    </div>
 
-                                <!-- 게시글 제목 및 날짜 -->
-                                <div class="post-info">
-                                    <span class="post-title" th:text="${board.board_title}">게시글 제목</span>
-                                    <span class="post-date" th:text="${#temporals.format(board.create_date, 'yyyy-MM-dd HH:mm')}">날짜</span>
-                                </div>
+                                    <!-- 게시글 제목 및 날짜 -->
+                                    <div class="post-info">
+                                        <span class="post-title" th:text="${board.board_title}">게시글 제목</span>
+                                        <div class="post-meta">
+                                            <span class="post-author" th:text="${board.board_writer_nickname}">작성자</span>
+                                            <span class="post-date" th:text="${#temporals.format(board.create_date, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                                        </div>
+                                    </div>
 
-                                <!-- ✅ 삭제 버튼 추가 (조건에 따라 보이도록 설정) -->
-                                <div class="post-actions">
-                                    <form th:if="${member_role == 'master' || (member_role == 'normal' && board.board_writer_id == loginMember.member_id)}"
-                                          th:action="@{/club/board_delete}" method="post"
-                                          onsubmit="return confirm('정말로 삭제하시겠습니까?');">
-                                        <input type="hidden" name="board_id" th:value="${board.board_id}">
-                                        <input type="hidden" name="club_id" th:value="${club.club_id}">
-                                        <button type="submit" class="btn btn-delete">삭제</button>
-                                    </form>
-                                </div>
-                            </li>
-                        </ul>
-
-                    </div>
-                </div>
-                <!-- ✅ 최근 포인트 모금 내역 추가 -->
-                <div th:if="${isMember}" class="club-info-container">
-                    <div class="club-info-box">
-                        <h3 class="club-info-title">최근 포인트 모금 내역</h3>
-                        <div class="club-info-content">
-                            <ul th:if="${#lists.isEmpty(donationList)}">
-                                <li>최근 모금 내역이 없습니다.</li>
-                            </ul>
-                            <ul th:unless="${#lists.isEmpty(donationList)}">
-                                <li th:each="donation : ${donationList}">
-                                    <p th:text="${#dates.format(donation.donation_date, 'yyyy.MM.dd HH:mm')}"></p>
-                                    <span th:text="${donation.member_nickname}">닉네임</span> 님이
-                                    <span th:text="${donation.donation_point}">500</span>P 후원하셨습니다.
+                                    <!-- 삭제 버튼 (내가 작성한 글이거나 동호회 관리자인 경우만 표시) -->
+                                    <div class="post-actions" th:if="${member_role == 'master' || (member_role != null && board.board_writer_id == loginMember.member_id)}">
+                                        <form th:action="@{/club/board_delete}" method="post"
+                                              onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                                            <input type="hidden" name="board_id" th:value="${board.board_id}">
+                                            <input type="hidden" name="club_id" th:value="${club.club_id}">
+                                            <button type="submit" class="btn-delete">삭제</button>
+                                        </form>
+                                    </div>
                                 </li>
                             </ul>
+                        </div>
+                    </div>
+                    <!-- ✅ 최근 포인트 모금 내역 추가 -->
+                    <div th:if="${isMember}" class="club-info-container">
+                        <div class="club-info-box">
+                            <h3 class="club-info-title">최근 포인트 모금 내역</h3>
+                            <div class="club-info-content">
+                                <ul th:if="${#lists.isEmpty(donationList)}">
+                                    <li>최근 모금 내역이 없습니다.</li>
+                                </ul>
+                                <ul th:unless="${#lists.isEmpty(donationList)}">
+                                    <li th:each="donation : ${donationList}">
+                                        <p th:text="${#dates.format(donation.donation_date, 'yyyy.MM.dd HH:mm')}"></p>
+                                        <span th:text="${donation.member_nickname}">닉네임</span> 님이
+                                        <span th:text="${donation.donation_point}">500</span>P 후원하셨습니다.
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -255,6 +256,18 @@
 
 <!-- 하단 정보바 -->
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const postList = document.querySelector('.club-post-list');
+        const sidebarContainer = document.querySelector('.club-post-sidebar');
+        const postItems = document.querySelectorAll('.club-post-item');
+
+        // 한마디가 5개 이상일 때만 스크롤바 활성화
+        if (postItems.length >= 5) {
+            sidebarContainer.classList.add('scrollable');
+        }
+    });
+</script>
 <script th:src="@{/js/top.js}"></script>
 </body>
 </html>
