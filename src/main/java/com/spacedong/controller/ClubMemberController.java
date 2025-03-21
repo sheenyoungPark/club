@@ -97,5 +97,10 @@ public class ClubMemberController {
         return "redirect:/club/pending?club_id=" + clubId + "&success=rejected";
     }
 
-
+    @GetMapping("/leaveClub")
+    public String leaveClub(@RequestParam("club_id") int clubId, Model model) {
+        String loggedInMemberId = loginMember.getMember_id();
+        clubMemberService.deleteMember(clubId, loggedInMemberId);
+        return "redirect:/club/club_info?club_id=" + clubId;
+    }
 }
