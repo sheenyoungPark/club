@@ -165,8 +165,8 @@ public class BusinessRepository {
     public void cancleReservation(int price, String business_id){
         businessMapper.cancleReservation(price, business_id);
     }
-    public void cancleReservationMP(int price, String business_id){
-        businessMapper.cancleReservationMP(price, business_id);
+    public void cancleReservationMP(int price, String member_id){
+        businessMapper.cancleReservationMP(price, member_id);
     }
     //===============================================================
 }

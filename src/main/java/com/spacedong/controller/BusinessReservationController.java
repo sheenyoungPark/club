@@ -40,8 +40,7 @@ public class BusinessReservationController {
     private BusinessBean loginBusiness;
     @Autowired
     private BusinessService businessService;
-    @Autowired
-    private BusinessMapper businessMapper;
+
 
     /**
      * 대기 중인 예약 목록 페이지를 표시합니다.
@@ -154,7 +153,8 @@ public class BusinessReservationController {
 
 //        businessService.cancleReservation(reservation.getTotal_price(), loginBusiness.getBusiness_id());
 //        loginBusiness.setBusiness_point(loginBusiness.getBusiness_point() - reservation.getTotal_price());
-        businessMapper.cancleReservationMP(reservation.getTotal_price(), loginBusiness.getBusiness_id());
+
+        businessService.cancleReservationMP(reservation.getTotal_price(), reservation.getMember_id());
 
         return "redirect:/business/reservations/waiting?success=declined";
     }
