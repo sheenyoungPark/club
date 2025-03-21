@@ -35,8 +35,6 @@ dependencies {
 
     // 데이터베이스 및 저장소 관련
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // 최신 버전으로 통합
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // Oracle JDBC 드라이버
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11' // 최신 버전으로 통합

@@ -18,6 +18,7 @@
             <!-- ✅ 일반 회원이면 "유형검사", 비즈니스 회원이면 "아이템 등록하기" 표시 -->
             <a th:if="${loginBusiness == null || loginBusiness.login == false}" th:href="@{/survey/start}">유형검사</a>
             <a th:if="${loginBusiness != null && loginBusiness.login == true}" th:href="@{/business/create_item}">아이템 등록하기</a>
+            <a th:href="@{/chat/view/rooms}">채팅</a>
             <div class="right-section">
                 <button id="searchToggle" class="search-toggle" type="button">🔍</button>
             </div>
