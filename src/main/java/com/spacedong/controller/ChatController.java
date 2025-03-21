@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.spacedong.beans.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.spacedong.beans.ChatMessageBean;
-import com.spacedong.beans.ChatParticipantBean;
-import com.spacedong.beans.ChatRoomBean;
-import com.spacedong.beans.ChatUserBean;
-import com.spacedong.beans.MemberBean;
 import com.spacedong.service.ChatService;
 
 import jakarta.annotation.Resource;
@@ -39,6 +36,9 @@ public class ChatController {
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     // === REST API 엔드포인트 ===
 
@@ -112,7 +112,7 @@ public class ChatController {
         String userId2 = request.get("targetUserId");
         String userType2 = request.get("targetUserType");
 
-        System.out.println("11111");
+        System.out.println("Creating/finding personal chat between " + userId1 + " and " + userId2);
 
         ChatRoomBean room = chatService.getOrCreatePersonalChatRoom(userId1, userType1, userId2, userType2);
         return ResponseEntity.ok(room);
@@ -216,7 +216,96 @@ public class ChatController {
         String userId = principal != null ? principal.getName() : (String) payload.get("userId");
         Long messageId = Long.valueOf(payload.get("messageId").toString());
 
+        // 읽음 처리
         chatService.markAsRead(roomId, userId, messageId);
+
+        // 메시지 정보 가져오기
+        ChatMessageBean message = chatService.getMessageById(messageId);
+
+        if (message != null) {
+            // 모든 읽음 상태 정보 가져오기
+            List<ChatReadReceiptBean> readReceipts = chatService.getReadReceiptsByMessageId(messageId);
+            message.setReadCount(readReceipts.size());
+
+            // 룸의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
+            messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+
+            // 원래 발신자에게도 개인 알림
+            if (!message.getSenderId().equals(userId)) {
+                messagingTemplate.convertAndSendToUser(
+                        message.getSenderId(),
+                        "/queue/read-receipts",
+                        message
+                );
+            }
+        }
+    }
+
+    @MessageMapping("/chat.getReadStatus/{roomId}")
+    public void getReadStatus(@DestinationVariable Long roomId,
+                              @Payload Map<String, Object> payload) {
+        System.out.println("getReadStatus 호출됨: " + payload);
+
+        // messageId를 얻는 과정에서 에러가 있는지 확인
+        try {
+            Long messageId = Long.valueOf(payload.get("messageId").toString());
+            System.out.println("messageId 변환 성공: " + messageId);
+
+            // 메시지 정보 가져오기
+            ChatMessageBean message = chatService.getMessageById(messageId);
+
+            if (message != null) {
+                System.out.println("메시지 찾음: " + message.getMessageId());
+
+                // 모든 읽음 상태 정보 가져오기
+                List<ChatReadReceiptBean> readReceipts = chatService.getReadReceiptsByMessageId(messageId);
+                message.setReadCount(readReceipts.size());
+
+                System.out.println("메시지 읽음 상태: " + message.getReadCount() + ", 전송 경로: /topic/read-status/" + roomId);
+
+                // 룸의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
+                messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+                System.out.println("읽음 상태 브로드캐스트 완료");
+            } else {
+                System.out.println("메시지를 찾을 수 없음: " + messageId);
+            }
+        } catch (Exception e) {
+            System.out.println("getReadStatus 처리 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // 타이핑 상태 전송
+    @MessageMapping("/chat.typing.{roomId}")
+    public void typingStatus(@DestinationVariable Long roomId,
+                             @Payload Map<String, Object> payload) {
+        String userId = (String) payload.get("userId");
+        boolean isTyping = (boolean) payload.get("isTyping");
+
+        // 타이핑 상태를 방의 모든 참여자에게 브로드캐스트
+        List<ChatParticipantBean> participants = chatService.getRoomParticipants(roomId);
+
+        for (ChatParticipantBean participant : participants) {
+            if (!participant.getUser_id().equals(userId)) {
+                Map<String, Object> typingStatus = new HashMap<>();
+                typingStatus.put("userId", userId);
+                typingStatus.put("isTyping", isTyping);
+
+                // 참여자의 닉네임 정보 추가
+                for (ChatParticipantBean p : participants) {
+                    if (p.getUser_id().equals(userId)) {
+                        typingStatus.put("userNickname", p.getUserNickname());
+                        break;
+                    }
+                }
+
+                messagingTemplate.convertAndSendToUser(
+                        participant.getUser_id(),
+                        "/queue/typing." + roomId,
+                        typingStatus
+                );
+            }
+        }
     }
 
     // === 뷰 컨트롤러 메서드 ===

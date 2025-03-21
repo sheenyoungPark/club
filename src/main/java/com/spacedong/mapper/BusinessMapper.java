@@ -29,5 +29,6 @@ public interface BusinessMapper {
     @Select("SELECT * FROM business WHERE business_id LIKE '%'||#{keyword}||'%' OR business_name LIKE '%'||#{keyword}||'%'")
     List<BusinessBean> searchBusinessByKeyword(String keyword);
 
-
+    @Select("SELECT * FROM business WHERE business_id=#{senderId}")
+    BusinessBean getBusinessById(String senderId);
 }

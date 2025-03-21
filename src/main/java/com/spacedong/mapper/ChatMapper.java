@@ -74,11 +74,11 @@ public interface ChatMapper {
             "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cp.user_id) " +
             "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cp.user_id) " +
             "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cp.user_id) " +
-            "END as user_nickname, " +
+            "END as userNickname, " +
             "CASE cp.user_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cp.user_id) " +
             "  ELSE NULL " +
-            "END as user_profile " +
+            "END as userProfile " +
             "FROM chat_participant cp " +
             "WHERE cp.room_id = #{roomId}")
     List<ChatParticipantBean> getParticipantsByRoomId(@Param("roomId") Long roomId);
@@ -99,16 +99,19 @@ public interface ChatMapper {
             "m.member_nickname as nickname, m.member_profile as profile_image " +
             "FROM member m " +
             "WHERE m.member_nickname LIKE '%' || #{keyword} || '%' " +
+            "OR m.member_id LIKE '%' || #{keyword} || '%' " +
             "UNION ALL " +
             "SELECT b.business_id as user_id, 'BUSINESS' as user_type, " +
             "b.business_name as nickname, NULL as profile_image " +
             "FROM business b " +
             "WHERE b.business_name LIKE '%' || #{keyword} || '%' " +
+            "OR b.business_id LIKE '%' || #{keyword} || '%' " +
             "UNION ALL " +
             "SELECT a.admin_id as user_id, 'ADMIN' as user_type, " +
             "a.admin_name as nickname, NULL as profile_image " +
             "FROM admin a " +
-            "WHERE a.admin_name LIKE '%' || #{keyword} || '%'")
+            "WHERE a.admin_name LIKE '%' || #{keyword} || '%'" +
+            "OR a.admin_id LIKE '%' || #{keyword} || '%'")
     List<ChatUserBean> searchUsers(@Param("keyword") String keyword);
 
     // Club 멤버 검색
@@ -132,32 +135,52 @@ public interface ChatMapper {
     @Options(useGeneratedKeys = true, keyProperty = "messageId", keyColumn = "message_id")
     int sendMessage(ChatMessageBean message);
 
-    @Select("SELECT cm.*, " +
+    @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
+            "cm.sender_id as senderId, cm.sender_type as senderType, " +
+            "cm.message_content as messageContent, cm.message_type as messageType, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, cm.read_count as readCount, " +
             "CASE cm.sender_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
             "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
             "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cm.sender_id) " +
-            "END as sender_nickname, " +
+            "END as senderNickname, " +
             "CASE cm.sender_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cm.sender_id) " +
             "  ELSE NULL " +
-            "END as sender_profile, " +
+            "END as senderProfile, " +
             "CASE WHEN EXISTS (SELECT 1 FROM chat_read_receipt crr WHERE crr.message_id = cm.message_id " +
             "                 AND crr.reader_id = #{currentUserId}) " +
-            "THEN 1 ELSE 0 END as is_read " +
+            "THEN 1 ELSE 0 END as isRead " +
             "FROM chat_message cm " +
             "WHERE cm.room_id = #{roomId} " +
             "ORDER BY cm.send_time ASC")
     List<ChatMessageBean> getMessagesByRoomId(@Param("roomId") Long roomId, @Param("currentUserId") String currentUserId);
 
-    @Select("SELECT * FROM chat_message WHERE message_id = #{messageId}")
+    @Select("SELECT message_id as messageId, room_id as roomId, sender_id as senderId, " +
+            "sender_type as senderType, message_content as messageContent, " +
+            "message_type as messageType, file_path as filePath, send_time as sendTime, " +
+            "read_count as readCount " +
+            "FROM chat_message WHERE message_id = #{messageId}")
     ChatMessageBean getMessageById(@Param("messageId") Long messageId);
 
     @Update("UPDATE chat_message SET read_count = read_count + 1 WHERE message_id = #{messageId}")
     int incrementReadCount(@Param("messageId") Long messageId);
 
     // 메시지 검색
-    @Select("SELECT cm.* FROM chat_message cm " +
+    @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
+            "cm.sender_id as senderId, cm.sender_type as senderType, " +
+            "cm.message_content as messageContent, cm.message_type as messageType, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, cm.read_count as readCount, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
+            "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cm.sender_id) " +
+            "END as senderNickname, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  ELSE NULL " +
+            "END as senderProfile " +
+            "FROM chat_message cm " +
             "WHERE cm.room_id = #{roomId} " +
             "AND cm.message_content LIKE '%' || #{keyword} || '%' " +
             "ORDER BY cm.send_time DESC")

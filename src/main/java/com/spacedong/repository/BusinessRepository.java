@@ -31,5 +31,9 @@ public class BusinessRepository {
     public int checkEmail(String business_email) {
         return businessMapper.checkEmail(business_email);
     }
+
+    public BusinessBean getBusinessById(String senderId) {
+        return businessMapper.getBusinessById(senderId);
+    }
 }
 
