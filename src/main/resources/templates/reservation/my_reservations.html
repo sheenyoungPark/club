@@ -435,13 +435,13 @@
             </div>
             <div class="reservation-footer">
                 <button
-                        th:if="${reservation.status != 'CANCELLED' && reservation.status != 'COMPLETED'}"
+                        th:if="${reservation.status == 'PENDING'}"
                         th:onclick="'openCancelModal(' + ${reservation.reservation_id} + ')'"
                         class="btn btn-cancel">
                     예약 취소
                 </button>
                 <button
-                        th:if="${reservation.status == 'CANCELLED' || reservation.status == 'COMPLETED'}"
+                        th:if="${reservation.status != 'PENDING'}"
                         class="btn btn-disabled" disabled>
                     예약 취소
                 </button>

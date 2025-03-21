@@ -189,4 +189,12 @@ public interface BusinessMapper {
             "FROM business " +
             "WHERE business_id = #{businessId}")
     BusinessBean selectBusinessById(String businessId);
+
+    //사업자 취소시 포인트 차감==========================================
+    @Update("update business set business_point = business_point - #{price} where business_id = #{business_id}")
+    void cancleReservation(int price, String business_id);
+
+    @Update("update business set business_point = business_point + #{price} where business_id = #{business_id}")
+    void cancleReservationMP(int price, String business_id);
+    //===============================================================
 }

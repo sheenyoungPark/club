@@ -260,4 +260,12 @@ public class BusinessService {
         return businessRepository.getItemInfo(itemId);
     }
 
+    //사업자 취소시 포인트 차감==========================================
+    public void cancleReservation(int price, String business_id){
+        businessRepository.cancleReservation(price, business_id);
+    }
+    public void cancleReservationMP(int price, String business_id){
+        businessRepository.cancleReservationMP(price, business_id);
+    }
+    //===============================================================
 }
