@@ -450,16 +450,17 @@
     <div class="button-container">
         <a href="javascript:history.back()" class="btn btn-secondary">이전으로 돌아가기</a>
 
-        <!-- 취소 가능한 상태일 때만 취소 버튼 표시 -->
+        <!-- 대기중(PENDING) 상태일 때만 취소 버튼 활성화 -->
         <button
-                th:if="${reservation.status != 'CANCELLED' && reservation.status != 'COMPLETED'}"
+                th:if="${reservation.status == 'PENDING'}"
                 onclick="openCancelModal()"
                 class="btn btn-danger">
             예약 취소하기
         </button>
 
+        <!-- 대기중이 아닐 때는 비활성화된 버튼 표시 -->
         <button
-                th:if="${reservation.status == 'CANCELLED' || reservation.status == 'COMPLETED'}"
+                th:if="${reservation.status != 'PENDING'}"
                 class="btn btn-disabled"
                 disabled>
             예약 취소하기
