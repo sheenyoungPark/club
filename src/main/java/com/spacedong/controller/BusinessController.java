@@ -49,6 +49,9 @@ public class BusinessController {
     @Resource(name = "loginBusiness")
     private BusinessBean loginBusiness;
 
+    @Resource(name = "loginMember")
+    private MemberBean loginMember;
+
     @InitBinder
     protected void initBinder(WebDataBinder binder) {
         if (binder.getTarget() instanceof MemberBean) {
@@ -94,8 +97,19 @@ public class BusinessController {
         if (businessBean.getBusiness_id() == null || businessBean.getBusiness_pw() == null) {
             return "/member/login_fail";
         }
+
+        // 개인회원 로그인 상태 확인 및 초기화
+        if (loginMember != null && loginMember.isLogin()) {
+            // 개인회원 로그인 상태 초기화
+            loginMember.setLogin(false);
+            loginMember.setMember_id(null);
+            loginMember.setMember_nickname(null);
+            loginMember.setMember_pw(null);
+            System.out.println("기업회원 로그인 시도 - 기존 개인회원 로그인 초기화됨");
+        }
+
         if (businessService.getLoginBusiness(businessBean)) {
-            // DB에서 전체 사업자 정보를 조회 (예: businessService.getBusinessById)
+            // DB에서 전체 사업자 정보를 조회
             BusinessBean fullBusiness = businessService.selectBusinessById(businessBean.getBusiness_id());
             if(fullBusiness != null && fullBusiness.getBusiness_pw().equals(businessBean.getBusiness_pw())){
                 loginBusiness.setBusiness_id(fullBusiness.getBusiness_id());
@@ -104,6 +118,11 @@ public class BusinessController {
                 loginBusiness.setBusiness_name(fullBusiness.getBusiness_name());
                 // 필요한 다른 필드들도 업데이트
                 loginBusiness.setLogin(true);
+
+                // 디버깅 로그
+                System.out.println("기업회원 로그인 성공: " + fullBusiness.getBusiness_id());
+                System.out.println("개인회원 로그인 상태: " + loginMember.isLogin());
+
                 return "business/login_success";
             } else {
                 return "member/login_fail";

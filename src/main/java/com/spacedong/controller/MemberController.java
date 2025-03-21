@@ -50,11 +50,15 @@ public class MemberController {
 
 	@PostMapping("/login_pro")
 	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean) {
-		// 로그인 시도 전에 다른 계정 로그아웃 처리
-		loginBusiness.setLogin(false);
-		loginBusiness.setBusiness_id(null);
-		loginBusiness.setBusiness_name(null);
-		loginBusiness.setBusiness_pw(null);
+		// 로그인 시도 전에 기업회원 로그인 상태 확인 및 초기화
+		if (loginBusiness != null && loginBusiness.isLogin()) {
+			// 기업회원 로그인 상태 초기화
+			loginBusiness.setLogin(false);
+			loginBusiness.setBusiness_id(null);
+			loginBusiness.setBusiness_name(null);
+			loginBusiness.setBusiness_pw(null);
+			System.out.println("개인회원 로그인 시도 - 기존 기업회원 로그인 초기화됨");
+		}
 
 		// 로그인 검증 (ID와 PW로 로그인 성공 여부 판단)
 		if (memberService.getLoginMember(memberBean)) {
