@@ -502,21 +502,7 @@
     function closeCancelModal() {
         document.getElementById('cancelModal').style.display = 'none';
     }
-
-    // ESC 키로 모달 닫기
-    window.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeCancelModal();
-        }
-    });
-
-    // 모달 바깥 클릭 시 닫기
-    window.onclick = function(event) {
-        const modal = document.getElementById('cancelModal');
-        if (event.target === modal) {
-            closeCancelModal();
-        }
-    };
 </script>
+
 </body>
 </html>

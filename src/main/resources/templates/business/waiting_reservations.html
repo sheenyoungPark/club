@@ -312,7 +312,7 @@
 <div class="waiting-reservations-container">
     <div class="page-title">
         <h1>예약 대기 목록</h1>
-        <a th:href="@{/business/businessinfo}" class="back-button">
+        <a th:href="@{/business/info}" class="back-button">
             <i class="fas fa-arrow-left"></i> 사업자 정보로 돌아가기
         </a>
     </div>
@@ -617,6 +617,38 @@
             closeDeclineModal();
         }
     };
+
+    // 페이지가 로드될 때 실행
+    (function() {
+        // 페이지가 로드될 때마다 히스토리에 현재 상태를 추가
+        window.history.pushState(null, null, window.location.href);
+
+        // 히스토리 상태가 변경될 때마다 발생하는 이벤트
+        window.addEventListener('popstate', function() {
+            // 다시 현재 URL로 상태 추가 (앞으로 가기 효과)
+            window.history.pushState(null, null, window.location.href);
+
+            // 선택적: 사용자에게 알림
+            alert("뒤로가기가 비활성화되어 있습니다.");
+        });
+    })();
+
+    // 세션 스토리지를 활용한 추가 보호 방법
+    window.onload = function() {
+        // 페이지 로드 시 무작위 값을 세션 스토리지에 저장
+        let pageId = Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem('currentPage', pageId);
+
+        // 주기적으로 체크
+        setInterval(function() {
+            // 저장된 값이 변경되었는지 확인 (브라우저 캐시에서 페이지가 복원된 경우)
+            if (sessionStorage.getItem('currentPage') !== pageId) {
+                // 현재 페이지로 강제 리디렉션
+                window.location.reload();
+            }
+        }, 300);
+    };
+
 </script>
 </body>
 </html>

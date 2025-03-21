@@ -753,6 +753,24 @@
             closeCancelModal();
         }
     };
+    // 페이지가 로드될 때 실행
+    window.onload = function() {
+        // 브라우저 히스토리 조작
+        history.pushState(null, null, location.href);
+
+        // 뒤로가기 버튼 이벤트 감지 (popstate)
+        window.onpopstate = function() {
+            history.go(1); // 강제로 앞으로 이동
+        };
+    };
+
+    // 페이지를 떠날 때 경고 메시지 표시 (선택적)
+    window.addEventListener('beforeunload', function(e) {
+        // 취소 메시지
+        const message = '페이지를 떠나시겠습니까?';
+        e.returnValue = message;
+        return message;
+    });
 </script>
 </body>
 </html>
