@@ -90,4 +90,7 @@ public interface MemberMapper {
 
 
 
+
+    @Select("select * from member where member_id LIKE '%'||#{keyword}||'%' OR member_nickname LIKE '%'||#{keyword}||'%'")
+    List<MemberBean> searchUsersByKeyword(String keyword);
 }

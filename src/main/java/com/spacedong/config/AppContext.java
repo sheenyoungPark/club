@@ -3,6 +3,7 @@ package com.spacedong.config;
 import com.spacedong.beans.AdminBean;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.MemberBean;
+import com.spacedong.interceptor.TopMenuInterceptor;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -12,12 +13,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.annotation.SessionScope;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.sql.DataSource;
 
 @Configuration
 @ComponentScan({"com.spacedong.controller", "com.spacedong.service"}) // 컨트롤러와 서비스 스캐닝
-public class AppContext {
+public class AppContext implements WebMvcConfigurer {
 
     @Bean(name="loginMember")
     @SessionScope
@@ -72,5 +75,19 @@ public class AppContext {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(dataSource());
         return sqlSessionFactoryBean.getObject();
+    }
+
+    // TopMenuInterceptor 빈 정의
+    @Bean
+    public TopMenuInterceptor topMenuInterceptor() {
+        return new TopMenuInterceptor(loginMember(), loginBusiness()); // ✅ 수정됨
+    }
+    // 인터셉터 등록
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        System.out.println("인터셉터 등록");
+        registry.addInterceptor(topMenuInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/resources/**", "/css/**", "/js/**", "/images/**");
     }
 }

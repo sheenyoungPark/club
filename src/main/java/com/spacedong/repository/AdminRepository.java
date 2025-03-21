@@ -22,6 +22,10 @@ public class AdminRepository {
 	public List<ClubBean> getWaitClub() {
 		return adminMapper.getWaitClub();
 	}
+
+	public AdminBean getAdminById(String adminId) {
+		return adminMapper.getAdminById(adminId);
+	}
 	
 	
 }

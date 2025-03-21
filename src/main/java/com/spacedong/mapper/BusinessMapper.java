@@ -89,7 +89,8 @@ public interface BusinessMapper {
             "WHERE i.item_id = #{itemId}")
     Map<String, String> getItemInfo(@Param("itemId") String itemId);
 
-
+    @Select("SELECT * FROM business WHERE business_id LIKE '%'||#{keyword}||'%' OR business_name LIKE '%'||#{keyword}||'%'")
+    List<BusinessBean> searchBusinessByKeyword(String keyword);
 
 
 

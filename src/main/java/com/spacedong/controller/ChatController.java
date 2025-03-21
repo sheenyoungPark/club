@@ -1,0 +1,350 @@
+package com.spacedong.controller;
+
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.spacedong.beans.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.spacedong.service.ChatService;
+
+import jakarta.annotation.Resource;
+
+@Controller
+@RequestMapping("/chat")
+public class ChatController {
+
+    @Resource(name = "loginMember")
+    private MemberBean loginMember;
+
+    @Autowired
+    private ChatService chatService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    // === REST API 엔드포인트 ===
+
+    // 사용자의 채팅방 목록 조회
+    @GetMapping("/rooms")
+    @ResponseBody
+    public ResponseEntity<List<ChatRoomBean>> getUserChatRooms() {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<ChatRoomBean> rooms = chatService.getChatRoomsByUserId(loginMember.getMember_id());
+        return ResponseEntity.ok(rooms);
+    }
+
+    // 채팅방 상세 정보 조회
+    @GetMapping("/room/{roomId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getChatRoomDetail(@PathVariable Long roomId) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        ChatRoomBean room = chatService.getChatRoomById(roomId);
+        List<ChatParticipantBean> participants = chatService.getRoomParticipants(roomId);
+        List<ChatMessageBean> messages = chatService.getRoomMessages(roomId, loginMember.getMember_id());
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("room", room);
+        responseData.put("participants", participants);
+        responseData.put("messages", messages);
+
+        return ResponseEntity.ok(responseData);
+    }
+
+    @PostMapping("/room/create")
+    @ResponseBody
+    public ResponseEntity<ChatRoomBean> createChatRoom(@RequestBody Map<String, Object> request) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        ChatRoomBean chatRoom = new ChatRoomBean();
+        chatRoom.setRoom_name((String) request.get("roomName"));
+        chatRoom.setRoom_type((String) request.get("roomType"));
+
+        if ("CLUB".equals(chatRoom.getRoom_type()) && request.get("clubId") != null) {
+            chatRoom.setClub_id(Integer.parseInt(request.get("clubId").toString()));
+        } else {
+            // For personal chats, set club_id to null
+            chatRoom.setClub_id(null);
+        }
+
+        @SuppressWarnings("unchecked")
+        List<ChatParticipantBean> participants = (List<ChatParticipantBean>) request.get("participants");
+
+        ChatRoomBean createdRoom = chatService.createChatRoom(chatRoom, participants);
+        return ResponseEntity.ok(createdRoom);
+    }
+
+    // 1:1 채팅방 생성/조회
+    @PostMapping("/room/personal")
+    @ResponseBody
+    public ResponseEntity<ChatRoomBean> getOrCreatePersonalChatRoom(@RequestBody Map<String, String> request) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String userId1 = loginMember.getMember_id();
+        String userType1 = "MEMBER"; // 현재는 MEMBER만 지원, 필요시 확장
+        String userId2 = request.get("targetUserId");
+        String userType2 = request.get("targetUserType");
+
+        System.out.println("Creating/finding personal chat between " + userId1 + " and " + userId2);
+
+        ChatRoomBean room = chatService.getOrCreatePersonalChatRoom(userId1, userType1, userId2, userType2);
+        return ResponseEntity.ok(room);
+    }
+
+    // 클럽 채팅방 생성/조회
+    @PostMapping("/room/club")
+    @ResponseBody
+    public ResponseEntity<ChatRoomBean> getOrCreateClubChatRoom(@RequestBody Map<String, Object> request) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        int clubId = Integer.parseInt(request.get("clubId").toString());
+        String userId = loginMember.getMember_id();
+        String userType = "MEMBER"; // 현재는 MEMBER만 지원, 필요시 확장
+
+        ChatRoomBean room = chatService.getOrCreateClubChatRoom(clubId, userId, userType);
+        return ResponseEntity.ok(room);
+    }
+
+    // 채팅방 나가기
+    @PostMapping("/room/{roomId}/leave")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> leaveRoom(@PathVariable Long roomId) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        int result = chatService.leaveRoom(roomId, loginMember.getMember_id());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", result > 0);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 메시지 검색
+    @GetMapping("/room/{roomId}/search")
+    @ResponseBody
+    public ResponseEntity<List<ChatMessageBean>> searchMessages(@PathVariable Long roomId,
+                                                                @RequestParam String keyword) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<ChatMessageBean> messages = chatService.searchMessages(roomId, keyword);
+        return ResponseEntity.ok(messages);
+    }
+
+    // 사용자 검색
+    @GetMapping("/users/search")
+    @ResponseBody
+    public ResponseEntity<List<ChatUserBean>> searchUsers(@RequestParam String keyword) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<ChatUserBean> users = chatService.searchUsers(keyword);
+        return ResponseEntity.ok(users);
+    }
+
+    // 클럽 검색
+    @GetMapping("/clubs/search")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> searchClubs(@RequestParam String keyword) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Map<String, Object>> clubs = chatService.searchClubs(keyword);
+        return ResponseEntity.ok(clubs);
+    }
+
+    // 클럽 멤버 조회
+    @GetMapping("/club/{clubId}/members")
+    @ResponseBody
+    public ResponseEntity<List<ChatUserBean>> getClubMembers(@PathVariable Long clubId) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<ChatUserBean> members = chatService.getClubMembers(clubId);
+        return ResponseEntity.ok(members);
+    }
+
+    // === WebSocket 메서드 ===
+
+    // 메시지 전송
+    @MessageMapping("/chat.sendMessage")
+    public void sendMessage(@Payload ChatMessageBean message) {
+        chatService.sendMessage(message);
+    }
+
+    // 메시지 읽음 표시
+    @MessageMapping("/chat.markAsRead/{roomId}")
+    public void markAsRead(@DestinationVariable Long roomId,
+                           @Payload Map<String, Object> payload,
+                           SimpMessageHeaderAccessor headerAccessor) {
+        Principal principal = headerAccessor.getUser();
+        String userId = principal != null ? principal.getName() : (String) payload.get("userId");
+        Long messageId = Long.valueOf(payload.get("messageId").toString());
+
+        // 읽음 처리
+        chatService.markAsRead(roomId, userId, messageId);
+
+        // 메시지 정보 가져오기
+        ChatMessageBean message = chatService.getMessageById(messageId);
+
+        if (message != null) {
+            // 모든 읽음 상태 정보 가져오기
+            List<ChatReadReceiptBean> readReceipts = chatService.getReadReceiptsByMessageId(messageId);
+            message.setReadCount(readReceipts.size());
+
+            // 룸의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
+            messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+
+            // 원래 발신자에게도 개인 알림
+            if (!message.getSenderId().equals(userId)) {
+                messagingTemplate.convertAndSendToUser(
+                        message.getSenderId(),
+                        "/queue/read-receipts",
+                        message
+                );
+            }
+        }
+    }
+
+    @MessageMapping("/chat.getReadStatus/{roomId}")
+    public void getReadStatus(@DestinationVariable Long roomId,
+                              @Payload Map<String, Object> payload) {
+        System.out.println("getReadStatus 호출됨: " + payload);
+
+        // messageId를 얻는 과정에서 에러가 있는지 확인
+        try {
+            Long messageId = Long.valueOf(payload.get("messageId").toString());
+            System.out.println("messageId 변환 성공: " + messageId);
+
+            // 메시지 정보 가져오기
+            ChatMessageBean message = chatService.getMessageById(messageId);
+
+            if (message != null) {
+                System.out.println("메시지 찾음: " + message.getMessageId());
+
+                // 모든 읽음 상태 정보 가져오기
+                List<ChatReadReceiptBean> readReceipts = chatService.getReadReceiptsByMessageId(messageId);
+                message.setReadCount(readReceipts.size());
+
+                System.out.println("메시지 읽음 상태: " + message.getReadCount() + ", 전송 경로: /topic/read-status/" + roomId);
+
+                // 룸의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
+                messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+                System.out.println("읽음 상태 브로드캐스트 완료");
+            } else {
+                System.out.println("메시지를 찾을 수 없음: " + messageId);
+            }
+        } catch (Exception e) {
+            System.out.println("getReadStatus 처리 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // 타이핑 상태 전송
+    @MessageMapping("/chat.typing.{roomId}")
+    public void typingStatus(@DestinationVariable Long roomId,
+                             @Payload Map<String, Object> payload) {
+        String userId = (String) payload.get("userId");
+        boolean isTyping = (boolean) payload.get("isTyping");
+
+        // 타이핑 상태를 방의 모든 참여자에게 브로드캐스트
+        List<ChatParticipantBean> participants = chatService.getRoomParticipants(roomId);
+
+        for (ChatParticipantBean participant : participants) {
+            if (!participant.getUser_id().equals(userId)) {
+                Map<String, Object> typingStatus = new HashMap<>();
+                typingStatus.put("userId", userId);
+                typingStatus.put("isTyping", isTyping);
+
+                // 참여자의 닉네임 정보 추가
+                for (ChatParticipantBean p : participants) {
+                    if (p.getUser_id().equals(userId)) {
+                        typingStatus.put("userNickname", p.getUserNickname());
+                        break;
+                    }
+                }
+
+                messagingTemplate.convertAndSendToUser(
+                        participant.getUser_id(),
+                        "/queue/typing." + roomId,
+                        typingStatus
+                );
+            }
+        }
+    }
+
+    // === 뷰 컨트롤러 메서드 ===
+
+    // 채팅방 목록 페이지
+    @GetMapping("/view/rooms")
+    public String chatRoomList(Model model) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return "redirect:/member/login";
+        }
+
+        model.addAttribute("rooms", chatService.getMyRooms());
+        return "chat/roomList";
+    }
+
+    // 채팅방 상세 페이지
+    @GetMapping("/view/room/{roomId}")
+    public String chatRoomDetail(@PathVariable Long roomId, Model model) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return "redirect:/member/login";
+        }
+
+        ChatRoomBean room = chatService.getChatRoomById(roomId);
+        if (room == null) {
+            return "redirect:/chat/view/rooms";
+        }
+
+        model.addAttribute("room", room);
+        model.addAttribute("participants", chatService.getRoomParticipants(roomId));
+        return "chat/roomDetail";
+    }
+
+    // 새 채팅 시작 페이지 (사용자 검색)
+    @GetMapping("/view/new")
+    public String newChat(Model model) {
+        if (loginMember == null || !loginMember.isLogin()) {
+            return "redirect:/member/login";
+        }
+
+        return "chat/newChat";
+    }
+}

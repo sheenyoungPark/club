@@ -16,7 +16,6 @@ public class TopMenuInterceptor implements HandlerInterceptor {
         this.loginMember = memberBean;
         this.loginBusiness = businessBean;
     }
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
@@ -56,11 +55,6 @@ public class TopMenuInterceptor implements HandlerInterceptor {
         if (modelAndView != null) {
             modelAndView.addObject("loginMember", loginMember);
             modelAndView.addObject("loginBusiness", loginBusiness);
-
-            // 디버깅 정보 출력
-            System.out.println("TopMenuInterceptor - 모델에 로그인 정보 추가:");
-            System.out.println("Member 로그인 상태: " + (loginMember != null ? loginMember.isLogin() : "null"));
-            System.out.println("Business 로그인 상태: " + (loginBusiness != null ? loginBusiness.isLogin() : "null"));
         }
     }
 }

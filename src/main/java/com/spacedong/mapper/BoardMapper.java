@@ -69,7 +69,6 @@ public interface BoardMapper {
             "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getAllBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
-
     @Select("SELECT COUNT(*) FROM ("
             + "SELECT board_id FROM member_board "
             + "UNION ALL "
@@ -128,7 +127,6 @@ public interface BoardMapper {
     @Insert("INSERT INTO ${boardType}_board_comment (comment_id, board_id, comment_writer_id, comment_text, parent_comment_id, create_date) "
             + "VALUES (comment_id_seq.NEXTVAL, #{comment.board_id}, #{comment.comment_writer_id}, #{comment.comment_text}, #{comment.parent_comment_id, jdbcType=INTEGER}, CURRENT_TIMESTAMP)")
     void writeComment(@Param("boardType") String boardType, @Param("comment") BoardCommentBean comment);
-
 
 
     /** ✅ 게시글 작성 **/

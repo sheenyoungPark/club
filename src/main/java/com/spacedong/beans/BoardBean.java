@@ -84,7 +84,7 @@ public class BoardBean {
 	public LocalDateTime getCreatedAt() {
 		return create_date;
 	}
-
+	
 
     public int getComment_count() {
         return comment_count;
