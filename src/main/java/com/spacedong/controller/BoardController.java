@@ -2,7 +2,10 @@ package com.spacedong.controller;
 
 import com.spacedong.beans.BoardBean;
 import com.spacedong.beans.BoardCommentBean;
+import com.spacedong.beans.BusinessBean;
+import com.spacedong.beans.MemberBean;
 import com.spacedong.service.BoardService;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +22,12 @@ public class BoardController {
 
 	@Autowired
 	private BoardService boardService;
+
+	@Resource(name = "loginMember")
+	private MemberBean loginMember;
+
+	@Resource(name = "loginBusiness")
+	private BusinessBean loginBusiness;
 
 	/** ✅ 게시판 목록 조회 */
 	@GetMapping("/board")
@@ -92,6 +101,29 @@ public class BoardController {
 
 		List<String> images = boardService.getBoardImages(boardType, boardId);
 
+		// 현재 로그인한 사용자 ID 확인
+		String userId = null;
+		String userType = null;
+
+		if (loginMember != null && loginMember.isLogin()) {
+			userId = loginMember.getMember_id();
+			userType = "member";
+		} else if (loginBusiness != null && loginBusiness.isLogin()) {
+			userId = loginBusiness.getBusiness_id();
+			userType = "business";
+		}
+
+		// 사용자 좋아요 상태 확인
+		boolean userLiked = false;
+		if (userId != null && !userId.isEmpty()) {
+			userLiked = boardService.hasUserLiked(boardType, boardId, userId);
+		}
+		model.addAttribute("userLiked", userLiked);
+
+		// 현재 사용자 정보 모델에 추가 - JavaScript에서 사용
+		model.addAttribute("currentUserId", userId != null ? userId : "");
+		model.addAttribute("currentUserType", userType != null ? userType : "");
+
 		model.addAttribute("comments", comments);
 		model.addAttribute("post", post);
 		model.addAttribute("boardType", boardType);
@@ -106,36 +138,48 @@ public class BoardController {
 	public Map<String, Object> toggleLike(
 			@RequestParam("board_id") int boardId,
 			@RequestParam("boardType") String boardType,
-			@RequestParam(value = "action", required = false) String action) {
+			@RequestParam("user_id") String userId,
+			@RequestParam("user_type") String userType) {
 
 		Map<String, Object> response = new HashMap<>();
 
-		// action 파라미터에 따라 좋아요 증가 또는 감소
-		int newLikeCount;
-		if ("unlike".equals(action)) {
-			// 좋아요 취소 (감소)
-			boardService.decrementLike(boardType, boardId);
-			newLikeCount = boardService.getLikeCount(boardType, boardId);
-		} else {
-			// 좋아요 (증가)
-			boardService.incrementLike(boardType, boardId);
-			newLikeCount = boardService.getLikeCount(boardType, boardId);
+		// 사용자 ID 검증
+		if (userId == null || userId.isEmpty()) {
+			response.put("success", false);
+			response.put("message", "좋아요를 누르려면 로그인이 필요합니다.");
+			return response;
 		}
 
-		// JSON 응답 생성
-		response.put("success", true);
-		response.put("newLikeCount", newLikeCount);
+		// 사업자 계정인 경우 제한
+		if ("business".equals(userType)) {
+			response.put("success", false);
+			response.put("message", "개인 회원으로 로그인해주세요.");
+			return response;
+		}
+
+		try {
+			// 좋아요 토글 처리
+			Map<String, Object> result = boardService.toggleLike(boardType, boardId, userId, userType);
+
+			// 응답 구성
+			response.put("success", true);
+			response.put("newLikeCount", result.get("likeCount"));
+			response.put("userLiked", result.get("userLiked"));
+		} catch (Exception e) {
+			response.put("success", false);
+			response.put("message", "좋아요 처리 중 오류가 발생했습니다.");
+			e.printStackTrace();
+		}
 
 		return response;
 	}
-
 
 	/** ✅ 댓글 작성 */
 	@PostMapping("/comment/write")
 	public String writeComment(@RequestParam("board_id") int boardId,
 							   @RequestParam("comment_text") String commentText,
-							   @RequestParam(value = "comment_writer_id", required = false) String writerId, // ✅ NULL 허용
-							   @RequestParam(value = "comment_writer_name", required = false) String writerName, // ✅ NULL 허용
+							   @RequestParam(value = "comment_writer_id", required = false) String writerId,
+							   @RequestParam(value = "comment_writer_name", required = false) String writerName,
 							   @RequestParam("boardType") String boardType,
 							   @RequestParam(value = "parent_comment_id", required = false) Integer parentCommentId) {
 
@@ -159,16 +203,14 @@ public class BoardController {
 		return "redirect:/community/boardDetail?id=" + boardId + "&boardType=" + boardType;
 	}
 
-
-
-
-	/** ✅ 1. 글쓰기 페이지 이동 (복구된 부분) */
+	/** ✅ 1. 글쓰기 페이지 이동 */
 	@GetMapping("/boardWrite")
 	public String showBoardWritePage(@RequestParam(value = "boardType", required = false) String boardType, Model model) {
 		model.addAttribute("boardType", boardType);
 		return "community/boardWrite"; // 글쓰기 페이지로 이동
 	}
 
+	/** ✅ 글쓰기 처리 */
 	@PostMapping("/write")
 	public String writeBoard(@RequestParam("boardType") String boardType,
 							 @RequestParam("board_title") String title,
@@ -186,7 +228,7 @@ public class BoardController {
 		System.out.println("📌 저장된 게시글 ID: " + boardId);
 
 		// 2️⃣ 이미지 저장 (이미지가 있을 때만 실행)
-		String uploadDir = "C:/upload/image/" + boardType + "BoardImg/"; // ✅ 저장 경로 변경
+		String uploadDir = "C:/upload/image/" + boardType + "BoardImg/";
 		File dir = new File(uploadDir);
 		if (!dir.exists()) {
 			boolean created = dir.mkdirs();
@@ -222,6 +264,7 @@ public class BoardController {
 		return "redirect:/community/board?boardType=" + boardType;
 	}
 
+	/** ✅ 게시글 삭제 */
 	@PostMapping("/board/delete")
 	public String deleteBoard(@RequestParam("board_id") int boardId,
 							  @RequestParam("boardType") String boardType) {

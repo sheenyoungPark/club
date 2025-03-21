@@ -80,9 +80,26 @@ public class BoardRepository {
     public int getLikeCount(String boardType, int boardId) {
         return boardMapper.getLikeCount(boardType, boardId);
     }
-    /** ✅ 게시글 좋아요 감소 */
+    /** ✅ 게시글 좋아요 수 감소 */
     public void decrementLike(String boardType, int boardId) {
         boardMapper.decrementLike(boardType, boardId);
+    }
+
+    /** ✅ 사용자가 게시글에 좋아요를 눌렀는지 확인 */
+    public boolean checkUserLiked(String boardType, int boardId, String userId) {
+        if (userId == null || userId.isEmpty()) {
+            return false;
+        }
+        return boardMapper.checkUserLiked(boardType, boardId, userId) > 0;
+    }
+    /** ✅ 게시글 좋아요 추가 */
+    public void addBoardLike(String boardType, int boardId, String userId, String userType) {
+        boardMapper.addBoardLike(boardType, boardId, userId, userType);
+    }
+
+    /** ✅ 게시글 좋아요 삭제 */
+    public void removeBoardLike(String boardType, int boardId, String userId) {
+        boardMapper.removeBoardLike(boardType, boardId, userId);
     }
 
 

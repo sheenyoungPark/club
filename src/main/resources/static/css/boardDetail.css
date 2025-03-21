@@ -312,4 +312,24 @@
     font-weight: bold;
     margin-left: 5px;
 }
+.disabled-btn {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.disabled-btn:hover::after {
+    content: '개인 회원으로 로그인해주세요.';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-bottom: 5px;
+}
 
