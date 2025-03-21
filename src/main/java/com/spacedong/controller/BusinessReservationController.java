@@ -121,7 +121,9 @@ public class BusinessReservationController {
         reservationService.updateReservationStatus("CONFIRMED", reservationId);
         paymentService.businessAddPoint(reservation.getTotal_price(), loginBusiness.getBusiness_id());
 
-        loginBusiness.setBusiness_point(loginBusiness.getBusiness_point() + reservation.getTotal_price());
+        BusinessBean bs = businessService.getBusinessById(loginBusiness.getBusiness_id());
+
+        loginBusiness.setBusiness_point(bs.getBusiness_point());
 
         return "redirect:/business/reservations/waiting?success=approved";
     }

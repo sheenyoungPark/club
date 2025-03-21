@@ -4,6 +4,7 @@ import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.beans.ReservationBean;
 import com.spacedong.service.BusinessService;
+import com.spacedong.service.MemberService;
 import com.spacedong.service.PaymentService;
 import com.spacedong.service.ReservationService;
 import jakarta.annotation.Resource;
@@ -34,6 +35,8 @@ public class ReservationController {
 
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private MemberService memberService;
 
     // 예약 가능 시간 확인 API
     @GetMapping("/check-availability")
@@ -243,7 +246,10 @@ public class ReservationController {
         //취소시 비지니스 금액 차감(회수)
 //        paymentService.businessCanclePoint(reservation.getTotal_price(), businessItemBean.getBusiness_id());
         paymentService.updateMemberPoint(loginMember.getMember_id(),reservation.getTotal_price());
-        loginMember.setMember_point(loginMember.getMember_point() + reservation.getTotal_price());
+
+        MemberBean mem = memberService.getMemberById(loginMember.getMember_id());
+
+        loginMember.setMember_point(mem.getMember_point());
         //==============================
 
         // 예약 취소 (상태 변경)
