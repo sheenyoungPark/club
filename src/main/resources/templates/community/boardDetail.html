@@ -14,6 +14,12 @@
 <div class="post-container">
     <h2 class="post-title" th:text="${post.board_title}">게시글 제목</h2>
 
+    <!-- 사용자 정보 (숨겨진 필드) -->
+    <input type="hidden" id="current-user-id"
+           th:value="${(loginMember != null) ? loginMember.member_id : ((loginBusiness != null) ? loginBusiness.business_id : '')}">
+    <input type="hidden" id="current-user-type"
+           th:value="${(loginMember != null) ? 'member' : ((loginBusiness != null) ? 'business' : '')}">
+
     <div th:if="${(loginMember != null and loginMember.member_id == post.board_writer_id)
             || (loginBusiness != null and loginBusiness.business_id == post.board_writer_id)}">
         <!-- 수정 버튼 -->
@@ -42,10 +48,12 @@
     <!-- 좋아요 버튼 -->
     <button type="button"
             th:attr="data-board-id=${post.board_id}, data-board-type=${boardType}"
-            class="like-btn"
-            id="likeButton"
-            onclick="toggleLike(this)">
-        <span class="heart-icon">❤️</span>
+            th:class="${userLiked ? 'like-btn active' : 'like-btn'} + ${currentUserType == 'business' ? ' disabled-btn' : ''}"
+            onclick="toggleLike(this)"
+            th:data-user-id="${currentUserId}"
+            th:data-user-type="${currentUserType}"
+            th:title="${currentUserType == 'business' ? '개인 회원으로 로그인해주세요.' : '좋아요'}">
+        <span th:class="${userLiked ? 'heart-icon filled' : 'heart-icon'}">❤️</span>
         좋아요 <span class="like-count" th:text="${post.board_like}">0</span>
     </button>
 
@@ -58,6 +66,7 @@
             <form th:action="@{/community/comment/write}" method="post">
                 <input type="hidden" name="board_id" th:value="${post.board_id}">
                 <input type="hidden" name="boardType" th:value="${boardType}">
+
 
                 <input type="hidden" name="comment_writer_id"
                        th:value="${(loginMember != null and loginMember.member_id != null) ? loginMember.member_id : ((loginBusiness != null and loginBusiness.business_id != null) ? loginBusiness.business_id : '')}">
@@ -161,13 +170,21 @@
     function toggleLike(button) {
         const boardId = button.getAttribute("data-board-id");
         const boardType = button.getAttribute("data-board-type");
-        const likeKey = `${boardType}_${boardId}_liked`;
-        const isLiked = localStorage.getItem(likeKey) === 'true';
+        const userId = button.getAttribute("data-user-id");
+        const userType = button.getAttribute("data-user-type");
 
-        // 현재 상태에 따라 액션 결정
-        const action = isLiked ? 'unlike' : 'like';
+        if (!userId) {
+            alert("좋아요를 누르려면 로그인이 필요합니다.");
+            return;
+        }
 
-        fetch(`/community/like?board_id=${boardId}&boardType=${boardType}&action=${action}`, {
+        // 클라이언트 사이드에서도 사업자 계정 체크 (선택적)
+        if (userType === "business") {
+            alert("개인 회원으로 로그인해주세요.");
+            return;
+        }
+
+        fetch(`/community/like?board_id=${boardId}&boardType=${boardType}&user_id=${userId}&user_type=${userType}`, {
             method: "POST"
         })
             .then(response => response.json())
@@ -176,23 +193,17 @@
                     // 좋아요 카운트 업데이트
                     button.querySelector(".like-count").textContent = data.newLikeCount;
 
-                    // 로컬 스토리지 상태 토글 및 버튼 스타일 변경
-                    if (isLiked) {
-                        localStorage.removeItem(likeKey);
-                        button.classList.remove('active');
-                        button.querySelector('.heart-icon').classList.remove('filled');
+                    // 좋아요 상태에 따라 버튼 스타일 변경
+                    if (data.userLiked) {
+                        button.classList.add("active");
+                        button.querySelector(".heart-icon").classList.add("filled");
                     } else {
-                        localStorage.setItem(likeKey, 'true');
-                        button.classList.add('active');
-                        button.querySelector('.heart-icon').classList.add('filled');
-
-                        // 좋아요 애니메이션 효과
-                        const heartIcon = button.querySelector('.heart-icon');
-                        heartIcon.style.transform = 'scale(1.3)';
-                        setTimeout(() => {
-                            heartIcon.style.transform = 'scale(1)';
-                        }, 300);
+                        button.classList.remove("active");
+                        button.querySelector(".heart-icon").classList.remove("filled");
                     }
+                } else {
+                    // 에러 메시지 표시
+                    alert(data.message);
                 }
             })
             .catch(error => console.error("🚨 오류:", error));

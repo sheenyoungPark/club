@@ -94,6 +94,40 @@ public class BoardService {
         }
     }
 
+    public Map<String, Object> toggleLike(String boardType, int boardId, String userId, String userType) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 이미 좋아요를 눌렀는지 확인
+        boolean alreadyLiked = boardRepository.checkUserLiked(boardType, boardId, userId);
+
+        if (alreadyLiked) {
+            // 이미 좋아요를 누른 상태라면 좋아요 삭제 및 카운트 감소
+            boardRepository.removeBoardLike(boardType, boardId, userId);
+            boardRepository.decrementLike(boardType, boardId);
+            result.put("action", "unliked");
+        } else {
+            // 좋아요를 누르지 않은 상태라면 좋아요 추가 및 카운트 증가
+            boardRepository.addBoardLike(boardType, boardId, userId, userType);
+            boardRepository.incrementLike(boardType, boardId);
+            result.put("action", "liked");
+        }
+
+        // 현재 좋아요 개수 반환
+        int currentLikes = boardRepository.getLikeCount(boardType, boardId);
+        result.put("likeCount", currentLikes);
+        result.put("userLiked", !alreadyLiked);
+
+        return result;
+    }
+
+    /** ✅ 사용자의 좋아요 상태 확인 */
+    public boolean hasUserLiked(String boardType, int boardId, String userId) {
+        if (userId == null || userId.isEmpty()) {
+            return false;
+        }
+        return boardRepository.checkUserLiked(boardType, boardId, userId);
+    }
+
 
     /** 댓글 조회 (계층 구조 정렬) **/
     public List<BoardCommentBean> getCommentHierarchy(String boardType, int boardId) {

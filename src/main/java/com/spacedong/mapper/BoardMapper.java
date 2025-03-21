@@ -94,6 +94,18 @@ public interface BoardMapper {
     @Update("UPDATE ${boardType}_board SET board_view = board_view + 1 WHERE board_id = #{boardId}")
     void incrementViewCount(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
+    /** ✅ 좋아요 여부 확인 */
+    @Select("SELECT COUNT(*) FROM ${boardType}_board_like WHERE board_id = #{boardId} AND user_id = #{userId}")
+    int checkUserLiked(@Param("boardType") String boardType, @Param("boardId") int boardId, @Param("userId") String userId);
+
+    /** ✅ 좋아요 추가 */
+    @Insert("INSERT INTO ${boardType}_board_like (board_id, user_id, user_type) VALUES (#{boardId}, #{userId}, #{userType})")
+    void addBoardLike(@Param("boardType") String boardType, @Param("boardId") int boardId, @Param("userId") String userId, @Param("userType") String userType);
+
+    /** ✅ 좋아요 삭제 */
+    @Delete("DELETE FROM ${boardType}_board_like WHERE board_id = #{boardId} AND user_id = #{userId}")
+    void removeBoardLike(@Param("boardType") String boardType, @Param("boardId") int boardId, @Param("userId") String userId);
+
 
 
     @Update("UPDATE ${boardType}_board SET board_like = board_like + 1 WHERE board_id = #{boardId}")
@@ -103,7 +115,7 @@ public interface BoardMapper {
     @Select("SELECT board_like FROM ${boardType}_board WHERE board_id = #{boardId}")
     int getLikeCount(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
-    /** ✅ 게시글 좋아요 수 감소 */
+    /** ✅ 좋아요 수 감소 */
     @Update("UPDATE ${boardType}_board SET board_like = CASE WHEN board_like > 0 THEN board_like - 1 ELSE 0 END WHERE board_id = #{boardId}")
     void decrementLike(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
