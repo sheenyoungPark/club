@@ -505,3 +505,109 @@ body {
 .club-post-sidebar::-webkit-scrollbar-thumb:hover {
     background: #a0a0a0;
 }
+.master-controls {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.master-controls h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #333;
+}
+
+.master-controls .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    margin-right: 10px;
+    transition: all 0.2s;
+}
+
+.master-controls .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.master-controls .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+    background-color: #ff5722;
+    color: white;
+}
+
+/* 하단 버튼 위치 조정을 위한 스타일 */
+.button-footer {
+    display: flex;
+    gap: 10px;
+    padding: 15px 30px;
+    justify-content: flex-start;
+    border-top: 1px solid #eee;
+    background-color: #f9f9f9;
+}
+
+.admin-footer {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 10px;
+    color: #555;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 14px;
+    min-width: 90px;
+}
+
+/* 목록으로 돌아가기 버튼 컨테이너 스타일 */
+.back-container {
+    width: 100%;
+    padding: 0 40px 30px 40px;
+    box-sizing: border-box;
+}
+.reservation-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reservation-table th,
+.reservation-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.alert {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.alert-success {
+    background-color: #dff0d8;
+    color: #3c763d;
+}
+
+.alert-danger {
+    background-color: #f2dede;
+    color: #a94442;
+}

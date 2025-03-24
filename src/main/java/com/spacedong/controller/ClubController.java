@@ -4,6 +4,7 @@ import com.spacedong.beans.*;
 import com.spacedong.service.CategoryService;
 import com.spacedong.service.ClubMemberService;
 import com.spacedong.service.ClubService;
+import com.spacedong.service.ReservationService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -40,7 +41,10 @@ public class ClubController {
 	private CategoryService categoryService;
 
 	@Autowired
-	ClubMemberService clubMemberService;
+	private ClubMemberService clubMemberService;
+
+	@Autowired
+	private ReservationService reservationService;
 
 	// ✅ 클럽 정보 페이지
 	@GetMapping("/club_info")
@@ -71,6 +75,10 @@ public class ClubController {
 		// ✅ 현재 사용자가 해당 클럽의 회원인지 확인
 		boolean isMember = clubService.isMemberOfClub(club_id, loginMember.getMember_id());
 
+		//클럽예약 리스트
+		List<ReservationBean> clubReservation = reservationService.getReservationsByClubId(club_id);
+
+		model.addAttribute("clubReservation", clubReservation);
 		model.addAttribute("club", club);
 		model.addAttribute("clubBoardList", clubBoardList);
 		model.addAttribute("isMember", isMember);
@@ -490,4 +498,29 @@ public class ClubController {
 		// 3️⃣ 리다이렉트
 		return "redirect:/club/club_info?club_id=" + clubId;
 	}
+
+	@PostMapping("/club/cancel_reservation")
+	public String cancelReservation(@RequestParam("reservation_id") int reservation_id,
+									@RequestParam("club_id") int club_id,
+									Model model) {
+		// 현재 로그인한 회원이 클럽 회장인지 확인
+		ClubMemberBean clubMemberBean = clubMemberService.getMemberInfo(club_id, loginMember.getMember_id());
+
+		if (clubMemberBean != null && "master".equals(clubMemberBean.getMember_role())) {
+			// 예약 취소 로직 실행
+			reservationService.cancelReservation(reservation_id);
+
+			// 성공 메시지 추가 가능
+			// model.addAttribute("message", "예약이 성공적으로 취소되었습니다.");
+		} else {
+			// 권한 없음 메시지 추가 가능
+			// model.addAttribute("message", "예약 취소 권한이 없습니다.");
+		}
+
+		// 클럽 정보 페이지로 리다이렉트
+		return "redirect:/club/club_info?club_id=" + club_id;
+	}
+
+
+
 }
