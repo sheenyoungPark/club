@@ -60,6 +60,11 @@ public class ClubController {
 				model.addAttribute("member_role", member_role);
 			}
 		}
+
+		// ✅ 클럽 회원 리스트 추가 (변수명 HTML과 통일)
+		List<ClubMemberBean> clubMemberList = clubMemberService.getClubMemberList(club_id);
+		model.addAttribute("clubMemberList", clubMemberList);
+
 		model.addAttribute("club", club);
 		List<ClubBoardBean> clubBoardList = clubService.getBoardListByClubId(club_id);
 

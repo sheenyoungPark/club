@@ -153,6 +153,41 @@
                             </p>
                         </div>
                     </div>
+                    <!-- ✅ 동호회원 리스트 추가 -->
+                    <div th:if="${isMember}" class="club-info-box">
+                        <h3 class="club-info-title">동호회원 리스트</h3>
+                        <div class="club-info-content">
+                            <ul th:if="${#lists.isEmpty(clubMemberList)}">
+                                <li>등록된 회원이 없습니다.</li>
+                            </ul>
+
+                            <div th:unless="${#lists.isEmpty(clubMemberList)}" class="club-post-sidebar">
+                                <ul class="club-post-list">
+                                    <li th:each="member : ${clubMemberList}" class="club-post-item">
+                                        <div class="post-thumbnail">
+                                            <img th:src="${(member.member_profile != null && member.member_profile != '')
+                                                        ? '/image/profile/' + member.member_profile
+                                                           : '/sources/picture/기본이미지.png'}"
+                                                 alt="회원 이미지" />
+                                        </div>
+
+                                        <div class="post-info">
+                                            <span class="post-title" th:text="${member.member_nickname}">회원닉네임</span>
+                                            <span class="post-date" th:if="${member.member_role == 'master'}" style="color: #5d4b8c; font-weight: bold;">회장</span>
+                                        </div>
+                                        <!-- ✅ 회장만 탈퇴 버튼 보이게 -->
+                                        <div class="post-actions" th:if="${member_role == 'master' and member.member_role != 'master'}">
+                                            <form th:action="@{/club/reject}" method="post" onsubmit="return confirm('정말로 이 회원을 탈퇴시키겠습니까?');">
+                                                <input type="hidden" name="club_id" th:value="${club.club_id}" />
+                                                <input type="hidden" name="member_ids" th:value="${member.member_id}" />
+                                                <button type="submit" class="btn-delete">탈퇴시키기</button>
+                                            </form>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 여기서 관리자 메뉴 제거 -->
@@ -250,7 +285,6 @@
                 <span th:if="${pendingCount > 0}" class="badge" th:text="${pendingCount}">3</span>
             </a>
             <a th:href="@{/club/edit(club_id=${club.club_id})}" class="btn btn-sm btn-secondary">동호회 정보 수정</a>
-            <a th:href="@{/club/member/manage(club_id=${club.club_id})}" class="btn btn-sm btn-secondary">회원 관리</a>
         </div>
     </div>
 

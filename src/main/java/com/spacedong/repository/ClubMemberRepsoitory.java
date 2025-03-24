@@ -32,6 +32,10 @@ public class ClubMemberRepsoitory {
         clubMemberMapper.deleteMember(club_id, member_id);
     }
 
+    // ✅ 클럽 회원 전체 리스트 조회
+    public List<ClubMemberBean> getClubMemberList(int club_id) {
+        return clubMemberMapper.getClubMemberList(club_id);
+    }
 
 
 

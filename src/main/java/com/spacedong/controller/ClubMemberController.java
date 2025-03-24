@@ -94,7 +94,7 @@ public class ClubMemberController {
 
         }
 
-        return "redirect:/club/pending?club_id=" + clubId + "&success=rejected";
+        return "redirect:/club/club_info?club_id=" + clubId;
     }
 
     @GetMapping("/leaveClub")

@@ -29,4 +29,11 @@ public interface ClubMemberMapper {
     @Select("select * from club_member where club_id = #{club_id}")
     List<ClubMemberBean> getClubMembers(@Param("club_id") int club_id);
 
+    @Select("SELECT cm.*, m.member_nickname, m.member_profile " +
+            "FROM club_member cm " +
+            "JOIN member m ON cm.member_id = m.member_id " +
+            "WHERE cm.club_id = #{club_id}")
+    List<ClubMemberBean> getClubMemberList(@Param("club_id") int club_id);
+
+
 }

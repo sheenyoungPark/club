@@ -27,4 +27,7 @@ public class ClubMemberService {
         clubMemberRepsoitory.deleteMember(club_id, member_id);
     }
 
+    public List<ClubMemberBean> getClubMemberList(int club_id) {
+        return clubMemberRepsoitory.getClubMemberList(club_id);
+    }
 }
