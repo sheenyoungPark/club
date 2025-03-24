@@ -282,7 +282,7 @@ public class ReservationController {
         }
 
         // 예약 목록 가져오기
-        List<ReservationBean> reservations = reservationService.getReservationsByMemberId(loginMember.getMember_id());
+        List<ReservationBean> reservations = reservationService.getReservationsByMemberId2(loginMember.getMember_id());
 
         for (ReservationBean r : reservations){
             System.out.println(r.getItem_title());

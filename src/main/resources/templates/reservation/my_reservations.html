@@ -425,13 +425,13 @@
                         class="status-badge"
                         th:with="status=${reservation.status}"
                         th:classappend="${status == 'PENDING' ? 'status-pending' :
-                                       (status == 'CONFIRMED' ? 'status-confirmed' :
-                                       (status == 'CANCELLED' ? 'status-cancelled' :
-                                       'status-completed'))}"
+                                        (status == 'CONFIRMED' ? 'status-confirmed' :
+                                        (status == 'CANCELLED' ? 'status-cancelled' :
+                                        (status == 'COMPLETE' ? 'status-completed' : '')))}"
                         th:text="${status == 'PENDING' ? '대기중' :
-                               (status == 'CONFIRMED' ? '예약완료' :
-                               (status == 'CANCELLED' ? '취소됨' :
-                               '완료됨'))}">
+                                 (status == 'CONFIRMED' ? '예약완료' :
+                                 (status == 'CANCELLED' ? '취소됨' :
+                                 (status == 'COMPLETE' ? '사용완료' : '알 수 없음')))}">
                 상태
                 </span>
                     </div>
@@ -452,7 +452,7 @@
 
 
                 <!-- ✅ 리뷰 남기기 버튼 (예약완료 상태인 경우만 표시) -->
-                <a th:if="${reservation.status == 'COMPLETE'}"
+                <a th:if="${reservation.status == 'COMPLETED'}"
                    th:href="@{/reservation/write_review(reservation_id=${reservation.reservation_id})}"
                    class="btn btn-secondary">
                     리뷰 남기기
