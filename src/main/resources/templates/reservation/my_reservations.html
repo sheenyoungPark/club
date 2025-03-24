@@ -399,8 +399,12 @@
 
     <!-- 예약 목록 -->
     <div class="reservations-grid" th:if="${not #lists.isEmpty(reservations)}">
-        <!-- 예약 카드 반복 -->
-        <div class="reservation-card" th:each="reservation : ${reservations}" th:data-page="1">
+        <!-- 예약 카드 반복 - 클럽 ID가 null이 아닌 경우 숨김 -->
+        <div class="reservation-card"
+             th:each="reservation : ${reservations}"
+             th:data-page="1"
+             th:data-club-id="${reservation.club_id}"
+             th:style="${reservation.club_id != null && reservation.club_id > 0} ? 'display: none;' : ''">
             <div class="reservation-header">
                 <h3 class="reservation-title" th:text="${reservation.item_title}">아이템 제목</h3>
             </div>
@@ -520,6 +524,109 @@
         const prevPageBtn = document.getElementById('prev-page');
         const nextPageBtn = document.getElementById('next-page');
 
+        // 날짜가 지난 예약의 상태를 '완료됨'으로 변경하는 함수
+        function updateCompletedReservations() {
+            const today = new Date();
+            console.log("현재 날짜:", today);
+
+            reservationCards.forEach(card => {
+                // 상태 요소
+                const statusElement = card.querySelector('.status-badge');
+                if (!statusElement) return;
+
+                // 상태가 '대기중' 또는 '예약완료'인 경우만 확인
+                const status = statusElement.textContent.trim();
+                if (status !== '대기중' && status !== '예약완료') return;
+
+                // 카드의 예약 날짜 텍스트 추출
+                const dateElement = card.querySelectorAll('.detail-value')[0];
+                if (!dateElement) return;
+
+                const dateText = dateElement.textContent.trim();
+                console.log("예약 날짜 텍스트:", dateText);
+
+                // yyyy년 MM월 dd일 형식에서 날짜 추출
+                const dateParts = dateText.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+                if (!dateParts) {
+                    console.log("날짜 형식 불일치:", dateText);
+                    return;
+                }
+
+                // 예약 날짜 생성
+                const year = parseInt(dateParts[1]);
+                const month = parseInt(dateParts[2]) - 1;  // JavaScript에서 월은 0부터 시작
+                const day = parseInt(dateParts[3]);
+
+                // 시간 추출
+                const timeElement = card.querySelectorAll('.detail-value')[1];
+                if (!timeElement) return;
+
+                const timeText = timeElement.textContent.trim();
+                console.log("예약 시간 텍스트:", timeText);
+
+                const timeParts = timeText.match(/(\d{1,2}):00\s*~\s*(\d{1,2}):00/);
+                if (!timeParts) {
+                    console.log("시간 형식 불일치:", timeText);
+                    return;
+                }
+
+                const endHour = parseInt(timeParts[2]);
+
+                // 예약 종료 시간 설정
+                const reservationEndTime = new Date(year, month, day, endHour, 0, 0);
+                console.log("예약 종료 시간:", reservationEndTime);
+                console.log("현재 시간과 비교:", today > reservationEndTime);
+
+                // 현재 날짜가 예약 종료 시간보다 나중이면 (예약 시간이 지났으면)
+                if (today > reservationEndTime) {
+                    console.log("상태 업데이트: 완료됨");
+
+                    // 상태 업데이트
+                    statusElement.textContent = '완료됨';
+                    statusElement.className = statusElement.className.replace(
+                        /status-pending|status-confirmed/g, 'status-completed'
+                    );
+
+                    // 취소 버튼 비활성화
+                    const cancelBtn = card.querySelector('.btn-cancel');
+                    if (cancelBtn) {
+                        const disabledBtn = document.createElement('button');
+                        disabledBtn.className = 'btn btn-disabled';
+                        disabledBtn.disabled = true;
+                        disabledBtn.textContent = '예약 취소';
+                        cancelBtn.parentNode.replaceChild(disabledBtn, cancelBtn);
+                    }
+
+                    // 서버에 상태 업데이트 요청
+                    const reservationId = card.querySelector('[onclick*="openCancelModal"]')?.
+                    getAttribute('onclick')?.
+                    match(/\d+/)?.[0];
+
+                    if (reservationId) {
+                        console.log("서버에 상태 업데이트 요청:", reservationId);
+                        fetch('/reservation/update-status', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `reservation_id=${reservationId}&status=COMPLETED`
+                        }).catch(error => console.error('상태 업데이트 실패:', error));
+                    }
+                }
+            });
+        }
+
+        // 클럽 ID가 있는 예약을 필터링하는 함수
+        function hideClubReservations() {
+            reservationCards.forEach(card => {
+                const clubId = card.getAttribute('data-club-id');
+                // clubId가 null이 아니고 0보다 크면 (클럽 예약이면) 숨김
+                if (clubId !== 'null' && clubId > 0) {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
         // 페이지네이션 초기화 함수
         function initializePagination() {
             // 모든 페이지 아이템 제거 (이전/다음 버튼 제외)
@@ -556,8 +663,7 @@
                 });
 
                 pageItem.appendChild(pageLink);
-                // 기존: prevPageBtn.after(pageItem); - 이 방식은 이전 버튼 뒤에 넣기 때문에 반대 순서가 됨
-                // 수정: 다음 버튼 앞에 넣어 오른쪽으로 순차적으로 늘어나도록 함
+                // 다음 버튼 앞에 넣어 오른쪽으로 순차적으로 늘어나도록 함
                 nextPageBtn.before(pageItem);
             }
 
@@ -614,9 +720,13 @@
                 card.style.display = 'none';
             });
 
-            // 현재 페이지에 해당하는 카드만 표시
+            // 현재 페이지에 해당하는 카드만 표시 (클럽 ID가 있는 예약은 제외)
             for (let i = startIndex; i < endIndex && i < filteredCards.length; i++) {
-                filteredCards[i].style.display = 'block';
+                const clubId = filteredCards[i].getAttribute('data-club-id');
+                // 클럽 ID가 null이 아니고 0보다 크면 계속 숨김 상태 유지
+                if (clubId === 'null' || clubId <= 0) {
+                    filteredCards[i].style.display = 'block';
+                }
             }
         }
 
@@ -630,6 +740,12 @@
 
             // 모든 카드에 필터 적용
             reservationCards.forEach(card => {
+                // 클럽 예약 필터링 - 클럽 ID가 있는 예약은 제외
+                const clubId = card.getAttribute('data-club-id');
+                if (clubId !== 'null' && clubId > 0) {
+                    return; // 클럽 예약은 건너뜀
+                }
+
                 // 상태 필터링 (클래스 대신 텍스트 내용으로 확인)
                 const statusSpan = card.querySelector('.status-badge');
                 const cardStatus = statusSpan ? statusSpan.textContent.trim() : '';
@@ -663,7 +779,11 @@
         function applySorting() {
             const sortValue = sortFilter.value;
             const container = document.querySelector('.reservations-grid');
-            const cards = Array.from(reservationCards);
+            const cards = Array.from(reservationCards).filter(card => {
+                // 클럽 예약 필터링
+                const clubId = card.getAttribute('data-club-id');
+                return clubId === 'null' || clubId <= 0; // 클럽 예약이 아닌 카드만 정렬
+            });
 
             cards.sort((a, b) => {
                 if (sortValue === 'date_desc' || sortValue === 'date_asc') {
@@ -691,8 +811,13 @@
         // 보이는 카드가 없는지 확인하고 메시지 표시
         function checkNoVisibleCards() {
             const grid = document.querySelector('.reservations-grid');
+            // 개인 예약만 카운트
+            const personalReservations = Array.from(reservationCards).filter(card => {
+                const clubId = card.getAttribute('data-club-id');
+                return clubId === 'null' || clubId <= 0;
+            });
 
-            if (filteredCards.length === 0 && reservationCards.length > 0) {
+            if (filteredCards.length === 0 && personalReservations.length > 0) {
                 // 동적으로 "필터링된 결과 없음" 메시지 생성
                 let noResults = document.querySelector('.no-filtered-results');
 
@@ -700,13 +825,31 @@
                     noResults = document.createElement('div');
                     noResults.className = 'no-reservations no-filtered-results';
                     noResults.innerHTML = `
-                      <i class="fas fa-filter"></i>
-                      <h3>검색 결과가 없습니다</h3>
-                      <p>다른 검색어나 필터 조건을 사용해보세요.</p>
-                    `;
+                  <i class="fas fa-filter"></i>
+                  <h3>검색 결과가 없습니다</h3>
+                  <p>다른 검색어나 필터 조건을 사용해보세요.</p>
+                `;
                     grid.after(noResults);
                 } else {
                     noResults.style.display = 'block';
+                }
+
+                grid.style.display = 'none';
+            } else if (personalReservations.length === 0) {
+                // 개인 예약이 아예 없는 경우
+                let noPersonalReservations = document.querySelector('.no-personal-reservations');
+
+                if (!noPersonalReservations) {
+                    noPersonalReservations = document.createElement('div');
+                    noPersonalReservations.className = 'no-reservations no-personal-reservations';
+                    noPersonalReservations.innerHTML = `
+                  <i class="fas fa-calendar-times"></i>
+                  <h3>개인 예약 내역이 없습니다</h3>
+                  <p>새로운 예약을 등록하시면 이곳에서 확인하실 수 있습니다.</p>
+                `;
+                    grid.after(noPersonalReservations);
+                } else {
+                    noPersonalReservations.style.display = 'block';
                 }
 
                 grid.style.display = 'none';
@@ -715,6 +858,10 @@
                 const noResults = document.querySelector('.no-filtered-results');
                 if (noResults) {
                     noResults.style.display = 'none';
+                }
+                const noPersonalReservations = document.querySelector('.no-personal-reservations');
+                if (noPersonalReservations) {
+                    noPersonalReservations.style.display = 'none';
                 }
             }
         }
@@ -732,8 +879,16 @@
             applyFilters();
         });
 
-        // 초기 필터 및 페이지네이션 적용
+        // 초기 실행
         if (reservationCards.length > 0) {
+            // 날짜가 지난 예약을 '완료됨'으로 업데이트
+            updateCompletedReservations();
+
+            // 1분마다 상태 업데이트 (선택적)
+            setInterval(updateCompletedReservations, 60000);
+
+            // 클럽 예약 숨기기
+            hideClubReservations();
             applySorting();
             applyFilters();
         }
@@ -763,6 +918,7 @@
             closeCancelModal();
         }
     };
+
     // 페이지가 로드될 때 실행
     window.onload = function() {
         // 브라우저 히스토리 조작

@@ -82,6 +82,12 @@ public class ReservationRepository {
         return reservationMapper.getReservationsByClubId(clubId);
     }
 
+    //예약정보 업데이트
+    public void updateReservation(ReservationBean reservation){
+        reservationMapper.updateReservation(reservation);
+    }
+
+
     // 리뷰 등록
     public void insertReview(ReservationReviewBean review) {
         reservationMapper.insertReview(review);

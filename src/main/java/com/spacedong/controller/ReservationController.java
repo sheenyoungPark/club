@@ -361,6 +361,81 @@ public class ReservationController {
         return "redirect:/reservation/my-reservations?cancel=success";
     }
 
+    // 예약 취소
+    @PostMapping("/clubcancel")
+    public String clubCancelReservation(
+
+            @RequestParam("reservation_id") int reservationId) {
+
+        // 로그인 확인
+        if (loginMember.getMember_id() == null) {
+            return "redirect:/member/login";
+        }
+
+        // 예약 정보 가져오기
+        ReservationBean reservation = reservationService.getReservationById(reservationId);
+
+        BusinessItemBean businessItemBean = businessService.getItemById(reservation.getItem_id());
+
+        if (reservation == null || !reservation.getMember_id().equals(loginMember.getMember_id())) {
+            return "redirect:/member/memberinfo";
+        }
+
+        // 클럽 예약인 경우 클럽 포인트 환불
+        if ("club".equals(reservation.getUser_type()) && reservation.getClub_id() > 0) {
+            // 클럽 포인트 환불
+            clubService.updateClubPoints(reservation.getClub_id(), reservation.getTotal_price());
+        } else {
+            // 개인 예약인 경우 회원 포인트 환불
+            //취소시 비지니스 금액 차감(회수)
+            // paymentService.businessCanclePoint(reservation.getTotal_price(), businessItemBean.getBusiness_id());
+            paymentService.updateMemberPoint(loginMember.getMember_id(), reservation.getTotal_price());
+
+            MemberBean mem = memberService.getMemberById(loginMember.getMember_id());
+            loginMember.setMember_point(mem.getMember_point());
+        }
+
+        // 예약 취소 (상태 변경)
+        reservation.setStatus("CANCELLED");
+        reservationService.cancelReservation(reservationId);
+
+        return "redirect:/club/club_info?club_id=" + reservation.getClub_id();
+    }
+
+    @PostMapping("/update-status")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateStatus(
+            @RequestParam("reservation_id") int reservationId,
+            @RequestParam("status") String status) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 예약 정보 가져오기
+            ReservationBean reservation = reservationService.getReservationById(reservationId);
+
+            if (reservation == null) {
+                response.put("success", false);
+                response.put("message", "예약 정보를 찾을 수 없습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // 상태 업데이트
+            reservation.setStatus(status);
+            reservationService.updateReservation(reservation);
+
+            response.put("success", true);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("예약 상태 업데이트 오류: {}", e.getMessage(), e);
+            response.put("success", false);
+            response.put("message", "예약 상태 업데이트 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+
+
     // 리뷰 작성 페이지 이동
     @GetMapping("/write_review")
     public String writeReview(@RequestParam("reservation_id") int reservationId, Model model) {

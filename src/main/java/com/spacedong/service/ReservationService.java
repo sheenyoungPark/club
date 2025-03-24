@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ public class ReservationService {
 
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private ReservationMapper reservationMapper;
 
 
     //예약된 시간 목록 가져오기
@@ -86,6 +89,35 @@ public class ReservationService {
         return reservationRepository.getReservationsByClubId(clubId);
     }
 
+    //예약정보 업데이트
+    public void updateReservation(ReservationBean reservation){
+        reservationRepository.updateReservation(reservation);
+    }
+
+    public List<ReservationBean> getReservationsByMemberId2(String memberId) {
+        List<ReservationBean> reservations = reservationMapper.getReservationsByMemberId(memberId);
+        updatePastReservations(reservations);
+        return reservations;
+    }
+
+    private void updatePastReservations(List<ReservationBean> reservations) {
+        Date today = new Date();
+
+        for (ReservationBean reservation : reservations) {
+            if (!"PENDING".equals(reservation.getStatus()) && !"CONFIRMED".equals(reservation.getStatus())) {
+                continue;
+            }
+
+            Calendar reservationEndTime = Calendar.getInstance();
+            reservationEndTime.setTime(reservation.getReservation_date());
+            reservationEndTime.set(Calendar.HOUR_OF_DAY, reservation.getEnd_time());
+
+            if (today.after(reservationEndTime.getTime())) {
+                reservation.setStatus("COMPLETED");
+                reservationMapper.updateReservation(reservation);
+            }
+        }
+    }
     // 리뷰 등록
     public void insertReview(ReservationReviewBean review) {
         reservationRepository.insertReview(review);

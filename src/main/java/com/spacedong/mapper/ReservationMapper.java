@@ -135,4 +135,9 @@ public interface ReservationMapper {
             "ORDER BY r.created_at DESC")
     List<ReservationReviewBean> getReviewsByItemId(@Param("itemId") String itemId);
 
+     // 예약 정보 업데이트
+    @Update("UPDATE reservation SET status = #{status} WHERE reservation_id = #{reservation_id}")
+    void updateReservation(ReservationBean reservation);
+
+
 }
