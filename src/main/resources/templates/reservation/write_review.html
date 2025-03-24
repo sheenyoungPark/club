@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>리뷰 작성</title>
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <style>
+        .review-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .review-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        form label {
+            font-weight: 600;
+            display: block;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        form input[type="text"],
+        form textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        form textarea {
+            resize: vertical;
+            height: 150px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-submit {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background-color: #0b5ed7;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse; /* 핵심 */
+            gap: 5px;
+            font-size: 2rem;
+            cursor: pointer;
+            justify-content: center;
+        }
+
+        .star {
+            color: #ccc;
+            transition: color 0.2s;
+        }
+
+        .star:hover,
+        .star:hover ~ .star {
+            color: #ffdb70; /* 밝은 노랑 */
+        }
+
+        .star.selected {
+            color: #ffc107; /* 진한 노랑 */
+        }
+
+
+    </style>
+</head>
+<body>
+<!-- 상단 메뉴 -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="review-container">
+    <h2 class="review-title">리뷰 작성</h2>
+    <form th:action="@{/reservation/write_review_pro}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="review_id" th:value="${reservation.reservation_id}" />
+        <input type="hidden" name="item_id" th:value="${reservation.item_id}" /> <!-- ✅ 이 줄 추가 -->
+        <input type="hidden" name="rating" id="ratingInput" value="0" />
+
+        <div class="form-group">
+            <label>평점</label>
+            <div class="star-rating" id="starRating">
+                <span class="star" data-value="5">&#9733;</span>
+                <span class="star" data-value="4">&#9733;</span>
+                <span class="star" data-value="3">&#9733;</span>
+                <span class="star" data-value="2">&#9733;</span>
+                <span class="star" data-value="1">&#9733;</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="review_title">리뷰 제목</label>
+            <input type="text" id="review_title" name="review_title" required />
+        </div>
+
+        <div class="form-group">
+            <label for="review_text">리뷰 내용</label>
+            <textarea id="review_text" name="review_text" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="review_img">사진 첨부 (선택)</label>
+            <input type="file" id="review_img" name="review_img" accept="image/*">
+            <div id="preview-container" style="margin-top: 10px;">
+                <img id="preview-image" src="#" alt="미리보기 이미지" style="max-width: 100%; display: none; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+
+
+        <div class="form-group" style="text-align: center;">
+            <button type="submit" class="btn-submit">리뷰 등록</button>
+        </div>
+    </form>
+</div>
+
+<!-- 하단 정보 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<script>
+    const stars = document.querySelectorAll('.star-rating .star');
+    const ratingInput = document.getElementById('ratingInput');
+
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.getAttribute('data-value'));
+            ratingInput.value = rating;
+
+            stars.forEach(s => {
+                s.classList.remove('selected');
+                if (parseInt(s.getAttribute('data-value')) <= rating) {
+                    s.classList.add('selected');
+                }
+            });
+        });
+    });
+
+    // ✅ 이미지 미리보기
+    const reviewImgInput = document.getElementById('review_img');
+    const previewImg = document.getElementById('preview-image');
+
+    reviewImgInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            previewImg.src = '#';
+            previewImg.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>

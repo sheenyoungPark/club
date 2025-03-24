@@ -445,6 +445,16 @@
                         class="btn btn-disabled" disabled>
                     예약 취소
                 </button>
+
+
+                <!-- ✅ 리뷰 남기기 버튼 (예약완료 상태인 경우만 표시) -->
+                <a th:if="${reservation.status == 'CONFIRMED'}"
+                   th:href="@{/reservation/write_review(reservation_id=${reservation.reservation_id})}"
+                   class="btn btn-secondary">
+                    리뷰 남기기
+                </a>
+
+
                 <a
                         th:href="@{/reservation/confirmation(reservation_id=${reservation.reservation_id})}"
                         class="btn btn-view">

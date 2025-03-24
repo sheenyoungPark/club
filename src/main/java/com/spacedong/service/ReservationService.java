@@ -1,6 +1,7 @@
 package com.spacedong.service;
 
 import com.spacedong.beans.ReservationBean;
+import com.spacedong.beans.ReservationReviewBean;
 import com.spacedong.mapper.ReservationMapper;
 import com.spacedong.repository.ReservationRepository;
 import org.apache.ibatis.annotations.Param;
@@ -85,6 +86,14 @@ public class ReservationService {
         return reservationRepository.getReservationsByClubId(clubId);
     }
 
+    // 리뷰 등록
+    public void insertReview(ReservationReviewBean review) {
+        reservationRepository.insertReview(review);
+    }
 
+    //리뷰 가져오기
+    public List<ReservationReviewBean> getReviewsByItemId(String itemId) {
+        return reservationRepository.getReviewsByItemId(itemId);
+    }
 
 }

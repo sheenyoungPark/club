@@ -101,6 +101,19 @@
            th:src="@{/sources/picture/기본이미지.png}"
            alt="기본 이미지"
            class="item-image">
+
+      <!-- ✅ 평균 별점 출력 -->
+      <div style="text-align: center; margin-top: 10px;">
+        <div style="font-size: 1.5rem; color: #ffc107;">
+          <span th:each="i : ${#numbers.sequence(1, 5)}"
+                th:text="${i <= averageRating} ? '★' : '☆'">★</span>
+        </div>
+        <div style="font-size: 0.9rem; margin-top: 5px;"
+             th:text="'평균 평점: ' + ${#numbers.formatDecimal(averageRating, 1, 1)} + '점'">
+          평균 평점: 4.2점
+        </div>
+      </div>
+
     </div>
 
     <div class="item-details">
@@ -226,6 +239,33 @@
       </form>
     </div>
   </div>
+
+  <!-- ✅ 리뷰 리스트 출력 -->
+  <div style="margin-top: 30px;">
+    <h3>리뷰 목록</h3>
+    <div th:if="${#lists.isEmpty(reviews)}">
+      <p>아직 작성된 리뷰가 없습니다.</p>
+    </div>
+
+    <div th:each="review : ${reviews}" class="review-box" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+      <div style="font-size: 1.2rem; color: #ffc107;">
+        <span th:each="i : ${#numbers.sequence(1, 5)}"
+              th:text="${i <= review.rating} ? '★' : '☆'">★</span>
+      </div>
+      <h4 th:text="${review.review_title}" style="margin: 10px 0 5px 0;">리뷰 제목</h4>
+      <p th:text="${review.review_text}">리뷰 내용입니다.</p>
+      <div th:if="${review.review_img != null}">
+        <img th:src="@{${review.review_img}}"
+             alt="리뷰 이미지"
+             style="max-width: 300px; margin-top: 10px; border-radius: 6px;" />
+      </div>
+      <div style="font-size: 0.8rem; color: gray; margin-top: 10px;"
+           th:text="${#dates.format(review.created_at, 'yyyy-MM-dd HH:mm')}">
+        작성일: 2025-03-24
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- 하단 정보바 -->

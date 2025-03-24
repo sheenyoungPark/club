@@ -4,6 +4,7 @@ import com.spacedong.beans.*;
 import com.spacedong.service.BusinessService;
 import com.spacedong.service.CategoryService;
 import com.spacedong.service.ItemService;
+import com.spacedong.service.ReservationService;
 import com.spacedong.validator.BusinessValidator;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
@@ -35,6 +36,9 @@ public class BusinessController {
 
     @Autowired
     public CategoryService categoryService;
+
+    @Autowired
+    public ReservationService reservationService;
 
     @Autowired
     private BusinessService businessService;
@@ -483,9 +487,25 @@ public class BusinessController {
                 LocalDate.now().toString()
         );
 
+
+// ✅ 리뷰 리스트 가져오기
+        List<ReservationReviewBean> reviews = reservationService.getReviewsByItemId(itemId);
+
+        // ✅ 평균 평점 계산
+        double averageRating = 0.0;
+        if (!reviews.isEmpty()) {
+            double total = 0;
+            for (ReservationReviewBean review : reviews) {
+                total += review.getRating();
+            }
+            averageRating = total / reviews.size();
+        }
+
         model.addAttribute("item", item);
         model.addAttribute("businessInfo", businessInfo);
         model.addAttribute("reservedTimes", reservedTimes);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("averageRating", averageRating);
 
         return "reservation/item_info";
     }

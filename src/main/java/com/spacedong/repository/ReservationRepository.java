@@ -1,6 +1,7 @@
 package com.spacedong.repository;
 
 import com.spacedong.beans.ReservationBean;
+import com.spacedong.beans.ReservationReviewBean;
 import com.spacedong.mapper.ReservationMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -80,6 +81,17 @@ public class ReservationRepository {
     public List<ReservationBean> getReservationsByClubId(Integer clubId){
         return reservationMapper.getReservationsByClubId(clubId);
     }
+
+    // 리뷰 등록
+    public void insertReview(ReservationReviewBean review) {
+        reservationMapper.insertReview(review);
+    }
+
+    //리뷰가져오기
+    public List<ReservationReviewBean> getReviewsByItemId(String itemId) {
+        return reservationMapper.getReviewsByItemId(itemId);
+    }
+
 
 
 }

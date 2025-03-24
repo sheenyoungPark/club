@@ -1,9 +1,6 @@
 package com.spacedong.controller;
 
-import com.spacedong.beans.BusinessItemBean;
-import com.spacedong.beans.ClubBean;
-import com.spacedong.beans.MemberBean;
-import com.spacedong.beans.ReservationBean;
+import com.spacedong.beans.*;
 import com.spacedong.service.BusinessService;
 import com.spacedong.service.ClubService;
 import com.spacedong.service.MemberService;
@@ -18,7 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 @Controller
@@ -359,4 +360,76 @@ public class ReservationController {
 
         return "redirect:/reservation/my-reservations?cancel=success";
     }
+
+    // 리뷰 작성 페이지 이동
+    @GetMapping("/write_review")
+    public String writeReview(@RequestParam("reservation_id") int reservationId, Model model) {
+        // 로그인 확인
+        if (loginMember.getMember_id() == null) {
+            return "redirect:/member/login";
+        }
+
+        // 예약 정보 가져오기
+        ReservationBean reservation = reservationService.getReservationById(reservationId);
+
+        // 본인 예약인지 확인
+        if (reservation == null || !reservation.getMember_id().equals(loginMember.getMember_id())) {
+            return "redirect:/reservation/my-reservations?error=unauthorized";
+        }
+
+        // 예약 정보와 함께 리뷰 작성 페이지로 이동
+        model.addAttribute("reservation", reservation);
+
+        return "reservation/write_review"; // templates/review/write_review.html 로 연결
+    }
+
+    @PostMapping("/write_review_pro")
+    public String writeReviewPro(@RequestParam("review_id") int reviewId,
+                                 @RequestParam("rating") int rating,
+                                 @RequestParam("review_title") String reviewTitle,
+                                 @RequestParam("review_text") String reviewText,
+                                 @RequestParam("item_id") String itemId,  // ✅ item_id 추가
+                                 @RequestParam(value = "review_img", required = false) MultipartFile reviewImg,
+                                 RedirectAttributes redirectAttributes) {
+
+        ReservationReviewBean review = new ReservationReviewBean();
+        review.setReview_id(reviewId);
+        review.setRating(rating);
+        review.setReview_title(reviewTitle);
+        review.setReview_text(reviewText);
+
+        // 이미지 업로드 처리
+        if (reviewImg != null && !reviewImg.isEmpty()) {
+            String uploadDir = "C:/upload/image/review/";
+            String originalFilename = reviewImg.getOriginalFilename();
+            String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+            File saveFolder = new File(uploadDir);
+            if (!saveFolder.exists()) {
+                saveFolder.mkdirs();
+            }
+
+            File saveFile = new File(uploadDir + savedFilename);
+            try {
+                reviewImg.transferTo(saveFile);
+                review.setReview_img("/upload/image/review/" + savedFilename);
+            } catch (IOException e) {
+                e.printStackTrace();
+                redirectAttributes.addFlashAttribute("error", "이미지 업로드 중 오류 발생");
+                return "redirect:/reservation/write_review?reservation_id=" + reviewId;
+            }
+        }
+
+        reservationService.insertReview(review);
+        redirectAttributes.addFlashAttribute("message", "리뷰가 등록되었습니다.");
+
+        // ✅ 아이템 상세 페이지로 리다이렉트
+        return "redirect:/business/item_info?item_id=" + itemId;
+    }
+
+
+
+
+
+
 }

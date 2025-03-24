@@ -1,6 +1,7 @@
 package com.spacedong.mapper;
 
 import com.spacedong.beans.ReservationBean;
+import com.spacedong.beans.ReservationReviewBean;
 import org.apache.ibatis.annotations.*;
 
 import java.util.Date;
@@ -120,5 +121,18 @@ public interface ReservationMapper {
             "ORDER BY r.reservation_date DESC, r.start_time ASC")
     List<ReservationBean> getReservationsByClubId(int clubId);
 
+    //리뷰작성
+    @Insert("INSERT INTO reservation_review " +
+            "(review_id, rating, review_title, review_text, review_img, created_at) " +
+            "VALUES (#{review_id}, #{rating}, #{review_title}, #{review_text}, #{review_img}, SYSDATE)")
+    void insertReview(ReservationReviewBean review);
+
+    //리뷰가져오기
+    @Select("SELECT r.* " +
+            "FROM reservation_review r " +
+            "JOIN reservation res ON r.review_id = res.reservation_id " +
+            "WHERE res.item_id = #{itemId} " +
+            "ORDER BY r.created_at DESC")
+    List<ReservationReviewBean> getReviewsByItemId(@Param("itemId") String itemId);
 
 }
