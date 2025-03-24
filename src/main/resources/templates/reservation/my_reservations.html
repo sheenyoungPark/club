@@ -448,7 +448,7 @@
 
 
                 <!-- ✅ 리뷰 남기기 버튼 (예약완료 상태인 경우만 표시) -->
-                <a th:if="${reservation.status == 'CONFIRMED'}"
+                <a th:if="${reservation.status == 'COMPLETE'}"
                    th:href="@{/reservation/write_review(reservation_id=${reservation.reservation_id})}"
                    class="btn btn-secondary">
                     리뷰 남기기
