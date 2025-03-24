@@ -10,12 +10,20 @@ import java.util.Map;
 @Mapper
 public interface ReservationMapper {
 
-    // 예약 생성 (자동 증가 ID 반환)
+    //맴버 예약 생성 (자동 증가 ID 반환)
     @Insert("INSERT INTO reservation (reservation_id, item_id, member_id, reservation_date, " +
-            "start_time, end_time, total_price, status, created_at) " +
+            "start_time, end_time, total_price, status, created_at, user_type, club_id) " +
             "VALUES (reservation_id_seq.nextval, #{item_id}, #{member_id}, #{reservation_date}, " +
-            "#{start_time}, #{end_time}, #{total_price}, #{status}, #{created_at})")
+            "#{start_time}, #{end_time}, #{total_price}, #{status}, #{created_at}, #{user_type},  #{club_id, jdbcType=INTEGER})")
     void createReservation(ReservationBean reservationBean);
+
+    //클럽 예약 생성
+    @Insert("INSERT INTO reservation " +
+            "(reservation_id, item_id, member_id, club_id, reservation_date, " +
+            "start_time, end_time, total_price, status, created_at, user_type) " +
+            "VALUES (reservation_id_seq.nextval, #{item_id}, #{member_id}, #{reservation_date}, " +
+            "#{start_time}, #{end_time}, #{total_price}, #{status}, #{created_at}, 'club')")
+    void createClubReservation(ReservationBean reservationBean);
 
     //대기중 예약 번호 조회
     @Select("select reservation_id from reservation where member_id = #{memberId} and item_id = #{itemId} and start_time = #{startTime} and reservation_date = #{reservationDate} and status = 'PENDING' ")
@@ -102,6 +110,15 @@ public interface ReservationMapper {
             " AND status = 'PENDING'" +
             "</script>")
     int countReservationsByItemIdsAndStatus(@Param("item_id") List<Integer> item_id);
+
+
+    // 클럽이 예약한 목록 조회
+    @Select("SELECT r.*, i.item_title, i.item_category " +
+            "FROM reservation r " +
+            "JOIN business_item i ON r.item_id = i.item_id " +
+            "WHERE r.club_id = #{clubId} " +
+            "ORDER BY r.reservation_date DESC, r.start_time ASC")
+    List<ReservationBean> getReservationsByClubId(int clubId);
 
 
 }

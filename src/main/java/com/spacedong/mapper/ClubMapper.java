@@ -1,6 +1,7 @@
 package com.spacedong.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import com.spacedong.beans.*;
 import org.apache.ibatis.annotations.*;
@@ -175,6 +176,31 @@ public interface ClubMapper {
     FETCH FIRST 5 ROWS ONLY
 """)
     List<ClubDonationBean> getRecentDonations(@Param("club_id") int club_id);
+
+
+     // 특정 회원이 마스터 역할을 가진 클럽 목록을 조회
+    @Select("SELECT c.club_id, c.club_name, c.club_point " +
+            "FROM club c " +
+            "JOIN club_member cm ON c.club_id = cm.club_id " +
+            "WHERE cm.member_id = #{memberId} AND cm.member_role = 'master'")
+    List<Map<String, Object>> getMasterClubsByMemberId(String memberId);
+
+    //클럽 포인트 업데이트
+    @Update("UPDATE club SET club_point = club_point + #{points} WHERE club_id = #{clubId}")
+    void updateClubPoints(@Param("clubId") int clubId, @Param("points") int points);
+
+
+     //회원이 특정 클럽의 마스터인지 확인
+    @Select("SELECT COUNT(*) FROM club_member " +
+            "WHERE member_id = #{memberId} AND club_id = #{clubId} AND member_role = 'master'")
+    int isClubMaster(@Param("memberId") String memberId, @Param("clubId") int clubId);
+
+    /**
+     * 회원이 특정 클럽의 마스터인지 확인
+     */
+    @Select("SELECT COUNT(*) FROM club_member " +
+            "WHERE member_id = #{memberId} AND club_id = #{clubId} AND member_role = 'master'")
+    int countClubMaster(@Param("memberId") String memberId, @Param("clubId") int clubId);
 
 
 }

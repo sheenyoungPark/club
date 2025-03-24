@@ -88,9 +88,19 @@ public interface MemberMapper {
             "WHERE member_id = #{memberId}")
     MemberBean selectMemberById(String memberId);
 
-
-
-
     @Select("select * from member where member_id LIKE '%'||#{keyword}||'%' OR member_nickname LIKE '%'||#{keyword}||'%'")
     List<MemberBean> searchUsersByKeyword(String keyword);
+
+    //회원 포인트 조회
+    @Select("SELECT member_point FROM member WHERE member_id = #{memberId}")
+    Integer getMemberPoint(String memberId);
+
+
+    //회원 포인트 업데이트
+    @Update("UPDATE member SET member_point = member_point + #{points} WHERE member_id = #{memberId}")
+    int updateMemberPoints(@Param("memberId") String memberId, @Param("points") Integer points);
+
+
+
+
 }

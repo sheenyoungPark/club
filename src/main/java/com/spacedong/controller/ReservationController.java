@@ -1,9 +1,11 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.BusinessItemBean;
+import com.spacedong.beans.ClubBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.beans.ReservationBean;
 import com.spacedong.service.BusinessService;
+import com.spacedong.service.ClubService;
 import com.spacedong.service.MemberService;
 import com.spacedong.service.PaymentService;
 import com.spacedong.service.ReservationService;
@@ -35,8 +37,12 @@ public class ReservationController {
 
     @Autowired
     private PaymentService paymentService;
+
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private ClubService clubService;
 
     // 예약 가능 시간 확인 API
     @GetMapping("/check-availability")
@@ -84,13 +90,35 @@ public class ReservationController {
         }
     }
 
+    // 사용자가 마스터인 클럽 목록 API
+    @GetMapping("/api/clubs/master")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getMasterClubs() {
+        // 로그인 확인
+        if (loginMember.getMember_id() == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            // 사용자가 마스터인 클럽 목록 조회
+            List<Map<String, Object>> masterClubs = clubService.getMasterClubsByMemberId(loginMember.getMember_id());
+            return ResponseEntity.ok(masterClubs);
+        } catch (Exception e) {
+            logger.error("마스터 클럽 목록 조회 오류: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     // 예약 생성 처리
     @PostMapping("/create")
     public String createReservation(
             @RequestParam("item_id") String itemId,
-            @RequestParam("reservation_date")Date reservationDate,
+            @RequestParam("reservation_date") Date reservationDate,
             @RequestParam("start_time") int startTime,
             @RequestParam("end_time") int endTime,
+            @RequestParam(value = "user_type", defaultValue = "member") String userType,
+            @RequestParam(value = "club_id", required = false) Integer clubId,
+            @RequestParam(value = "reservation_people", defaultValue = "1") int reservationPeople,
             Model model) {
 
         System.out.println(reservationDate);
@@ -139,16 +167,7 @@ public class ReservationController {
         int hours = endTime - startTime;
         int totalPrice = item.getItem_price() * hours;
 
-        if(loginMember.getMember_point() < totalPrice){
-            model.addAttribute("error", "포인트가 부족합니다.");
-            return "redirect:/business/item_info?item_id=" + itemId + "&error=enough_point";
-        }else {
-            paymentService.payMoney(totalPrice, loginMember.getMember_id());
-            loginMember.setMember_point(loginMember.getMember_point() - totalPrice);
-         //   paymentService.businessAddPoint(totalPrice, item.getBusiness_id());
-        }
-
-        // 예약 생성
+        // 예약 정보 생성
         ReservationBean reservation = new ReservationBean();
         reservation.setItem_id(itemId);
         reservation.setMember_id(loginMember.getMember_id());
@@ -158,15 +177,60 @@ public class ReservationController {
         reservation.setTotal_price(totalPrice);
         reservation.setStatus("PENDING"); // 초기 상태: 대기 중
         reservation.setCreated_at(new Date()); // 현재 시간
+        reservation.setUser_type(userType); // 예약 유형 설정
+
+        // 클럽 또는 개인 예약 처리
+        if ("club".equals(userType) && clubId != null) {
+            // 클럽 예약 처리
+
+            // 회원이 클럽의 마스터인지 확인
+            boolean isMaster = clubService.isClubMaster(loginMember.getMember_id(), clubId);
+            if (!isMaster) {
+                model.addAttribute("error", "해당 클럽의 마스터 권한이 없습니다.");
+                return "redirect:/business/item_info?item_id=" + itemId + "&errorInteger=not_club_master";
+            }
+
+            // 클럽 정보 가져오기
+            ClubBean club = clubService.oneClubInfo(clubId);
+            if (club == null) {
+                model.addAttribute("error", "존재하지 않는 클럽입니다.");
+                return "redirect:/business/item_info?item_id=" + itemId + "&error=club_not_found";
+            }
+
+            // 클럽 포인트 확인
+            if (club.getClub_point() < totalPrice) {
+                model.addAttribute("error", "클럽 포인트가 부족합니다.");
+                return "redirect:/business/item_info?item_id=" + itemId + "&error=enough_point";
+            }
+
+            // 클럽 포인트 차감
+            clubService.updateClubPoints(clubId, -totalPrice);
+
+            // 예약 정보에 클럽 ID 설정
+            reservation.setClub_id(clubId);
+            String clubType = "club";
+            reservation.setUser_type(clubType);
+
+        } else {
+            // 개인 예약 처리
+            if (loginMember.getMember_point() < totalPrice) {
+                model.addAttribute("error", "포인트가 부족합니다.");
+                return "redirect:/business/item_info?item_id=" + itemId + "&error=enough_point";
+            } else {
+                String memberType = "member";
+                reservation.setUser_type(memberType);
+                paymentService.payMoney(totalPrice, loginMember.getMember_id());
+                loginMember.setMember_point(loginMember.getMember_point() - totalPrice);
+                // paymentService.businessAddPoint(totalPrice, item.getBusiness_id());
+            }
+        }
 
 
-
+        // 예약 생성
         reservationService.createReservation(reservation);
-        int reservationId = reservationService.getReservationId(reservation.getMember_id(), reservation.getItem_id(), reservation.getStart_time(),reservation.getReservation_date());
+        int reservationId = reservationService.getReservationId(reservation.getMember_id(), reservation.getItem_id(), reservation.getStart_time(), reservation.getReservation_date());
 
-
-            return "redirect:/reservation/confirmation?reservation_id=" + reservationId;
-
+        return "redirect:/reservation/confirmation?reservation_id=" + reservationId;
     }
 
     // 예약 확인 페이지
@@ -196,6 +260,12 @@ public class ReservationController {
         // 아이템 정보 가져오기
         BusinessItemBean item = businessService.getItemById(reservation.getItem_id());
 
+        // 클럽 예약인 경우 클럽 정보 추가
+        if ("club".equals(reservation.getUser_type()) && reservation.getClub_id() > 0) {
+            ClubBean club = clubService.oneClubInfo(reservation.getClub_id());
+            model.addAttribute("club", club);
+        }
+
         model.addAttribute("reservation", reservation);
         model.addAttribute("item", item);
 
@@ -210,9 +280,6 @@ public class ReservationController {
             return "redirect:/member/login";
         }
 
-
-
-
         // 예약 목록 가져오기
         List<ReservationBean> reservations = reservationService.getReservationsByMemberId(loginMember.getMember_id());
 
@@ -223,6 +290,34 @@ public class ReservationController {
         model.addAttribute("reservations", reservations);
 
         return "reservation/my_reservations";
+    }
+
+    // 클럽 예약 목록 보기
+    @GetMapping("/club-reservations")
+    public String clubReservations(
+            @RequestParam("club_id") int clubId,
+            Model model) {
+        // 로그인 확인
+        if (loginMember.getMember_id() == null) {
+            return "redirect:/member/login";
+        }
+
+        // 클럽 마스터 권한 확인
+        boolean isMaster = clubService.isClubMaster(loginMember.getMember_id(), clubId);
+        if (!isMaster) {
+            return "redirect:/club/my-clubs";
+        }
+
+        // 클럽 정보 가져오기
+        ClubBean club = clubService.oneClubInfo(clubId);
+
+        // 클럽 예약 목록 가져오기
+        List<ReservationBean> reservations = reservationService.getReservationsByClubId(clubId);
+
+        model.addAttribute("club", club);
+        model.addAttribute("reservations", reservations);
+
+        return "reservation/club_reservations";
     }
 
     // 예약 취소
@@ -243,14 +338,20 @@ public class ReservationController {
         if (reservation == null || !reservation.getMember_id().equals(loginMember.getMember_id())) {
             return "redirect:/member/memberinfo";
         }
-        //취소시 비지니스 금액 차감(회수)
-//        paymentService.businessCanclePoint(reservation.getTotal_price(), businessItemBean.getBusiness_id());
-        paymentService.updateMemberPoint(loginMember.getMember_id(),reservation.getTotal_price());
 
-        MemberBean mem = memberService.getMemberById(loginMember.getMember_id());
+        // 클럽 예약인 경우 클럽 포인트 환불
+        if ("club".equals(reservation.getUser_type()) && reservation.getClub_id() > 0) {
+            // 클럽 포인트 환불
+            clubService.updateClubPoints(reservation.getClub_id(), reservation.getTotal_price());
+        } else {
+            // 개인 예약인 경우 회원 포인트 환불
+            //취소시 비지니스 금액 차감(회수)
+            // paymentService.businessCanclePoint(reservation.getTotal_price(), businessItemBean.getBusiness_id());
+            paymentService.updateMemberPoint(loginMember.getMember_id(), reservation.getTotal_price());
 
-        loginMember.setMember_point(mem.getMember_point());
-        //==============================
+            MemberBean mem = memberService.getMemberById(loginMember.getMember_id());
+            loginMember.setMember_point(mem.getMember_point());
+        }
 
         // 예약 취소 (상태 변경)
         reservation.setStatus("CANCELLED");

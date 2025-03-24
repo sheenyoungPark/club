@@ -16,8 +16,7 @@ public class ReservationService {
 
     @Autowired
     private ReservationRepository reservationRepository;
-    @Autowired
-    private ReservationMapper reservationMapper;
+
 
     //예약된 시간 목록 가져오기
     public List<Map<String, Integer>> getReservedTimeRangesByItemIdAndDate(
@@ -35,10 +34,16 @@ public class ReservationService {
         return reservationRepository.checkTimeRangeOverlap(itemId, date, startTime, endTime);
     }
 
-    //예약생성
+    //멤버 예약생성
     public void createReservation(ReservationBean reservationBean){
         reservationRepository.createReservation(reservationBean);
     }
+
+    //클럽 예약생성
+    public void createClubReservation(ReservationBean reservationBean){
+        reservationRepository.createClubReservation(reservationBean);
+    }
+
 
     //예약정보 가져오기
     public ReservationBean getReservationById(@Param("reservationId") int reservationId){
@@ -74,5 +79,12 @@ public class ReservationService {
     public int countReservationsByItemIdsAndStatus(List<Integer> business_ids){
         return reservationRepository.countReservationsByItemIdsAndStatus(business_ids);
     }
+
+    // 클럽이 예약한 목록 조회
+    public List<ReservationBean> getReservationsByClubId(Integer clubId){
+        return reservationRepository.getReservationsByClubId(clubId);
+    }
+
+
 
 }
