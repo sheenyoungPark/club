@@ -350,6 +350,25 @@ public class ChatService {
         return chatRepository.getReadReceiptsByMessageId(messageId);
     }
 
+    /**
+     * 사용자의 총 안 읽은 메시지 수 계산
+     * @param userId 사용자 ID
+     * @return 총 안 읽은 메시지 수
+     */
+    public int calculateTotalUnreadMessages(String userId) {
+        // 사용자의 모든 채팅방 조회
+        List<ChatRoomBean> rooms = chatRepository.getChatRoomsByUserId(userId);
+        int totalUnread = 0;
+
+        // 각 채팅방의 안 읽은 메시지 수 합산
+        for (ChatRoomBean room : rooms) {
+            totalUnread += room.getUnreadCount();
+        }
+
+        return totalUnread;
+    }
+
+
     // 채팅 시스템에 필요한 초기 설정
     @Transactional
     public void setupChatSystem() {

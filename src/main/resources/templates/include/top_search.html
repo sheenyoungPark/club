@@ -18,7 +18,18 @@
             <!-- ✅ 일반 회원이면 "유형검사", 비즈니스 회원이면 "아이템 등록하기" 표시 -->
             <a th:if="${loginBusiness == null || loginBusiness.login == false}" th:href="@{/survey/start}">유형검사</a>
             <a th:if="${loginBusiness != null && loginBusiness.login == true}" th:href="@{/business/create_item}">아이템 등록하기</a>
-            <a th:href="@{/chat/view/rooms}">채팅</a>
+            <li class="nav-item" th:if="${loginMember.isLogin}">
+                <a th:href="@{/chat/view/rooms}" class="nav-link position-relative">
+                    <i class="fas fa-comments"></i> 채팅
+                    <!-- 안 읽은 메시지 배지 -->
+                    <span id="unreadChatCount"
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          th:text="${unreadChatCount}"
+                          th:style="${unreadChatCount > 0 ? 'display:inline-block' : 'display:none'}">
+                            0
+                    </span>
+                </a>
+            </li>
             <div class="right-section">
                 <button id="searchToggle" class="search-toggle" type="button">🔍</button>
             </div>
@@ -101,6 +112,19 @@
         }
         /*]]>*/
     </script>
+    <th:block th:if="${loginMember != null && loginMember.isLogin}">
+        <!-- 사용자 ID 설정 (JavaScript에서 사용) -->
+        <script th:inline="javascript">
+            var userId = /*[[${loginMember.member_id}]]*/ null;
+        </script>
+
+        <!-- WebSocket 라이브러리 -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+        <!-- 알림 스크립트 -->
+        <script th:src="@{/js/notification.js}"></script>
+    </th:block>
 </div>
 </body>
 </html>
