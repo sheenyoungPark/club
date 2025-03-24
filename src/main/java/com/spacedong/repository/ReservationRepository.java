@@ -30,9 +30,13 @@ public class ReservationRepository {
         return reservationMapper.checkTimeRangeOverlap(itemId, date, startTime, endTime);
     }
 
-    //예약생성
+    //멤버 예약생성
     public void createReservation(ReservationBean reservationBean){
        reservationMapper.createReservation(reservationBean);
+    }
+    //클럽 예약생성
+    public void createClubReservation(ReservationBean reservationBean){
+        reservationMapper.createClubReservation(reservationBean);
     }
     //예약번호 조회
     public int getReservationId(String member_id, String item_id, int start_time, Date date){
@@ -71,5 +75,11 @@ public class ReservationRepository {
     public int countReservationsByItemIdsAndStatus(List<Integer> business_ids){
         return reservationMapper.countReservationsByItemIdsAndStatus(business_ids);
     }
+
+    // 클럽이 예약한 목록 조회
+    public List<ReservationBean> getReservationsByClubId(Integer clubId){
+        return reservationMapper.getReservationsByClubId(clubId);
+    }
+
 
 }

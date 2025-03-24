@@ -13,6 +13,24 @@ public class ReservationBean {
     private int total_price;   // 총 금액
     private String status;        // 예약 상태 (CONFIRMED, CANCELLED, PENDING 등)
     private Date created_at;
+    private Integer  club_id;
+    private String user_type;
+
+    public Integer getClub_id() {
+        return club_id;
+    }
+
+    public void setClub_id(Integer club_id) {
+        this.club_id = club_id;
+    }
+
+    public String getUser_type() {
+        return user_type;
+    }
+
+    public void setUser_type(String user_type) {
+        this.user_type = user_type;
+    }
 
     private String item_title;
 

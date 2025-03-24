@@ -2,6 +2,7 @@ package com.spacedong.service;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import com.spacedong.beans.*;
 import jakarta.annotation.Resource;
@@ -194,6 +195,23 @@ public class ClubService {
 
     public List<ClubDonationBean> getRecentDonations(int club_id) {
         return clubRepository.getRecentDonations(club_id);
+    }
+
+    // 특정 회원이 마스터 역할을 가진 클럽 목록을 조회
+    public List<Map<String, Object>> getMasterClubsByMemberId(String memberId){
+        return clubRepository.getMasterClubsByMemberId(memberId);
+    }
+
+    //클럽 포인트 업데이트
+    public void updateClubPoints(@Param("clubId") int clubId, @Param("points") int points){
+        clubRepository.updateClubPoints(clubId, points);
+    }
+
+    //회원이 특정 클럽의 마스터인지 확인
+   public boolean isClubMaster(@Param("memberId") String memberId, @Param("clubId") int clubId){
+       int count = clubRepository.countClubMaster(memberId, clubId);
+       return count > 0;
+
     }
 
 

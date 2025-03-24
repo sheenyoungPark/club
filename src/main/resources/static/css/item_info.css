@@ -1,0 +1,263 @@
+/* 시간 선택 스타일 */
+.time-range-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-select {
+    flex: 1;
+}
+
+.time-separator {
+    font-weight: bold;
+    margin: 0 5px;
+    padding-top: 20px;
+}
+
+/* 예약 요약 스타일 */
+.reservation-summary {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+
+.summary-item {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.summary-item:last-child {
+    margin-bottom: 0;
+}
+
+.summary-item .label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+.summary-item .value {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* 비활성화된 옵션 스타일 */
+select option:disabled {
+    color: #ccc;
+    background-color: #f8f8f8;
+}
+
+/* 비활성화된 버튼 스타일 */
+.btn-primary:disabled {
+    background-color: #b9d4f2;
+    cursor: not-allowed;
+}
+
+/* 아이템 정보 페이지 스타일 */
+.item-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.item-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.item-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.item-category {
+    color: #666;
+    font-size: 1rem;
+}
+
+.item-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.item-image-container {
+    flex: 1;
+    min-width: 300px;
+}
+
+.item-image {
+    width: 100%;
+    border-radius: 8px;
+    object-fit: cover;
+    max-height: 500px;
+}
+
+.item-details {
+    flex: 2;
+    min-width: 300px;
+}
+
+.item-price, .item-business, .item-hours {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+.item-description {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.reservation-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .item-content {
+        flex-direction: column;
+    }
+
+    .item-image-container, .item-details {
+        flex: 1 1 100%;
+    }
+}
+/* 예약된 시간 표시 영역 스타일 */
+.reserved-times-container {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #f0f8ff;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.reserved-times-container h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #0056b3;
+    font-size: 1.1rem;
+}
+
+.reserved-times-container h5 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 1rem;
+}
+
+.loading-message {
+    color: #666;
+    font-style: italic;
+}
+
+.error-message {
+    color: #dc3545;
+    font-style: italic;
+}
+
+.no-reservations {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.reserved-times {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.reserved-time-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background-color: #e6f2ff;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.reserved-time-item:hover {
+    background-color: #d1e7ff;
+}
+
+.reserved-time-item:last-child {
+    margin-bottom: 0;
+}
+
+.reserved-time-range {
+    font-weight: 500;
+}
+
+.reserved-time-status {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #dc3545;
+    background-color: #ffeaea;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
