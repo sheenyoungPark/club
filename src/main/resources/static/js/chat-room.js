@@ -3,6 +3,7 @@ let stompClient = null;
 let typingTimeout = null;
 let isConnected = false;
 let readCheckInterval;
+let room = null;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
@@ -140,10 +141,10 @@ function handleServerMessage(message) {
             let unreadCount = 0;
 
             if (participants && participants.length > 0) {
-                unreadCount = participants.length - (message.readCount || 0);
+                unreadCount = participants.length - (message.readCount+1 || 1);
                 unreadCount = unreadCount < 0 ? 0 : unreadCount;
 
-                console.log(`메시지 ID: ${messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount || 0}, 안 읽은 사용자 수: ${unreadCount}`);
+                console.log(`메시지 ID: ${messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount+1 || 1}, 안 읽은 사용자 수: ${unreadCount}`);
             }
 
             // 현재 메시지가 내가 보낸 메시지인지 확인
@@ -287,6 +288,10 @@ function loadMessages() {
             // 참가자 정보 확인 로그 추가
             console.log("채팅방 정보 로드:", data);
 
+            if (data.room) {
+                room = data.room;
+                console.log("룸 정보 업데이트:", room);
+            }
             // 참가자 정보가 있으면 전역 변수 업데이트
             if (data.participants && Array.isArray(data.participants)) {
                 // 기존 참가자 배열 비우고 새로운 참가자로 채우기
@@ -395,10 +400,10 @@ function shouldShowTime(message, lastMessageTime) {
         currentMessageTime.getFullYear() !== lastMessageTime.getFullYear();
 }
 
-// 메시지 추가 함수 수정
 function appendMessage(message, animate = true, isNewSender = true, showTime = true) {
     const chatMessages = document.getElementById('chatMessages');
     const isCurrentUser = message.senderId === userId;
+    const isClubChat = room && room.room_type === 'CLUB'; // 클럽 채팅인지 확인
 
     // 메시지 요소 생성
     const messageDiv = document.createElement('div');
@@ -456,31 +461,41 @@ function appendMessage(message, animate = true, isNewSender = true, showTime = t
 
     // 시간 및 읽음 상태 표시 (마지막 메시지이거나 시간이 변경된 경우만)
     if (showTime) {
-        // 읽지 않은 사용자 수 계산
-        let unreadCount = 0;
-        if (participants && participants.length > 0) {
-            unreadCount = participants.length - (message.readCount || 0);
-            // 0보다 작으면 0으로 설정 (읽음 카운트 오류 방지)
-            unreadCount = unreadCount < 0 ? 0 : unreadCount;
-        }
-
-        // 읽음 상태 표시 (내가 보낸 메시지는 시간 앞에, 상대방이 보낸 메시지는 시간 뒤에)
-        if (isCurrentUser) {
-            // 내가 보낸 메시지: 읽음 표시가 시간 앞에
+        // 클럽 채팅일 경우 시간만 표시
+        if (isClubChat) {
             messageHtml += `
-                <div class="message-time-wrapper text-end">
-                    ${unreadCount > 0 ? `<span class="text-primary read-count me-1">${unreadCount}</span>` : ''}
+                <div class="message-time-wrapper text-${isCurrentUser ? 'end' : 'start'}">
                     <span class="message-time">${formattedTime}</span>
                 </div>
             `;
         } else {
-            // 상대방이 보낸 메시지: 읽음 표시가 시간 뒤에
-            messageHtml += `
-                <div class="message-time-wrapper text-start">
-                    <span class="message-time">${formattedTime}</span>
-                    ${unreadCount > 0 ? `<span class="text-primary read-count ms-1">${unreadCount}</span>` : ''}
-                </div>
-            `;
+            // 1:1 채팅일 경우 읽음 상태도 함께 표시
+            // 읽지 않은 사용자 수 계산
+            let unreadCount = 0;
+            if (participants && participants.length > 0) {
+                unreadCount = participants.length - (message.readCount+1 || 1);
+                // 0보다 작으면 0으로 설정 (읽음 카운트 오류 방지)
+                unreadCount = unreadCount < 0 ? 0 : unreadCount;
+            }
+
+            // 읽음 상태 표시 (내가 보낸 메시지는 시간 앞에, 상대방이 보낸 메시지는 시간 뒤에)
+            if (isCurrentUser) {
+                // 내가 보낸 메시지: 읽음 표시가 시간 앞에
+                messageHtml += `
+                    <div class="message-time-wrapper text-end">
+                        ${unreadCount > 0 ? `<span class="text-primary read-count me-1">${unreadCount}</span>` : ''}
+                        <span class="message-time">${formattedTime}</span>
+                    </div>
+                `;
+            } else {
+                // 상대방이 보낸 메시지: 읽음 표시가 시간 뒤에
+                messageHtml += `
+                    <div class="message-time-wrapper text-start">
+                        <span class="message-time">${formattedTime}</span>
+                        ${unreadCount > 0 ? `<span class="text-primary read-count ms-1">${unreadCount}</span>` : ''}
+                    </div>
+                `;
+            }
         }
     }
 
@@ -611,7 +626,7 @@ function markAsRead(messageId) {
     }
 }
 
-// 읽음 확인 업데이트 함수 수정
+// updateReadReceipt 함수 수정
 function updateReadReceipt(message) {
     console.log('읽음 상태 업데이트:', message);
 
@@ -620,74 +635,93 @@ function updateReadReceipt(message) {
         return;
     }
 
-    // 해당 메시지 ID를 가진 메시지를 찾아서 읽음 상태 업데이트
-    const messageElements = document.querySelectorAll(`.message[data-message-id="${message.messageId}"]`);
+    // 클럽 채팅인지 확인
+    const isClubChat = room.room_type === 'CLUB';
+
+    // 클럽 채팅일 경우 읽음 표시를 업데이트하지 않음
+    if (isClubChat) {
+        return;
+    }
+
+    // 읽지 않은 사용자 수 계산
+    let unreadCount = 0;
+
+    if (participants && participants.length > 0) {
+        unreadCount = participants.length - (message.readCount+1 || 1);
+
+        // 안 읽은 수가 0보다 작으면 0으로 설정
+        unreadCount = unreadCount < 0 ? 0 : unreadCount;
+
+        // 디버깅 로그 추가
+        console.log(`메시지 ID: ${message.messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount || 0}, 안 읽은 사용자 수: ${unreadCount}`);
+    }
+
+    // 읽음 표시가 0이 되면 해당 메시지와 이전 메시지 모두 읽음 처리
+    if (unreadCount === 0) {
+        updateAllPreviousMessages(message.messageId, 0);
+    } else {
+        // 해당 메시지 ID만 업데이트
+        updateSingleMessage(message.messageId, unreadCount);
+    }
+}
+
+// 단일 메시지 읽음 상태 업데이트
+function updateSingleMessage(messageId, unreadCount) {
+    const messageElements = document.querySelectorAll(`.message[data-message-id="${messageId}"]`);
 
     if (messageElements.length > 0) {
-        // 메시지를 찾으면 상태 업데이트
         messageElements.forEach(messageElement => {
-            const isCurrentUserMessage = messageElement.classList.contains('message-sent');
-            const timeWrapper = messageElement.querySelector('.message-time-wrapper');
-
-            if (timeWrapper) {
-                // 읽지 않은 사용자 수 계산
-                let unreadCount = 0;
-
-                if (participants && participants.length > 0) {
-                    unreadCount = participants.length - (message.readCount || 0);
-
-                    // 안 읽은 수가 0보다 작으면 0으로 설정
-                    unreadCount = unreadCount < 0 ? 0 : unreadCount;
-
-                    // 디버깅 로그 추가
-                    console.log(`메시지 ID: ${message.messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount || 0}, 안 읽은 사용자 수: ${unreadCount}`);
-                }
-
-                // 시간 요소 찾기
-                const timeElement = timeWrapper.querySelector('.message-time');
-                if (!timeElement) {
-                    console.warn('시간 요소를 찾을 수 없습니다:', timeWrapper);
-                    return;
-                }
-
-                const timeText = timeElement.textContent;
-
-                // 완전히 새로운 HTML로 내용 교체
-                if (isCurrentUserMessage) {
-                    // 내가 보낸 메시지
-                    timeWrapper.innerHTML = '';
-
-                    if (unreadCount > 0) {
-                        const countSpan = document.createElement('span');
-                        countSpan.className = 'text-primary read-count me-1';
-                        countSpan.textContent = unreadCount;
-                        timeWrapper.appendChild(countSpan);
-                    }
-
-                    const newTimeSpan = document.createElement('span');
-                    newTimeSpan.className = 'message-time';
-                    newTimeSpan.textContent = timeText;
-                    timeWrapper.appendChild(newTimeSpan);
-                } else {
-                    // 상대방이 보낸 메시지
-                    timeWrapper.innerHTML = '';
-
-                    const newTimeSpan = document.createElement('span');
-                    newTimeSpan.className = 'message-time';
-                    newTimeSpan.textContent = timeText;
-                    timeWrapper.appendChild(newTimeSpan);
-
-                    if (unreadCount > 0) {
-                        const countSpan = document.createElement('span');
-                        countSpan.className = 'text-primary read-count ms-1';
-                        countSpan.textContent = unreadCount;
-                        timeWrapper.appendChild(countSpan);
-                    }
-                }
-            }
+            updateMessageTimeDisplay(messageElement, unreadCount);
         });
     } else {
-        console.warn(`메시지 ID ${message.messageId}에 해당하는 요소를 찾을 수 없습니다.`);
+        console.warn(`메시지 ID ${messageId}에 해당하는 요소를 찾을 수 없습니다.`);
+    }
+}
+
+// 메시지 시간과 읽음 상태 표시 업데이트 (중복 코드 제거를 위한 헬퍼 함수)
+function updateMessageTimeDisplay(messageElement, unreadCount) {
+    const timeWrapper = messageElement.querySelector('.message-time-wrapper');
+    if (!timeWrapper) return;
+
+    const isCurrentUserMessage = messageElement.classList.contains('message-sent');
+    const timeElement = timeWrapper.querySelector('.message-time');
+
+    if (!timeElement) {
+        console.warn('시간 요소를 찾을 수 없습니다:', timeWrapper);
+        return;
+    }
+
+    const timeText = timeElement.textContent;
+
+    // 완전히 새로운 HTML로 내용 교체
+    timeWrapper.innerHTML = '';
+
+    if (isCurrentUserMessage) {
+        // 내가 보낸 메시지
+        if (unreadCount > 0) {
+            const countSpan = document.createElement('span');
+            countSpan.className = 'text-primary read-count me-1';
+            countSpan.textContent = unreadCount;
+            timeWrapper.appendChild(countSpan);
+        }
+
+        const newTimeSpan = document.createElement('span');
+        newTimeSpan.className = 'message-time';
+        newTimeSpan.textContent = timeText;
+        timeWrapper.appendChild(newTimeSpan);
+    } else {
+        // 상대방이 보낸 메시지
+        const newTimeSpan = document.createElement('span');
+        newTimeSpan.className = 'message-time';
+        newTimeSpan.textContent = timeText;
+        timeWrapper.appendChild(newTimeSpan);
+
+        if (unreadCount > 0) {
+            const countSpan = document.createElement('span');
+            countSpan.className = 'text-primary read-count ms-1';
+            countSpan.textContent = unreadCount;
+            timeWrapper.appendChild(countSpan);
+        }
     }
 }
 
@@ -790,9 +824,82 @@ function highlightMessage(messageId) {
     }
 }
 
-// 알림 모달 표시
+// 알림 표시 (모달 대신 토스트 사용)
 function showAlert(message) {
-    const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
-    document.getElementById('alertModalBody').textContent = message;
-    alertModal.show();
+    // 기존 토스트가 있으면 제거
+    const existingToast = document.getElementById('alertToast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    // 새 토스트 생성
+    const toastHtml = `
+        <div id="alertToast" class="toast align-items-center text-white bg-primary border-0 position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = document.getElementById('alertToast');
+    const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 3000 });
+    toast.show();
+}
+// 특정 메시지와 그 이전 메시지의 읽음 상태를 모두 업데이트
+function updateAllPreviousMessages(messageId, unreadCount) {
+    // 현재 메시지 찾기
+    const currentMessage = document.querySelector(`.message[data-message-id="${messageId}"]`);
+    if (!currentMessage) return;
+
+    // 현재 메시지와 그 이전의 모든 메시지들 찾기
+    const allMessages = Array.from(document.querySelectorAll('#chatMessages .message'));
+    const currentIndex = allMessages.indexOf(currentMessage);
+
+    // 현재 메시지를 포함하여 그 이전의 모든 메시지 처리
+    for (let i = 0; i <= currentIndex; i++) {
+        const message = allMessages[i];
+        const timeWrapper = message.querySelector('.message-time-wrapper');
+
+        if (timeWrapper) {
+            const isCurrentUserMessage = message.classList.contains('message-sent');
+            const timeElement = timeWrapper.querySelector('.message-time');
+
+            if (timeElement) {
+                const timeText = timeElement.textContent;
+
+                // 메시지 시간과 읽음 상태 업데이트
+                timeWrapper.innerHTML = '';
+
+                if (isCurrentUserMessage) {
+                    // 내가 보낸 메시지
+                    if (unreadCount > 0) {
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'text-primary read-count me-1';
+                        countSpan.textContent = unreadCount;
+                        timeWrapper.appendChild(countSpan);
+                    }
+
+                    const newTimeSpan = document.createElement('span');
+                    newTimeSpan.className = 'message-time';
+                    newTimeSpan.textContent = timeText;
+                    timeWrapper.appendChild(newTimeSpan);
+                } else {
+                    // 상대방이 보낸 메시지
+                    const newTimeSpan = document.createElement('span');
+                    newTimeSpan.className = 'message-time';
+                    newTimeSpan.textContent = timeText;
+                    timeWrapper.appendChild(newTimeSpan);
+
+                    if (unreadCount > 0) {
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'text-primary read-count ms-1';
+                        countSpan.textContent = unreadCount;
+                        timeWrapper.appendChild(countSpan);
+                    }
+                }
+            }
+        }
+    }
 }

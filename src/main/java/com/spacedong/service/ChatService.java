@@ -93,7 +93,7 @@ public class ChatService {
         return new ArrayList<>();
     }
 
-    // 1:1 채팅방 찾기 또는 생성하기
+    // Also modify the getOrCreatePersonalChatRoom method to include similar logic
     @Transactional
     public ChatRoomBean getOrCreatePersonalChatRoom(String userId1, String userType1, String userId2, String userType2) {
         ChatRoomBean chatRoom = chatRepository.getPersonalChatRoom(userId1, userType1, userId2, userType2);
@@ -101,37 +101,35 @@ public class ChatService {
         String user1nickname = chatRepository.searchUsers(userId1).get(0).getNickname();
         String user2nickname = chatRepository.searchUsers(userId2).get(0).getNickname();
 
+        boolean isNewRoom = false;
+
         if (chatRoom == null) {
+            isNewRoom = true;
             chatRoom = new ChatRoomBean();
             chatRoom.setRoom_type("PERSONAL");
 
-            // 상대방의 닉네임이나 이름을 가져와서 채팅방 이름으로 설정
+            // Room name based on user types
             String roomName = "";
             if(userType2.equals("MEMBER")) {
-                //회원의 정보 가져오기
                 MemberBean mem1 = memberRepository.getMemberById(userId1);
                 MemberBean mem2 = memberRepository.getMemberById(userId2);
-
                 roomName = mem1.getMember_nickname() + mem2.getMember_nickname()+"의 대화";
-                // 모든 채팅 참여자 정보 조회 후 설정할 수도 있음
             } else if(userType2.equals("BUSINESS")) {
-
-
                 roomName = "판매자와의 대화";
             } else if(userType2.equals("ADMIN")) {
                 roomName = "관리자와의 대화";
             }
 
             chatRoom.setRoom_name(roomName);
-
             chatRepository.createChatRoom(chatRoom);
 
-            // 참여자 추가
+            // Add participants
             ChatParticipantBean participant1 = new ChatParticipantBean();
             participant1.setRoom_id(chatRoom.getRoom_id());
             participant1.setUser_id(userId1);
             participant1.setUser_type(userType1);
             participant1.setUserNickname(user1nickname);
+            participant1.setJoinDate(LocalDateTime.now()); // Set join date
             chatRepository.addParticipant(participant1);
 
             ChatParticipantBean participant2 = new ChatParticipantBean();
@@ -139,24 +137,51 @@ public class ChatService {
             participant2.setUser_id(userId2);
             participant2.setUser_type(userType2);
             participant2.setUserNickname(user2nickname);
+            participant2.setJoinDate(LocalDateTime.now()); // Set join date
             chatRepository.addParticipant(participant2);
+        } else {
+            // Check if users are already participants, if not add them
+            // This covers the case where a user was removed and is rejoining
+            ChatParticipantBean participant1 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId1);
+            if (participant1 == null) {
+                participant1 = new ChatParticipantBean();
+                participant1.setRoom_id(chatRoom.getRoom_id());
+                participant1.setUser_id(userId1);
+                participant1.setUser_type(userType1);
+                participant1.setUserNickname(user1nickname);
+                participant1.setJoinDate(LocalDateTime.now());
+                chatRepository.addParticipant(participant1);
+
+                // Mark all previous messages as read for the new participant
+                markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId1);
+            }
+
+            ChatParticipantBean participant2 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId2);
+            if (participant2 == null) {
+                participant2 = new ChatParticipantBean();
+                participant2.setRoom_id(chatRoom.getRoom_id());
+                participant2.setUser_id(userId2);
+                participant2.setUser_type(userType2);
+                participant2.setUserNickname(user2nickname);
+                participant2.setJoinDate(LocalDateTime.now());
+                chatRepository.addParticipant(participant2);
+
+                // Mark all previous messages as read for the new participant
+                markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId2);
+            }
         }
 
         return chatRoom;
     }
 
-    // 클럽 채팅방 찾기 또는 생성하기
-    // 클럽 채팅방 생성 또는 조회 메서드에 참여 시간 기록 확인
     @Transactional
     public ChatRoomBean getOrCreateClubChatRoom(int clubId, String userId, String userType) {
-        // 클럽 존재 여부 확인 (클럽 회원인지도 확인)
+        // Existing code for checking club membership and getting club info
         boolean isClubMember = false;
         String usernickname = chatRepository.searchUsers(userId).get(0).getNickname();
         if (userType.equals("MEMBER")) {
-            // 클럽 회원인지 확인
             isClubMember = clubService.isMemberOfClub(clubId, userId);
         } else if (userType.equals("ADMIN")) {
-            // 관리자는 항상 모든 클럽에 접근 가능
             isClubMember = true;
         }
 
@@ -164,64 +189,66 @@ public class ChatService {
             throw new RuntimeException("클럽 회원이 아닙니다.");
         }
 
-        // 클럽 정보 가져오기
         ClubBean clubInfo = clubService.oneClubInfo(clubId);
         if (clubInfo == null) {
             throw new RuntimeException("존재하지 않는 클럽입니다.");
         }
 
-        // 클럽 채팅방 찾기
         List<ChatRoomBean> clubRooms = chatRepository.getChatRoomsByClubId((long)clubId);
         ChatRoomBean chatRoom = null;
+        boolean isNewParticipant = false;
 
-        // 기존 클럽 채팅방이 있는 경우
+        // Existing code for finding or creating a room
         if (!clubRooms.isEmpty()) {
             chatRoom = clubRooms.get(0);
 
-            // 사용자가 이미 참여자인지 확인
+            // Check if user is already a participant
             ChatParticipantBean participant = chatRepository.getParticipant(chatRoom.getRoom_id(), userId);
             if (participant == null) {
-                // 참여자가 아니면 추가 (현재 시간으로 join_date 설정)
+                // User is not a participant, add them
+                isNewParticipant = true;
                 participant = new ChatParticipantBean();
                 participant.setRoom_id(chatRoom.getRoom_id());
                 participant.setUser_id(userId);
                 participant.setUser_type(userType);
                 participant.setUserNickname(usernickname);
-                participant.setJoinDate(LocalDateTime.now()); // join_date 명시적 설정
+                participant.setJoinDate(LocalDateTime.now()); // Set join date to current time
                 chatRepository.addParticipant(participant);
+
+                // Mark all previous messages as read for the new participant
+                markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId);
             }
         } else {
-            // 채팅방이 없으면 생성
+            // Create new room if none exists
             chatRoom = new ChatRoomBean();
             chatRoom.setRoom_type("CLUB");
             chatRoom.setClub_id(clubId);
-
-            // 클럽 이름 설정
             chatRoom.setRoom_name(clubInfo.getClub_name() + " 채팅");
-
             chatRepository.createChatRoom(chatRoom);
 
-            // 현재 사용자를 참여자로 추가 (현재 시간으로 join_date 설정)
+            // Add current user as first participant
             ChatParticipantBean participant = new ChatParticipantBean();
             participant.setRoom_id(chatRoom.getRoom_id());
             participant.setUser_id(userId);
             participant.setUser_type(userType);
             participant.setUserNickname(usernickname);
-            participant.setJoinDate(LocalDateTime.now()); // join_date 명시적 설정
+            participant.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant);
 
-            // 모든 클럽 회원을 참여자로 추가
+            // Add all club members as participants
             List<ChatUserBean> clubMembers = chatRepository.getClubMembers((long)clubId);
             for (ChatUserBean member : clubMembers) {
                 String memberNickname = chatRepository.searchUsers(member.getUser_id()).get(0).getNickname();
-                if (!member.getUser_id().equals(userId)) {  // 현재 사용자는 이미 추가했으므로 제외
+                if (!member.getUser_id().equals(userId)) {  // Skip current user as they're already added
                     ChatParticipantBean memberParticipant = new ChatParticipantBean();
                     memberParticipant.setRoom_id(chatRoom.getRoom_id());
                     memberParticipant.setUser_id(member.getUser_id());
                     memberParticipant.setUser_type("MEMBER");
                     memberParticipant.setUserNickname(memberNickname);
-                    memberParticipant.setJoinDate(LocalDateTime.now()); // join_date 명시적 설정
+                    memberParticipant.setJoinDate(LocalDateTime.now());
                     chatRepository.addParticipant(memberParticipant);
+
+                    // No need to mark messages as read for a new room (no messages yet)
                 }
             }
         }
@@ -306,6 +333,38 @@ public class ChatService {
             System.out.println("마지막 읽은 메시지 ID 업데이트 결과: " + updateResult + ", 룸 ID: " + roomId + ", 사용자: " + userId);
         } else {
             System.out.println("이미 읽은 메시지입니다. 메시지 ID: " + messageId + ", 사용자: " + userId);
+        }
+    }
+
+    // New method to mark all previous messages as read for a new participant
+    @Transactional
+    private void markPreviousMessagesAsRead(int roomId, String userId) {
+        // Get all messages in the room
+        List<ChatMessageBean> allMessages = chatRepository.getMessagesByRoomId((long)roomId, userId);
+
+        // For each message, create a read receipt
+        for (ChatMessageBean message : allMessages) {
+            // Check if this message was sent before the user joined
+            // Skip if user is the sender (no need to mark your own messages as read)
+            if (!message.getSenderId().equals(userId)) {
+                // Only create read receipt if one doesn't already exist
+                if (!chatRepository.checkIfRead(message.getMessageId(), userId)) {
+                    ChatReadReceiptBean readReceipt = new ChatReadReceiptBean();
+                    readReceipt.setMessageId(message.getMessageId());
+                    readReceipt.setReaderId(userId);
+                    readReceipt.setReadTime(LocalDateTime.now());
+                    chatRepository.markAsRead(readReceipt);
+
+                    // Update read count for the message
+                    chatRepository.incrementReadCount(message.getMessageId());
+                }
+            }
+        }
+
+        // If there are messages, update the last read message ID for the participant
+        if (!allMessages.isEmpty()) {
+            Long lastMessageId = allMessages.get(allMessages.size() - 1).getMessageId();
+            chatRepository.updateLastReadMsgId((long)roomId, userId, lastMessageId);
         }
     }
 
