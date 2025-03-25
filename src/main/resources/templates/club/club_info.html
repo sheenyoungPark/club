@@ -274,14 +274,13 @@
     <div class="action-footer">
         <!-- 비회원용 버튼 -->
         <div th:if="${member_role == null}" class="action-buttons">
+            <a th:href="@{/chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
+                <i class="fas fa-envelope"></i> 문의하기
+            </a>
             <a th:if="${loginBusiness == null or loginBusiness.login == false}"
                th:href="@{/club/club_join(club_id=${club.club_id})}"
                class="btn btn-primary">
                 <i class="fas fa-user-plus"></i> 가입 신청하기
-            </a>
-
-            <a th:href="@{/chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
-                <i class="fas fa-envelope"></i> 문의하기
             </a>
         </div>
 
