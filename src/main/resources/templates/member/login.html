@@ -12,10 +12,12 @@
         <div class="tab" data-tab="business">기업회원</div>
     </div>
 
-    <div th:if="${fail}" class="alert alert-danger">
+    <div th:if="${loginError}" class="alert alert-danger">
         <h3>로그인 실패</h3>
-        <p>아이디 비밀번호를 확인해주세요</p>
+        <p th:text="${loginError}">로그인 실패 메시지</p>
     </div>
+
+
 
     <form id="personal-form" th:action="@{/member/login_pro}" method="post" th:object="${tempLoginMember}">
         <input type="text" th:field="*{member_id}" class="input-field" placeholder="아이디" />

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 - 동호회 관리</title>
+  <link rel="stylesheet" th:href="@{/css/adminClub.css}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .sidebar {
+      height: 100vh;
+      background-color: #343a40;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+    .sidebar a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      display: block;
+      padding: 10px 15px;
+    }
+    .sidebar a:hover {
+      color: white;
+      background-color: #495057;
+    }
+    .sidebar a.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+    .club-item {
+      cursor: pointer;
+    }
+    .club-item:hover {
+      background-color: #f8f9fa;
+    }
+    .pagination {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+      z-index: 1000;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .table-responsive {
+      margin-bottom: 80px; /* 페이지네이션 버튼을 위한 여백 */
+    }
+  </style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <!-- 사이드바 메뉴 -->
+    <div class="col-md-2 sidebar p-0">
+      <div class="d-flex flex-column flex-shrink-0 p-3">
+        <a href="/admin/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+          <span class="fs-4">관리자 패널</span>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+          <li class="nav-item">
+            <a href="/admin/dashboard" class="nav-link">
+              대시보드
+            </a>
+          </li>
+          <li>
+            <a href="/admin/club_management" class="nav-link active">
+              동호회 관리
+            </a>
+          </li>
+          <li>
+            <a href="/admin/business_management" class="nav-link">
+              판매자 관리
+            </a>
+          </li>
+          <li>
+            <a href="/admin/member_management" class="nav-link">
+              회원 관리
+            </a>
+          </li>
+          <li>
+            <a href="/admin/board_management" class="nav-link">
+              게시판 관리
+            </a>
+          </li>
+          <li>
+            <a href="/admin/exchange_management" class="nav-link">
+              포인트 관리
+            </a>
+          </li>
+        </ul>
+        <hr>
+        <div>
+          <a href="/member/logout" class="btn btn-danger w-100">로그아웃</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="col-md-10 p-4">
+      <h2>동호회 관리</h2>
+      <p>총 <span id="clubCount">0</span>개의 동호회가 등록되어 있습니다.</p>
+
+      <!-- 검색 영역 -->
+      <div class="card mb-4">
+        <div class="card-header">
+          동호회 검색
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <select class="form-select" id="searchType">
+                <option value="name">동호회명</option>
+                <option value="category">카테고리</option>
+                <option value="description">설명</option>
+              </select>
+            </div>
+            <div class="col-md-7">
+              <input type="text" class="form-control" id="keyword" placeholder="검색어 입력">
+            </div>
+            <div class="col-md-2">
+              <button id="searchBtn" class="btn btn-primary w-100">검색</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 동호회 목록 -->
+      <div class="card">
+        <div class="card-header">
+          동호회 목록
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+              <tr>
+                <th>번호</th>
+                <th>동호회명</th>
+                <th>카테고리</th>
+                <th>생성일</th>
+                <th>상태</th>
+                <th>관리</th>
+              </tr>
+              </thead>
+              <tbody id="clubList">
+              <!-- 동호회 목록이 여기에 동적으로 추가됩니다 -->
+              </tbody>
+            </table>
+
+            <!-- 페이지네이션 -->
+            <nav aria-label="동호회 페이지 내비게이션">
+              <ul class="pagination" id="pagination">
+                <!-- 페이지 번호가 여기에 동적으로 추가됩니다 -->
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 동호회 상세 정보 모달 -->
+<div class="modal fade" id="clubDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">동호회 상세 정보</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">기본 정보</div>
+              <div class="card-body">
+                <p><strong>동호회명:</strong> <span id="detail-club-name"></span></p>
+                <p><strong>카테고리:</strong> <span id="detail-club-category"></span></p>
+                <p><strong>생성일:</strong> <span id="detail-club-date"></span></p>
+                <p><strong>회원수:</strong> <span id="detail-club-members"></span>명</p>
+                <p><strong>상태:</strong> <span id="detail-club-status" class="badge"></span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">동호회 설명</div>
+              <div class="card-body">
+                <p id="detail-club-description"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" id="approveBtn">승인하기</button>
+        <button type="button" class="btn btn-warning" id="privateBtn">비공개 설정</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  $(document).ready(function() {
+    // 페이지 관련 변수
+    var currentPage = 1;
+    var itemsPerPage = 10;
+    var totalPages = 1;
+    var allClubs = []; // 모든 동호회 데이터 저장
+
+    // 모든 동호회 데이터 가져오기
+    function loadAllClubs() {
+      $.ajax({
+        url: '/admin/club_list',  // 별도의 JSON 데이터 API 엔드포인트
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+          allClubs = response.clubList;
+          totalPages = Math.ceil(allClubs.length / itemsPerPage);
+
+          // 전체 동호회 수 표시
+          $('#clubCount').text(allClubs.length);
+
+          // 첫 페이지 표시
+          displayClubsPage(1);
+
+          // 페이지네이션 생성
+          createPagination();
+        },
+        error: function(xhr, status, error) {
+          console.error('데이터 로드 실패:', error);
+        }
+      });
+    }
+
+    // 동호회 검색
+    $('#searchBtn').click(function() {
+      var searchType = $('#searchType').val();
+      var keyword = $('#keyword').val();
+
+      $.ajax({
+        url: '/admin/searchClub',
+        type: 'POST',
+        data: {
+          searchType: searchType,
+          keyword: keyword
+        },
+        dataType: 'json',
+        success: function(response) {
+          if(response.success) {
+            // 검색 결과로 목록 업데이트
+            allClubs = response.clubList;
+            totalPages = Math.ceil(allClubs.length / itemsPerPage);
+
+            // 검색 결과 수 표시
+            $('#clubCount').text(allClubs.length);
+
+            // 첫 페이지 표시
+            currentPage = 1;
+            displayClubsPage(currentPage);
+
+            // 페이지네이션 업데이트
+            createPagination();
+          } else {
+            alert('검색 실패: ' + response.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('검색 요청 실패:', error);
+        }
+      });
+    });
+
+    // 특정 페이지의 동호회 목록 표시
+    function displayClubsPage(page) {
+      // 현재 페이지 설정
+      currentPage = page;
+
+      // 시작 인덱스와 끝 인덱스 계산
+      var startIndex = (page - 1) * itemsPerPage;
+      var endIndex = startIndex + itemsPerPage;
+
+      // 현재 페이지에 표시할 동호회들
+      var clubsToShow = allClubs.slice(startIndex, endIndex);
+
+      // 동호회 목록 표시
+      displayClubs(clubsToShow);
+    }
+
+// 페이지네이션 생성 함수를 다음과 같이 수정합니다
+    function createPagination() {
+      var pagination = $('#pagination');
+      pagination.empty();
+
+      // 이전 페이지 버튼
+      var prevBtn = `
+    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+      <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="이전">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+  `;
+      pagination.append(prevBtn);
+
+      // 페이지 번호 버튼 (총 5개만 표시, 고정된 위치)
+      // 총 페이지 수가 5개 이하면 모두 표시
+      if (totalPages <= 5) {
+        for (var i = 1; i <= totalPages; i++) {
+          var pageBtn = `
+        <li class="page-item ${i === currentPage ? 'active' : ''}">
+          <a class="page-link" href="#" data-page="${i}">${i}</a>
+        </li>
+      `;
+          pagination.append(pageBtn);
+        }
+      }
+      // 총 페이지 수가 5개 초과면 항상 1, 2, ..., n-1, n 형식으로 표시
+      else {
+        // 항상 1 표시
+        pagination.append(`
+      <li class="page-item ${currentPage === 1 ? 'active' : ''}">
+        <a class="page-link" href="#" data-page="1">1</a>
+      </li>
+    `);
+
+        // 2 표시 (현재 페이지가 1 또는 2면 활성화)
+        pagination.append(`
+      <li class="page-item ${currentPage === 2 ? 'active' : ''}">
+        <a class="page-link" href="#" data-page="2">2</a>
+      </li>
+    `);
+
+        // 중간 페이지 표시 방식 결정
+        if (currentPage <= 2 || currentPage >= totalPages - 1) {
+          // 현재 페이지가 앞쪽이나 뒤쪽이면 "..." 만 표시
+          pagination.append(`
+        <li class="page-item disabled">
+          <a class="page-link" href="#">&hellip;</a>
+        </li>
+      `);
+        } else {
+          // 현재 페이지가 중간에 있으면 현재 페이지만 표시
+          pagination.append(`
+        <li class="page-item disabled">
+          <a class="page-link" href="#">&hellip;</a>
+        </li>
+        <li class="page-item active">
+          <a class="page-link" href="#" data-page="${currentPage}">${currentPage}</a>
+        </li>
+        <li class="page-item disabled">
+          <a class="page-link" href="#">&hellip;</a>
+        </li>
+      `);
+        }
+
+        // 항상 끝에서 두 번째 페이지 표시
+        if (totalPages > 2) {
+          pagination.append(`
+        <li class="page-item ${currentPage === totalPages - 1 ? 'active' : ''}">
+          <a class="page-link" href="#" data-page="${totalPages - 1}">${totalPages - 1}</a>
+        </li>
+      `);
+        }
+
+        // 항상 마지막 페이지 표시
+        pagination.append(`
+      <li class="page-item ${currentPage === totalPages ? 'active' : ''}">
+        <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
+      </li>
+    `);
+      }
+
+      // 다음 페이지 버튼
+      var nextBtn = `
+    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+      <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="다음">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  `;
+      pagination.append(nextBtn);
+
+      // 페이지 클릭 이벤트 처리
+      $('.page-link').click(function(e) {
+        e.preventDefault();
+
+        var page = $(this).data('page');
+        if (page >= 1 && page <= totalPages) {
+          displayClubsPage(page);
+
+          // 페이지네이션 업데이트
+          createPagination();
+        }
+      });
+    }
+
+    // 동호회 목록 표시
+    function displayClubs(clubs) {
+      var clubList = $('#clubList');
+      clubList.empty();
+
+      $.each(clubs, function(index, club) {
+        var status = getStatusBadge(club.club_public);
+
+        var row = `
+          <tr class="club-item" data-club-id="${club.club_id}">
+            <td>${club.club_id}</td>
+            <td>${club.club_name}</td>
+            <td>${club.club_category || '-'}</td>
+            <td>${formatDate(club.club_joindate)}</td>
+            <td>${status}</td>
+            <td>
+              <button class="btn btn-sm btn-primary view-detail" data-club-id="${club.club_id}">
+                상세보기
+              </button>
+            </td>
+          </tr>
+        `;
+
+        clubList.append(row);
+      });
+
+      // 동호회 상세 버튼 이벤트
+      $('.view-detail').click(function() {
+        var clubId = $(this).data('club-id');
+        showClubDetail(clubId);
+      });
+    }
+
+    // 상태별 배지 반환
+    function getStatusBadge(status) {
+      if(status === 'PASS') {
+        return '<span class="badge bg-success">승인됨</span>';
+      } else if(status === 'WAIT') {
+        return '<span class="badge bg-warning text-dark">대기중</span>';
+      } else {
+        return '<span class="badge bg-secondary">기타</span>';
+      }
+    }
+
+    // 날짜 포맷팅
+    function formatDate(dateStr) {
+      if(!dateStr) return '-';
+      var date = new Date(dateStr);
+      return date.getFullYear() + '-' +
+              padZero(date.getMonth() + 1) + '-' +
+              padZero(date.getDate());
+    }
+
+    function padZero(num) {
+      return (num < 10 ? '0' : '') + num;
+    }
+
+    // 동호회 상세 정보 표시
+    function showClubDetail(clubId) {
+      $.ajax({
+        url: '/admin/club_detail',
+        type: 'GET',
+        data: { club_id: clubId },
+        dataType: 'json',
+        success: function(club) {
+          $('#detail-club-name').text(club.club_name);
+          $('#detail-club-category').text(club.club_category || '-');
+          $('#detail-club-date').text(formatDate(club.club_joindate));
+          $('#detail-club-members').text(club.member_count || 0);
+          $('#detail-club-description').text(club.club_info || '설명 없음');
+
+          var statusClass = 'bg-secondary';
+          if(club.club_public === 'PASS') {
+            statusClass = 'bg-success';
+            $('#detail-club-status').text('승인됨');
+            $('#approveBtn').hide();
+            $('#privateBtn').show();
+          } else if(club.club_public === 'WAIT') {
+            statusClass = 'bg-warning text-dark';
+            $('#detail-club-status').text('대기중');
+            $('#approveBtn').show();
+            $('#privateBtn').hide();
+          }
+
+          $('#detail-club-status').removeClass().addClass('badge ' + statusClass);
+
+          // 승인 버튼에 클럽 ID 데이터 설정
+          $('#approveBtn').data('club-id', clubId);
+          $('#privateBtn').data('club-id', clubId);
+
+          // 모달 표시
+          var modal = new bootstrap.Modal(document.getElementById('clubDetailModal'));
+          modal.show();
+        },
+        error: function(xhr, status, error) {
+          console.error('동호회 상세 정보 로드 실패:', error);
+        }
+      });
+    }
+
+    // 동호회 승인 처리
+    $('#approveBtn').click(function() {
+      var clubId = $(this).data('club-id');
+
+      $.ajax({
+        url: '/admin/approve_club',
+        type: 'POST',
+        data: { clubId: clubId },
+        dataType: 'json',
+        success: function(response) {
+          if(response.success) {
+            alert('동호회가 승인되었습니다.');
+            $('#clubDetailModal').modal('hide');
+            loadAllClubs(); // 목록 갱신
+          } else {
+            alert('승인 실패: ' + response.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('승인 요청 실패:', error);
+        }
+      });
+    });
+
+    // 동호회 비공개 설정
+    $('#privateBtn').click(function() {
+      var clubId = $(this).data('club-id');
+
+      $.ajax({
+        url: '/admin/update_club_status',
+        type: 'POST',
+        data: {
+          clubId: clubId,
+          status: 'private'
+        },
+        dataType: 'json',
+        success: function(response) {
+          if(response.success) {
+            alert('동호회가 비공개로 설정되었습니다.');
+            $('#clubDetailModal').modal('hide');
+            loadAllClubs(); // 목록 갱신
+          } else {
+            alert('상태 변경 실패: ' + response.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('상태 변경 요청 실패:', error);
+        }
+      });
+    });
+
+    // 초기 데이터 로드
+    loadAllClubs();
+  });
+</script>
+</body>
+</html>

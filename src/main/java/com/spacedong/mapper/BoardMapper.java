@@ -9,48 +9,49 @@ import com.spacedong.beans.BoardCommentBean;
 @Mapper
 public interface BoardMapper {
 
-    /** ✅ 회원 게시판 조회 (댓글 개수 추가) **/
+    // 회원 게시판 조회 쿼리 개선
     @Select("SELECT mb.*, m.member_nickname AS writer_name, " +
-            "       (SELECT COUNT(*) FROM member_board_comment c WHERE c.board_id = mb.board_id) AS comment_count " +
+            "(SELECT COUNT(*) FROM member_board_comment c WHERE c.board_id = mb.board_id) AS comment_count " +
             "FROM member_board mb " +
             "LEFT JOIN member m ON mb.board_writer_id = m.member_id " +
-            "ORDER BY mb.create_date DESC " +
+            "ORDER BY mb.board_id DESC " +
             "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getMemberBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
     @Select("SELECT COUNT(*) FROM member_board")
     int getMemberBoardCount();
 
-    /** ✅ 판매자 게시판 조회 (댓글 개수 추가) **/
+    // 판매자 게시판 조회 쿼리 개선
     @Select("SELECT bb.*, b.business_name AS writer_name, " +
-            "       (SELECT COUNT(*) FROM business_board_comment c WHERE c.board_id = bb.board_id) AS comment_count " +
+            "(SELECT COUNT(*) FROM business_board_comment c WHERE c.board_id = bb.board_id) AS comment_count " +
             "FROM business_board bb " +
             "LEFT JOIN business b ON bb.board_writer_id = b.business_id " +
-            "ORDER BY bb.create_date DESC " +
+            "ORDER BY bb.board_id DESC " +
             "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getBusinessBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
     @Select("SELECT COUNT(*) FROM business_board")
     int getBusinessBoardCount();
 
-    /** ✅ 운영자 게시판 조회 (댓글 개수 추가) **/
+    // 운영자 게시판 조회 쿼리 개선
     @Select("SELECT ab.*, '관리자' AS writer_name, " +
-            "       (SELECT COUNT(*) FROM admin_board_comment c WHERE c.board_id = ab.board_id) AS comment_count " +
+            "(SELECT COUNT(*) FROM admin_board_comment c WHERE c.board_id = ab.board_id) AS comment_count " +
             "FROM admin_board ab " +
-            "ORDER BY ab.create_date DESC " +
+            "ORDER BY ab.board_id DESC " +
             "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getAdminBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
     @Select("SELECT COUNT(*) FROM admin_board")
     int getAdminBoardCount();
 
-    /** ✅ 통합 게시판 조회 (댓글 개수 추가) **/
+    // 통합 게시판 조회 (댓글 개수 추가) - board_id 기준 내림차순 정렬
     @Select("SELECT b.board_id, b.board_title, b.board_text, b.board_writer_id, b.board_view, b.board_like, b.create_date, " +
+            "       b.board_type, " +
             "       CASE " +
             "           WHEN b.board_type = 'admin' THEN '관리자' " +
-            "           ELSE COALESCE(m.member_nickname, bs.business_name) " +
+            "           WHEN b.board_type = 'business' THEN COALESCE(bs.business_name, '판매자') " +
+            "           WHEN b.board_type = 'member' THEN COALESCE(m.member_nickname, '회원') " +
             "       END AS writer_name, " +
-            "       b.board_type, " +
             "       (SELECT COUNT(*) FROM member_board_comment mc WHERE mc.board_id = b.board_id AND b.board_type = 'member') + " +
             "       (SELECT COUNT(*) FROM business_board_comment bc WHERE bc.board_id = b.board_id AND b.board_type = 'business') + " +
             "       (SELECT COUNT(*) FROM admin_board_comment ac WHERE ac.board_id = b.board_id AND b.board_type = 'admin') AS comment_count " +
@@ -61,11 +62,11 @@ public interface BoardMapper {
             "    UNION ALL " +
             "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'admin' AS board_type FROM admin_board " +
             ") b " +
-            "LEFT JOIN member m ON b.board_writer_id = m.member_id " +
-            "LEFT JOIN business bs ON b.board_writer_id = bs.business_id " +
+            "LEFT JOIN member m ON b.board_writer_id = m.member_id AND b.board_type = 'member' " +
+            "LEFT JOIN business bs ON b.board_writer_id = bs.business_id AND b.board_type = 'business' " +
             "ORDER BY " +
             "    CASE WHEN b.board_type = 'admin' THEN 1 ELSE 2 END, " +
-            "    b.create_date DESC " +
+            "    b.board_id DESC " +
             "OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY")
     List<BoardBean> getAllBoardList(@Param("offset") int offset, @Param("pageSize") int pageSize);
 
@@ -129,7 +130,7 @@ public interface BoardMapper {
             "FROM ${boardType}_board_comment c " +
             "LEFT JOIN member m ON c.comment_writer_id = m.member_id " +
             "LEFT JOIN business b ON c.comment_writer_id = b.business_id " +
-            "WHERE c.board_id = #{boardId} " +  // ✅ 해당 게시글의 댓글만 가져오도록 수정
+            "WHERE c.board_id = #{boardId} " +
             "ORDER BY c.create_date ASC")
     List<BoardCommentBean> getCommentsByBoardId(@Param("boardType") String boardType, @Param("boardId") int boardId);
 
@@ -175,4 +176,45 @@ public interface BoardMapper {
     /** ✅ 특정 게시글의 특정 이미지 삭제 */
     @Delete("DELETE FROM ${boardType}_board_image WHERE board_id = #{boardId} AND img = #{fileName}")
     void deleteBoardImage(@Param("boardType") String boardType, @Param("boardId") int boardId, @Param("fileName") String fileName);
+
+    /** 게시판 검색 기능 */
+    @Select({
+            "<script>",
+            "SELECT b.board_id, b.board_title, b.board_text, b.board_writer_id, b.board_view, b.board_like, b.create_date, ",
+            "       CASE ",
+            "           WHEN b.board_type = 'admin' THEN '관리자' ",
+            "           ELSE COALESCE(m.member_nickname, bs.business_name) ",
+            "       END AS writer_name, ",
+            "       b.board_type, ",
+            "       (SELECT COUNT(*) FROM member_board_comment mc WHERE mc.board_id = b.board_id AND b.board_type = 'member') + ",
+            "       (SELECT COUNT(*) FROM business_board_comment bc WHERE bc.board_id = b.board_id AND b.board_type = 'business') + ",
+            "       (SELECT COUNT(*) FROM admin_board_comment ac WHERE ac.board_id = b.board_id AND b.board_type = 'admin') AS comment_count ",
+            "FROM ( ",
+            "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'member' AS board_type FROM member_board ",
+            "    UNION ALL ",
+            "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'business' AS board_type FROM business_board ",
+            "    UNION ALL ",
+            "    SELECT board_id, board_title, board_text, board_writer_id, board_view, board_like, create_date, 'admin' AS board_type FROM admin_board ",
+            ") b ",
+            "LEFT JOIN member m ON b.board_writer_id = m.member_id ",
+            "LEFT JOIN business bs ON b.board_writer_id = bs.business_id ",
+            "WHERE 1=1 ",
+            "<if test='searchType == \"title\"'>",
+            "    AND LOWER(b.board_title) LIKE '%' || #{keyword} || '%'",
+            "</if>",
+            "<if test='searchType == \"content\"'>",
+            "    AND LOWER(b.board_text) LIKE '%' || #{keyword} || '%'",
+            "</if>",
+            "<if test='searchType == \"writer\"'>",
+            "    AND (LOWER(b.board_writer_id) LIKE '%' || #{keyword} || '%'",
+            "         OR LOWER(m.member_nickname) LIKE '%' || #{keyword} || '%'",
+            "         OR LOWER(bs.business_name) LIKE '%' || #{keyword} || '%')",
+            "</if>",
+            "<if test='searchType == \"board_type\"'>",
+            "    AND LOWER(b.board_type) LIKE '%' || #{keyword} || '%'",
+            "</if>",
+            "ORDER BY CASE WHEN b.board_type = 'admin' THEN 1 ELSE 2 END, b.create_date DESC",
+            "</script>"
+    })
+    List<BoardBean> searchBoards(@Param("searchType") String searchType, @Param("keyword") String keyword);
 }

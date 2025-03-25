@@ -15,7 +15,15 @@ public class BoardBean {
 	private LocalDateTime update_date; // 수정일
 	private String writer_name; // ✅ 닉네임 또는 비즈니스명 추가
 	private int comment_count; // ✅ 댓글 개수 추가
+	private String board_type;
 
+	public String getBoard_type() {
+		return board_type;
+	}
+
+	public void setBoard_type(String board_type) {
+		this.board_type = board_type;
+	}
 
 	// Getter & Setter 추가
 	public String getWriter_name() {

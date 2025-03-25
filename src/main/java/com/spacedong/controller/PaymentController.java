@@ -1,6 +1,9 @@
 package com.spacedong.controller;
 
+import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.MemberBean;
+import com.spacedong.service.BankService;
+import com.spacedong.service.BusinessService;
 import com.spacedong.service.PaymentService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +18,14 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/payment")
 public class PaymentController {
+    private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
     @Resource(name = "loginMember")
     private MemberBean loginMember;
@@ -28,6 +35,12 @@ public class PaymentController {
 
     private final String CLIENT_KEY = "test_ck_DnyRpQWGrN5BYwJnKKbyVKwv1M9E"; // 토스 테스트용 클라이언트 키
     private final String SECRET_KEY = "test_sk_0RnYX2w532q19BZzeLBP8NeyqApQ"; // 토스 테스트용 시크릿 키
+    @Autowired
+    private BusinessBean loginBusiness;
+    @Autowired
+    private BusinessService businessService;
+    @Autowired
+    private BankService bankService;
 
     // 🔹 충전 페이지 이동
     @GetMapping("/charge")
@@ -103,4 +116,80 @@ public class PaymentController {
         model.addAttribute("message", "결제 실패: " + message);
         return "payment/fail"; // 실패 페이지 이동
     }
+
+    // 환전 신청 페이지
+    @GetMapping("/businessexchange")
+    public String showExchangePage(Model model) {
+        // 로그인 체크
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
+            return "redirect:/member/login";
+        }
+
+        // 최신 비즈니스 정보 가져오기 (포인트 업데이트 위해)
+        BusinessBean latestInfo = businessService.getBusinessInfoById(loginBusiness.getBusiness_id());
+        if (latestInfo != null) {
+            loginBusiness.setBusiness_point(latestInfo.getBusiness_point());
+        }
+
+        model.addAttribute("loginBusiness", loginBusiness);
+        return "payment/businessExchange";
+    }
+    // 환전 요청 처리
+    @PostMapping("/requestExchange")
+    public String requestExchange(
+            @RequestParam("exchange_point") int exchangePoint,
+            RedirectAttributes redirectAttributes) {
+
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
+            return "redirect:/member/login";
+        }
+
+        try {
+            // 최소 환전 금액 체크
+            if (exchangePoint < 1000) {
+                redirectAttributes.addAttribute("error", "최소 환전 금액은 1,000P입니다.");
+                return "redirect:/payment/businessexchange";
+            }
+
+            // 보유 포인트 체크
+            if (exchangePoint > loginBusiness.getBusiness_point()) {
+                redirectAttributes.addAttribute("error", "보유한 포인트보다 많은 금액을 환전할 수 없습니다.");
+                return "redirect:/payment/businessexchange";
+            }
+
+            // 환전 요청 등록
+            bankService.requestExchange(loginBusiness.getBusiness_id(), exchangePoint);
+
+            logger.info("환전 요청 성공 - 판매자: {}, 금액: {}", loginBusiness.getBusiness_id(), exchangePoint);
+            redirectAttributes.addAttribute("success", "환전 신청이 완료되었습니다. 관리자 승인 후 처리됩니다.");
+
+        } catch (Exception e) {
+            logger.error("환전 요청 실패", e);
+            redirectAttributes.addAttribute("error", "환전 신청 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        return "redirect:/payment/businessexchange";
+    }
+
+    // 환전 내역 조회 페이지
+    @GetMapping("/exchangehistory")
+    public String showExchangeHistory(Model model) {
+        if (loginBusiness == null || !loginBusiness.isLogin()) {
+            return "redirect:/member/login";
+        }
+
+        try {
+            // 해당 판매자의 환전 요청 내역 조회
+            model.addAttribute("exchangeHistory",
+                    bankService.getExchangeRequestsByBusinessId(loginBusiness.getBusiness_id()));
+            model.addAttribute("loginBusiness", loginBusiness);
+
+        } catch (Exception e) {
+            logger.error("환전 내역 조회 실패", e);
+            model.addAttribute("error", "환전 내역을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        return "payment/exchangeHistory";
+    }
+
 }

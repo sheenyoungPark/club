@@ -20,11 +20,10 @@ public interface SearchMapper {
     List<ClubBean> searchedClubs(@Param("region") String region, @Param("age") int age, @Param("searchtxt") String searchtxt);
 
 
-    // age 매개변수 제거
     @Select("SELECT bi.*, b.business_name, b.business_address " +
             "FROM business_item bi " +
             "JOIN business b ON bi.business_id = b.business_id " +
-            "WHERE b.business_public = 'WAIT' " +
+            "WHERE b.business_public = 'PASS' " +  // 'WAIT'에서 'PASS'로 변경
             "AND b.business_address LIKE '%' || #{region} || '%' " +
             "AND (bi.item_title LIKE '%' || #{searchtxt} || '%' OR bi.item_text LIKE '%' || #{searchtxt} || '%')")
     List<BusinessItemBean> searchedBusinessItems(@Param("region") String region, @Param("searchtxt") String searchtxt);

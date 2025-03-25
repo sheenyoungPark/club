@@ -19,10 +19,17 @@ public class BoardService {
     @Autowired
     private BoardRepository boardRepository;
 
-    // 회원 게시판 조회 (페이징 적용)
+    // 회원 게시판 조회
     public List<BoardBean> getMemberBoardList(int page, int pageSize) {
         int offset = (page - 1) * pageSize;
-        return boardRepository.getMemberBoardList(offset, pageSize);
+        List<BoardBean> boardList = boardRepository.getMemberBoardList(offset, pageSize);
+
+        // board_type 필드 명시적 설정
+        for (BoardBean board : boardList) {
+            board.setBoard_type("member");
+        }
+
+        return boardList;
     }
 
     // 회원 게시판 총 개수
@@ -30,20 +37,34 @@ public class BoardService {
         return boardRepository.getMemberBoardCount();
     }
 
-    /** 판매자 게시판 조회 **/
+    // 판매자 게시판 조회
     public List<BoardBean> getBusinessBoardList(int page, int pageSize) {
         int offset = (page - 1) * pageSize;
-        return boardRepository.getBusinessBoardList(offset, pageSize);
+        List<BoardBean> boardList = boardRepository.getBusinessBoardList(offset, pageSize);
+
+        // board_type 필드 명시적 설정
+        for (BoardBean board : boardList) {
+            board.setBoard_type("business");
+        }
+
+        return boardList;
     }
 
     public int getBusinessBoardCount() {
         return boardRepository.getBusinessBoardCount();
     }
 
-    /** 운영자 게시판 조회 **/
+    // 관리자 게시판 조회
     public List<BoardBean> getAdminBoardList(int page, int pageSize) {
         int offset = (page - 1) * pageSize;
-        return boardRepository.getAdminBoardList(offset, pageSize);
+        List<BoardBean> boardList = boardRepository.getAdminBoardList(offset, pageSize);
+
+        // board_type 필드 명시적 설정
+        for (BoardBean board : boardList) {
+            board.setBoard_type("admin");
+        }
+
+        return boardList;
     }
 
     public int getAdminBoardCount() {
@@ -67,6 +88,18 @@ public class BoardService {
 
     /** 게시글 상세 조회 **/
     public BoardBean getBoardDetail(String boardType, int boardId) {
+        // boardType이 null이거나 유효하지 않은 경우 처리
+        if (boardType == null || boardType.isEmpty() ||
+                !(boardType.equals("member") || boardType.equals("business") || boardType.equals("admin"))) {
+
+            // 게시글 ID로 올바른 게시판 유형 찾기
+            boardType = findBoardType(boardId);
+
+            if (boardType == null) {
+                throw new IllegalArgumentException("유효한 게시판 유형을 찾을 수 없습니다. (board_id: " + boardId + ")");
+            }
+        }
+
         return boardRepository.getBoardDetail(boardType, boardId);
     }
 
@@ -181,6 +214,7 @@ public class BoardService {
         return boardRepository.getBoardImages(boardType, boardId);
     }
 
+
     // ✅ 게시글 삭제 (물리적 파일 삭제 포함)
     public void deleteBoard(String boardType, int boardId) {
         System.out.println("🗑 서비스: 게시글 삭제 (boardType: " + boardType + ", boardId: " + boardId + ")");
@@ -216,6 +250,19 @@ public class BoardService {
     /** ✅ 특정 게시글의 특정 이미지 삭제 */
     public void deleteBoardImage(String boardType, int boardId, String fileName) {
         boardRepository.deleteBoardImage(boardType, boardId, fileName);
+    }
+
+
+    /** 게시판 검색 기능 */
+    public List<BoardBean> searchBoards(String searchType, String keyword) {
+        // 검색 유형에 따라 다른 메소드 호출
+        if (searchType == null || keyword == null) {
+            return new ArrayList<>();
+        }
+
+        keyword = keyword.toLowerCase();
+
+        return boardRepository.searchBoards(searchType, keyword);
     }
 
 }

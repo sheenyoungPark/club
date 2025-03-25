@@ -7,8 +7,8 @@
 <body>
 <script th:inline="javascript">
     /*<![CDATA[*/
-    alert('로그인에 실패하였습니다');
-    location.href = /*[[@{/member/login?fail=true}]]*/ '/member/login?fail=true';
+    alert(/*[[${loginError}]]*/ '로그인에 실패하였습니다');
+    location.href = /*[[@{/business/login?fail=true}]]*/ '/business/login?fail=true';
     /*]]>*/
 </script>
 </body>

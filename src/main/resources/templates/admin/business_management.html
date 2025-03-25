@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 판매자 관리</title>
+    <link rel="stylesheet" th:href="@{/css/adminSeller.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+        }
+        .sidebar a:hover {
+            color: white;
+            background-color: #495057;
+        }
+        .sidebar a.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .seller-item {
+            cursor: pointer;
+        }
+        .seller-item:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- 사이드바 메뉴 -->
+        <div class="col-md-2 sidebar p-0">
+            <div class="d-flex flex-column flex-shrink-0 p-3">
+                <a href="/admin/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+                    <span class="fs-4">관리자 패널</span>
+                </a>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link">
+                            대시보드
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/club_management" class="nav-link">
+                            동호회 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/business_management" class="nav-link active">
+                            판매자 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/member_management" class="nav-link">
+                            회원 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/board_management" class="nav-link">
+                            게시판 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/exchange_management" class="nav-link">
+                            포인트 관리
+                        </a>
+                    </li>
+                </ul>
+                <hr>
+                <div>
+                    <a href="/member/logout" class="btn btn-danger w-100">로그아웃</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="col-md-10 p-4">
+            <h2>판매자 관리</h2>
+            <p>총 <span id="sellerCount" th:text="${#lists.size(businessList)}">0</span>명의 판매자가 등록되어 있습니다.</p>
+
+            <!-- 검색 영역 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    판매자 검색
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="searchType">
+                                <option value="name">판매자명</option>
+                                <option value="business">사업자명</option>
+                                <option value="category">카테고리</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <input type="text" class="form-control" id="keyword" placeholder="검색어 입력">
+                        </div>
+                        <div class="col-md-2">
+                            <button id="searchBtn" class="btn btn-primary w-100">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 판매자 목록 -->
+            <div class="card">
+                <div class="card-header">
+                    판매자 목록
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>아이디</th>
+                                <th>사업자명</th>
+                                <th>사업자등록번호</th>
+                                <th>등록일</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                            </thead>
+                            <tbody id="sellerList">
+                            <!-- 판매자 목록이 동적으로 추가됩니다 -->
+                            <tr th:each="business : ${businessList}" class="seller-item">
+                                <td th:text="${business.business_id}">1</td>
+                                <td th:text="${business.business_name}">판매자명</td>
+                                <td th:text="${business.business_number}">사업자번호</td>
+                                <td th:text="${#dates.format(business.business_joindate, 'yyyy-MM-dd')}">2023-01-01</td>
+                                <td>
+                                    <span th:if="${business.business_public == 'PASS'}" class="badge bg-success">승인</span>
+                                    <span th:if="${business.business_public == 'WAIT'}" class="badge bg-warning text-dark">대기</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary view-detail" th:data-business-id="${business.business_id}">상세보기</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 판매자 상세 정보 모달 -->
+<div class="modal fade" id="sellerDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">판매자 상세 정보</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">기본 정보</div>
+                            <div class="card-body">
+                                <p><strong>판매자 ID:</strong> <span id="detail-seller-id"></span></p>
+                                <p><strong>판매자명:</strong> <span id="detail-seller-name"></span></p>
+                                <p><strong>사업자등록번호:</strong> <span id="detail-business-number"></span></p>
+                                <p><strong>등록일:</strong> <span id="detail-seller-date"></span></p>
+                                <p><strong>연락처:</strong> <span id="detail-seller-contact"></span></p>
+                                <p><strong>상태:</strong> <span id="detail-seller-status" class="badge"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">판매자 상세정보</div>
+                            <div class="card-body">
+                                <p><strong>이메일:</strong> <span id="detail-seller-email"></span></p>
+                                <p><strong>주소:</strong> <span id="detail-seller-address"></span></p>
+                                <p><strong>포인트:</strong> <span id="detail-seller-point"></span>점</p>
+                                <p><strong>소개:</strong></p>
+                                <p id="detail-seller-description"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<!--                <div class="row">-->
+<!--                    <div class="col-12">-->
+<!--                        <div class="card">-->
+<!--                            <div class="card-header">프로필 이미지</div>-->
+<!--                            <div class="card-body text-center">-->
+<!--                                <img id="business-profile-img" src="" alt="프로필 이미지" class="img-fluid" style="max-height: 300px;">-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="approveBtn">승인하기</button>
+                <button type="button" class="btn btn-warning" id="suspendBtn">계정 정지</button>
+                <button type="button" class="btn btn-danger" id="rejectBtn">거부하기</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // 판매자 검색
+        $('#searchBtn').click(function() {
+            var searchType = $('#searchType').val();
+            var keyword = $('#keyword').val();
+
+            $.ajax({
+                url: '/admin/searchBusiness',
+                type: 'POST',
+                data: {
+                    searchType: searchType,
+                    keyword: keyword
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if(response.success) {
+                        displaySellers(response.businessList);
+                    } else {
+                        alert('검색 실패: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('검색 요청 실패:', error);
+                }
+            });
+        });
+
+        // 판매자 목록 표시
+        function displaySellers(sellers) {
+            var sellerList = $('#sellerList');
+            sellerList.empty();
+
+            $('#sellerCount').text(sellers.length);
+
+            $.each(sellers, function(index, seller) {
+                var status = seller.business_public === 'PASS' ?
+                    '<span class="badge bg-success">승인</span>' :
+                    '<span class="badge bg-warning text-dark">대기</span>';
+
+                var row = `
+                <tr class="seller-item">
+                    <td>${seller.business_id}</td>
+                    <td>${seller.business_name}</td>
+                    <td>${seller.business_number}</td>
+                    <td>${formatDate(seller.business_joindate)}</td>
+                    <td>${status}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary view-detail" data-business-id="${seller.business_id}">
+                            상세보기
+                        </button>
+                    </td>
+                </tr>
+                `;
+
+                sellerList.append(row);
+            });
+
+            // 판매자 상세 버튼 이벤트
+            $('.view-detail').click(function() {
+                var businessId = $(this).data('business-id');
+                showSellerDetail(businessId);
+            });
+        }
+
+        // 날짜 포맷팅
+        function formatDate(dateStr) {
+            if(!dateStr) return '-';
+            var date = new Date(dateStr);
+            return date.getFullYear() + '-' +
+                padZero(date.getMonth() + 1) + '-' +
+                padZero(date.getDate());
+        }
+
+        function padZero(num) {
+            return (num < 10 ? '0' : '') + num;
+        }
+
+        // 판매자 상세 정보 표시
+        function showSellerDetail(businessId) {
+            $.ajax({
+                url: '/admin/business_detail',
+                type: 'GET',
+                data: { business_id: businessId },
+                dataType: 'json',
+                success: function(business) {
+                    $('#detail-seller-id').text(business.business_id);
+                    $('#detail-seller-name').text(business.business_name);
+                    $('#detail-business-number').text(business.business_number || '정보 없음');
+                    $('#detail-seller-date').text(formatDate(business.business_joindate));
+                    $('#detail-seller-contact').text(business.business_phone || '정보 없음');
+                    $('#detail-seller-email').text(business.business_email || '정보 없음');
+                    $('#detail-seller-address').text(business.business_address || '정보 없음');
+                    $('#detail-seller-point').text(business.business_point || 0);
+                    $('#detail-seller-description').text(business.business_info || '소개 없음');
+
+                    // // 프로필 이미지 표시
+                    // if(business.business_profile) {
+                    //     $('#business-profile-img').attr('src', '/uploads/business/' + business.business_profile);
+                    //     $('#business-profile-img').show();
+                    // } else {
+                    //     $('#business-profile-img').attr('src', '/images/default-profile.png');
+                    // }
+
+                    // 상태에 따른 버튼 표시 설정
+                    var statusClass = 'bg-secondary';
+                    if(business.business_public === 'PASS') {
+                        statusClass = 'bg-success';
+                        $('#detail-seller-status').text('승인됨');
+                        $('#approveBtn').hide();
+                        $('#rejectBtn').hide();
+                        $('#suspendBtn').show();
+                    } else if(business.business_public === 'WAIT') {
+                        statusClass = 'bg-warning text-dark';
+                        $('#detail-seller-status').text('대기중');
+                        $('#approveBtn').show();
+                        $('#rejectBtn').show();
+                        $('#suspendBtn').hide();
+                    }
+
+                    $('#detail-seller-status').removeClass().addClass('badge ' + statusClass);
+
+                    // 버튼에 판매자 ID 데이터 설정
+                    $('#approveBtn').data('business-id', businessId);
+                    $('#suspendBtn').data('business-id', businessId);
+                    $('#rejectBtn').data('business-id', businessId);
+
+                    // 모달 표시
+                    var modal = new bootstrap.Modal(document.getElementById('sellerDetailModal'));
+                    modal.show();
+                },
+                error: function(xhr, status, error) {
+                    console.error('판매자 상세 정보 로드 실패:', error);
+                    alert('판매자 상세 정보를 가져오는데 실패했습니다.');
+                }
+            });
+        }
+
+        // 판매자 승인 처리
+        $('#approveBtn').click(function() {
+            var businessId = $(this).data('business-id');
+
+            $.ajax({
+                url: '/admin/approve_business',
+                type: 'POST',
+                data: { businessId: businessId },
+                dataType: 'json',
+                success: function(response) {
+                    if(response.success) {
+                        alert('판매자가 승인되었습니다.');
+                        $('#sellerDetailModal').modal('hide');
+                        window.location.reload(); // 페이지 새로고침
+                    } else {
+                        alert('승인 실패: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('승인 요청 실패:', error);
+                    alert('승인 처리 중 오류가 발생했습니다.');
+                }
+            });
+        });
+
+        // 판매자 계정 정지
+        $('#suspendBtn').click(function() {
+            var businessId = $(this).data('business-id');
+
+            if(confirm('이 판매자의 계정을 정지하시겠습니까?')) {
+                $.ajax({
+                    url: '/admin/update_business_status',
+                    type: 'POST',
+                    data: {
+                        businessId: businessId,
+                        status: 'WAIT'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.success) {
+                            alert('판매자 계정이 정지되었습니다.');
+                            $('#sellerDetailModal').modal('hide');
+                            window.location.reload(); // 페이지 새로고침
+                        } else {
+                            alert('상태 변경 실패: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('상태 변경 요청 실패:', error);
+                        alert('상태 변경 처리 중 오류가 발생했습니다.');
+                    }
+                });
+            }
+        });
+
+        // 판매자 거부 처리
+        $('#rejectBtn').click(function() {
+            if(confirm('이 판매자의 신청을 거부하시겠습니까?')) {
+                var businessId = $(this).data('business-id');
+                $.ajax({
+                    url: '/admin/delete_business',
+                    type: 'POST',
+                    data: { businessId: businessId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.success) {
+                            alert('판매자 신청이 거부되었습니다.');
+                            $('#sellerDetailModal').modal('hide');
+                            window.location.reload(); // 페이지 새로고침
+                        } else {
+                            alert('거부 처리 실패: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('거부 요청 실패:', error);
+                        alert('거부 처리 중 오류가 발생했습니다.');
+                    }
+                });
+            }
+        });
+
+        // 판매자 상세보기 버튼 이벤트 등록
+        $('.view-detail').click(function() {
+            var businessId = $(this).data('business-id');
+            showSellerDetail(businessId);
+        });
+    });
+</script>
+</body>
+</html>

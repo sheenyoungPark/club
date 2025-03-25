@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.3'
+    id 'org.springframework.boot' version '3.2.3'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.github.node-gradle.node' version '5.0.0'
 }
@@ -32,6 +32,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
+
+    // OSHI 라이브러리 - 시스템 하드웨어 및 OS 정보 수집
+    implementation 'com.github.oshi:oshi-core:6.4.3'
 
     // 데이터베이스 및 저장소 관련
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4' // 최신 버전으로 통합

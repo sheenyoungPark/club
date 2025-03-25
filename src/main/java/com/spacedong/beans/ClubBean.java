@@ -36,6 +36,9 @@ public class ClubBean {
 
 	private String member_role;
 
+	private int member_count; // 회원 수
+
+
 	public String getMember_role() {
 		return member_role;
 	}
@@ -121,5 +124,15 @@ public class ClubBean {
 
 	public void setClub_profile(String club_profile) {
 		this.club_profile = club_profile;
+	}
+
+	// getter
+	public int getMember_count() {
+		return member_count;
+	}
+
+	// setter
+	public void setMember_count(int member_count) {
+		this.member_count = member_count;
 	}
 }

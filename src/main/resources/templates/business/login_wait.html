@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>승인 대기중</title>
+</head>
+<body>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  alert('사업자 회원가입 승인이 처리되지 않았습니다.');
+  location.href = /*[[@{/business/login}]]*/ '/business/login';
+  /*]]>*/
+</script>
+</body>
+</html>

@@ -19,6 +19,9 @@ public class ClubRepository {
       list = clubMapper.getAllClub();
       return list;
    }
+    public List<ClubBean> getAllClubForAdmin() {
+        return clubMapper.getAllClubForAdmin();
+    }
    
    public List<ClubBean> getClubsByCategory(@Param("categoryType") String categoryType){
        return clubMapper.getClubsByCategory(categoryType);

@@ -168,5 +168,20 @@ public class BusinessRepository {
     public void cancleReservationMP(int price, String member_id){
         businessMapper.cancleReservationMP(price, member_id);
     }
+
+    // 모든 판매자 목록 조회
+    public List<BusinessBean> getAllBusiness() {
+        return businessMapper.getAllBusiness();
+    }
+
+    // 판매자 검색
+    public List<BusinessBean> searchBusiness(String searchType, String keyword) {
+        return businessMapper.searchBusiness(searchType, keyword);
+    }
+
+    // 판매자 상태 업데이트
+    public void updateBusinessStatus(String businessId, String status) {
+        businessMapper.updateBusinessStatus(businessId, status);
+    }
     //===============================================================
 }

@@ -88,6 +88,35 @@ public class MemberRepository {
 	public List<BoardBean> getUserPosts(String memberId) {
 		return memberMapper.getUserPosts(memberId);
 	}
+	// 전체 회원 목록 조회
+	public List<MemberBean> getAllMembers() {
+		return memberMapper.getAllMembers();
+	}
+
+	// ID로 회원 검색
+	public List<MemberBean> searchMembersById(String keyword) {
+		return memberMapper.searchMembersById(keyword);
+	}
+
+	// 이름으로 회원 검색
+	public List<MemberBean> searchMembersByName(String keyword) {
+		return memberMapper.searchMembersByName(keyword);
+	}
+
+	// 이메일로 회원 검색
+	public List<MemberBean> searchMembersByEmail(String keyword) {
+		return memberMapper.searchMembersByEmail(keyword);
+	}
+
+	// 전화번호로 회원 검색
+	public List<MemberBean> searchMembersByPhone(String keyword) {
+		return memberMapper.searchMembersByPhone(keyword);
+	}
+
+	// 모든 필드로 회원 검색
+	public List<MemberBean> searchMembersByAllFields(String keyword) {
+		return memberMapper.searchMembersByAllFields(keyword);
+	}
 
 
 

@@ -1,9 +1,11 @@
 package com.spacedong.controller;
 
+import com.spacedong.beans.AdminBean;
 import com.spacedong.beans.BoardBean;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.ClubBean;
 import com.spacedong.beans.MemberBean;
+import com.spacedong.service.AdminService;
 import com.spacedong.service.MemberService;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
@@ -29,12 +31,18 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 
+	@Autowired
+	private AdminService adminService;
+
 	// session‑scope 빈으로 정의된 loginMember와 loginBusiness를 주입받음
 	@Resource(name = "loginMember")
 	private MemberBean loginMember;
 
 	@Resource(name = "loginBusiness")
 	private BusinessBean loginBusiness;
+
+	@Resource(name = "loginAdmin")
+	private AdminBean loginAdmin;
 
 	@InitBinder("memberBean")
 	protected void initBinder(WebDataBinder binder) {
@@ -49,18 +57,24 @@ public class MemberController {
 	}
 
 	@PostMapping("/login_pro")
-	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean) {
-		// 로그인 시도 전에 기업회원 로그인 상태 확인 및 초기화
-		if (loginBusiness != null && loginBusiness.isLogin()) {
-			// 기업회원 로그인 상태 초기화
-			loginBusiness.setLogin(false);
-			loginBusiness.setBusiness_id(null);
-			loginBusiness.setBusiness_name(null);
-			loginBusiness.setBusiness_pw(null);
-			System.out.println("개인회원 로그인 시도 - 기존 기업회원 로그인 초기화됨");
+	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean, Model model) {
+		// 로그인 상태 초기화 - 모든 로그인 세션을 초기화
+		resetAllLoginSessions();
+
+		// 1. 먼저 관리자 계정인지 확인
+		AdminBean tempAdmin = new AdminBean();
+		tempAdmin.setAdmin_id(memberBean.getMember_id());
+		tempAdmin.setAdmin_pw(memberBean.getMember_pw());
+
+		if (adminService.getLoginAdmin(tempAdmin)) {
+			// 관리자 로그인 성공 - loginAdmin 세션 정보는 adminService에서 이미 설정됨
+			System.out.println("관리자 로그인 성공: " + loginAdmin.getAdmin_id());
+
+			// 관리자 대시보드로 리다이렉트
+			return "admin/dashboard";
 		}
 
-		// 로그인 검증 (ID와 PW로 로그인 성공 여부 판단)
+		// 2. 일반 회원 로그인 시도
 		if (memberService.getLoginMember(memberBean)) {
 			// DB에서 전체 회원 정보를 조회
 			MemberBean fullMember = memberService.selectMemberById(memberBean.getMember_id());
@@ -76,28 +90,46 @@ public class MemberController {
 
 				// 디버깅 로그
 				System.out.println("일반 회원 로그인 성공: " + fullMember.getMember_id());
-				System.out.println("비즈니스 로그인 상태: " + loginBusiness.isLogin());
 
 				return "member/login_success";
-			} else {
-				return "member/login_fail";
 			}
-		} else {
-			return "member/login_fail";
+		}
+
+		// 로그인 실패
+		model.addAttribute("fail", true);
+		return "member/login";
+	}
+
+	// 모든 로그인 세션 초기화 메서드
+	private void resetAllLoginSessions() {
+		// 개인회원 로그인 상태 초기화
+		if (loginMember != null) {
+			loginMember.setLogin(false);
+			loginMember.setMember_id(null);
+			loginMember.setMember_nickname(null);
+			loginMember.setMember_pw(null);
+		}
+
+		// 기업회원 로그인 상태 초기화
+		if (loginBusiness != null) {
+			loginBusiness.setLogin(false);
+			loginBusiness.setBusiness_id(null);
+			loginBusiness.setBusiness_name(null);
+			loginBusiness.setBusiness_pw(null);
+		}
+
+		// 관리자 로그인 상태 초기화
+		if (loginAdmin != null) {
+			loginAdmin.setAdmin_login(false);
+			loginAdmin.setAdmin_id(null);
+			loginAdmin.setAdmin_name(null);
 		}
 	}
 
 	@RequestMapping("/logout")
 	public String logout() {
-		// DI로 주입받은 loginMember와 loginBusiness의 로그인 상태를 해제하고, 필요시 필드를 초기화합니다.
-		loginMember.setLogin(false);
-		loginMember.setMember_id(null);
-		loginMember.setMember_nickname(null);
-		loginMember.setMember_pw(null);
-		loginBusiness.setLogin(false);
-		loginBusiness.setBusiness_id(null);
-		loginBusiness.setBusiness_name(null);
-		loginBusiness.setBusiness_pw(null);
+		// 모든 로그인 세션 초기화
+		resetAllLoginSessions();
 		return "redirect:/";
 	}
 

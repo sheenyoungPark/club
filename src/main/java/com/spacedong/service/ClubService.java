@@ -28,7 +28,11 @@ public class ClubService {
     public List<ClubBean> getAllClub() {
         return clubRepository.getAllClub();
     }
-    
+
+    public List<ClubBean> getAllClubForAdmin() {
+        return clubRepository.getAllClubForAdmin();
+    }
+
     /**
      * 특정 메인 카테고리에 속한 동호회 목록 조회
      * @param categoryType 메인 카테고리 타입
