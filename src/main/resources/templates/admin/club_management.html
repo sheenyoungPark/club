@@ -50,6 +50,25 @@
     .table-responsive {
       margin-bottom: 80px; /* 페이지네이션 버튼을 위한 여백 */
     }
+    /* 관리자 채팅 배지 스타일 */
+    .nav-link.admin-chat-link {
+      position: relative;
+    }
+
+    .admin-chat-badge {
+      position: absolute;
+      top: 0;
+      right: -10px;
+      font-size: 10px;
+      background-color: #dc3545;
+      color: white;
+      border-radius: 50%;
+      min-width: 16px;
+      height: 16px;
+      text-align: center;
+      line-height: 16px;
+      padding: 0 4px;
+    }
   </style>
 </head>
 <body>
@@ -94,8 +113,9 @@
             </a>
           </li>
           <li>
-            <a href="/chat/view/rooms" class="nav-link">
+            <a href="#" onclick="openChatWindow();" class="nav-link admin-chat-link">
               관리자 채팅
+              <span class="admin-chat-badge" style="display:none;">0</span>
             </a>
           </li>
         </ul>
@@ -213,6 +233,16 @@
 </div>
 
 <!-- JavaScript -->
+<script th:inline="javascript">
+  // 관리자 ID 설정 (Thymeleaf 변수에서 가져옴)
+  var currentUserId = /*[[${loginAdmin.admin_id}]]*/ '';
+  var userType = 'ADMIN';
+</script>
+
+<!-- WebSocket 라이브러리 및 관리자 알림 스크립트 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script th:src="@{/js/admin_notification.js}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
@@ -563,6 +593,32 @@
     // 초기 데이터 로드
     loadAllClubs();
   });
+  // 채팅 창 팝업 함수
+  function openChatWindow() {
+    // 팝업 창의 크기와 위치 설정
+    const width = 500;
+    const height = 700;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+
+    // 현재 사용자 ID가 필요한 경우 URL에 추가
+    const userId = window.userId || '';
+
+    // 팝업 창 열기
+    const chatWindow = window.open(
+            '/chat/view/rooms',
+            'chatWindow',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
+    );
+
+    // 팝업 창 포커스
+    if (chatWindow) {
+      chatWindow.focus();
+    } else {
+      // 팝업이 차단된 경우 알림
+      alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+    }
+  }
 </script>
 </body>
 </html>
