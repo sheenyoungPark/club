@@ -227,6 +227,8 @@ public class ChatController {
             List<ChatReadReceiptBean> readReceipts = chatService.getReadReceiptsByMessageId(messageId);
             message.setReadCount(readReceipts.size());
 
+            System.out.println("메시지 ID: " + messageId + ", 읽은 사용자 수: " + readReceipts.size());
+
             // 룸의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
             messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
 
@@ -332,11 +334,14 @@ public class ChatController {
         if (room == null) {
             return "redirect:/chat/view/rooms";
         }
+        chatService.markAllMessagesAsRead((long)roomId, loginMember.getMember_id());
 
         model.addAttribute("room", room);
         model.addAttribute("participants", chatService.getRoomParticipants(roomId));
         return "chat/roomDetail";
     }
+
+
 
     // 새 채팅 시작 페이지 (사용자 검색)
     @GetMapping("/view/new")
@@ -347,4 +352,21 @@ public class ChatController {
 
         return "chat/newChat";
     }
+
+    @MessageMapping("/chat.markAllAsRead/{roomId}")
+    public void markAllAsRead(@DestinationVariable Long roomId,
+                              @Payload Map<String, Object> payload) {
+        String userId = (String) payload.get("userId");
+
+        // 모든 메시지 읽음 처리
+        chatService.markAllMessagesAsRead((long)roomId, userId);
+
+        // 채팅방의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
+        List<ChatMessageBean> messages = chatService.getRoomMessages(roomId, userId);
+        for (ChatMessageBean message : messages) {
+            messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+        }
+    }
+
+
 }

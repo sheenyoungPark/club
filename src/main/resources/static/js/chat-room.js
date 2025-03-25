@@ -111,25 +111,83 @@ function startPeriodicReadCheck() {
 
 // 서버에서 받은 메시지 처리
 function handleServerMessage(message) {
+    console.log("서버에서 받은 메시지:", message);
+
+    if (!message || !message.messageId) {
+        console.error("잘못된 메시지 형식:", message);
+        return;
+    }
+
     // 이미 같은 ID의 메시지가 있는지 확인 (임시 ID로 전송된 경우 때문)
-    const existingMessage = document.querySelector(`.message[data-message-id="temp-${message.messageId}"]`);
+    const tempSelector = `.message[data-message-id="temp-${message.messageId}"]`;
+    const normalSelector = `.message[data-message-id="${message.messageId}"]`;
+
+    let existingMessage = document.querySelector(tempSelector);
+    if (!existingMessage) {
+        existingMessage = document.querySelector(normalSelector);
+    }
+
+    const messageId = message.messageId.toString();
 
     if (existingMessage) {
         // 이미 존재하는 메시지의 ID를 실제 ID로 업데이트
-        existingMessage.dataset.messageId = message.messageId;
+        existingMessage.dataset.messageId = messageId;
 
         // 읽지 않은 사용자 수 업데이트
-        const timeElement = existingMessage.querySelector('.message-time');
-        if (timeElement) {
+        const timeWrapper = existingMessage.querySelector('.message-time-wrapper');
+        if (timeWrapper) {
             // 읽지 않은 사용자 수 계산
-            let unreadCount = participants.length - message.readCount - 1;
-            unreadCount = unreadCount < 0 ? 0 : unreadCount;
+            let unreadCount = 0;
 
-            // 시간 표시 업데이트
-            const timeText = timeElement.textContent.split(' ')[0];
-            timeElement.innerHTML = unreadCount > 0 ?
-                `<span class="text-primary read-count">${unreadCount}</span> ${timeText}` :
-                timeText;
+            if (participants && participants.length > 0) {
+                unreadCount = participants.length - (message.readCount || 0);
+                unreadCount = unreadCount < 0 ? 0 : unreadCount;
+
+                console.log(`메시지 ID: ${messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount || 0}, 안 읽은 사용자 수: ${unreadCount}`);
+            }
+
+            // 현재 메시지가 내가 보낸 메시지인지 확인
+            const isSentByMe = existingMessage.classList.contains('message-sent');
+
+            // 시간 요소 찾기
+            const timeElement = timeWrapper.querySelector('.message-time');
+
+            if (timeElement) {
+                const timeText = timeElement.textContent;
+
+                // 완전히 새로운 HTML로 내용 교체
+                if (isSentByMe) {
+                    // 내가 보낸 메시지
+                    timeWrapper.innerHTML = '';
+
+                    if (unreadCount > 0) {
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'text-primary read-count me-1';
+                        countSpan.textContent = unreadCount;
+                        timeWrapper.appendChild(countSpan);
+                    }
+
+                    const newTimeSpan = document.createElement('span');
+                    newTimeSpan.className = 'message-time';
+                    newTimeSpan.textContent = timeText;
+                    timeWrapper.appendChild(newTimeSpan);
+                } else {
+                    // 상대방이 보낸 메시지
+                    timeWrapper.innerHTML = '';
+
+                    const newTimeSpan = document.createElement('span');
+                    newTimeSpan.className = 'message-time';
+                    newTimeSpan.textContent = timeText;
+                    timeWrapper.appendChild(newTimeSpan);
+
+                    if (unreadCount > 0) {
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'text-primary read-count ms-1';
+                        countSpan.textContent = unreadCount;
+                        timeWrapper.appendChild(countSpan);
+                    }
+                }
+            }
         }
     } else {
         // 새 메시지 추가 (이전 메시지와 연속성 확인)
@@ -226,6 +284,19 @@ function loadMessages() {
     fetch(`/chat/room/${roomId}`)
         .then(response => response.json())
         .then(data => {
+            // 참가자 정보 확인 로그 추가
+            console.log("채팅방 정보 로드:", data);
+
+            // 참가자 정보가 있으면 전역 변수 업데이트
+            if (data.participants && Array.isArray(data.participants)) {
+                // 기존 참가자 배열 비우고 새로운 참가자로 채우기
+                participants.length = 0;
+                data.participants.forEach(p => participants.push(p));
+
+                console.log("업데이트된 참가자 목록:", participants);
+                console.log("현재 참가자 수:", participants.length);
+            }
+
             // 메시지 표시
             if (data.messages && data.messages.length > 0) {
                 displayMessages(data.messages);
@@ -310,7 +381,6 @@ function displayMessages(messages) {
     // 스크롤을 가장 아래로
     scrollToBottom();
 }
-
 // 시간 표시 여부 결정
 function shouldShowTime(message, lastMessageTime) {
     if (!lastMessageTime) return true;
@@ -386,10 +456,10 @@ function appendMessage(message, animate = true, isNewSender = true, showTime = t
 
     // 시간 및 읽음 상태 표시 (마지막 메시지이거나 시간이 변경된 경우만)
     if (showTime) {
-        // 읽지 않은 사용자 수 계산 (전체 참여자 수 - 읽은 사용자 수 - 1(발신자))
+        // 읽지 않은 사용자 수 계산
         let unreadCount = 0;
         if (participants && participants.length > 0) {
-            unreadCount = participants.length - message.readCount - 1;
+            unreadCount = participants.length - (message.readCount || 0);
             // 0보다 작으면 0으로 설정 (읽음 카운트 오류 방지)
             unreadCount = unreadCount < 0 ? 0 : unreadCount;
         }
@@ -397,22 +467,18 @@ function appendMessage(message, animate = true, isNewSender = true, showTime = t
         // 읽음 상태 표시 (내가 보낸 메시지는 시간 앞에, 상대방이 보낸 메시지는 시간 뒤에)
         if (isCurrentUser) {
             // 내가 보낸 메시지: 읽음 표시가 시간 앞에
-            const readStatus = unreadCount > 0 ?
-                `<span class="text-primary read-count me-1">${unreadCount}</span>` : '';
-
             messageHtml += `
                 <div class="message-time-wrapper text-end">
-                    ${readStatus}<span class="message-time">${formattedTime}</span>
+                    ${unreadCount > 0 ? `<span class="text-primary read-count me-1">${unreadCount}</span>` : ''}
+                    <span class="message-time">${formattedTime}</span>
                 </div>
             `;
         } else {
             // 상대방이 보낸 메시지: 읽음 표시가 시간 뒤에
-            const readStatus = unreadCount > 0 ?
-                `<span class="text-primary read-count ms-1">${unreadCount}</span>` : '';
-
             messageHtml += `
                 <div class="message-time-wrapper text-start">
-                    <span class="message-time">${formattedTime}</span>${readStatus}
+                    <span class="message-time">${formattedTime}</span>
+                    ${unreadCount > 0 ? `<span class="text-primary read-count ms-1">${unreadCount}</span>` : ''}
                 </div>
             `;
         }
@@ -549,6 +615,11 @@ function markAsRead(messageId) {
 function updateReadReceipt(message) {
     console.log('읽음 상태 업데이트:', message);
 
+    if (!message || !message.messageId) {
+        console.error("잘못된 메시지 형식:", message);
+        return;
+    }
+
     // 해당 메시지 ID를 가진 메시지를 찾아서 읽음 상태 업데이트
     const messageElements = document.querySelectorAll(`.message[data-message-id="${message.messageId}"]`);
 
@@ -559,36 +630,64 @@ function updateReadReceipt(message) {
             const timeWrapper = messageElement.querySelector('.message-time-wrapper');
 
             if (timeWrapper) {
-                // 읽지 않은 사용자 수 계산 (전체 참여자 수 - 읽은 사용자 수 - 1(발신자))
+                // 읽지 않은 사용자 수 계산
                 let unreadCount = 0;
+
                 if (participants && participants.length > 0) {
-                    unreadCount = participants.length - message.readCount - 1;
-                    // 0보다 작으면 0으로 설정 (읽음 카운트 오류 방지)
+                    unreadCount = participants.length - (message.readCount || 0);
+
+                    // 안 읽은 수가 0보다 작으면 0으로 설정
                     unreadCount = unreadCount < 0 ? 0 : unreadCount;
+
+                    // 디버깅 로그 추가
+                    console.log(`메시지 ID: ${message.messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount || 0}, 안 읽은 사용자 수: ${unreadCount}`);
                 }
 
                 // 시간 요소 찾기
                 const timeElement = timeWrapper.querySelector('.message-time');
-                const timeText = timeElement ? timeElement.textContent : '';
+                if (!timeElement) {
+                    console.warn('시간 요소를 찾을 수 없습니다:', timeWrapper);
+                    return;
+                }
 
-                // 내가 보낸 메시지와 받은 메시지에 대해 다른 구조 적용
+                const timeText = timeElement.textContent;
+
+                // 완전히 새로운 HTML로 내용 교체
                 if (isCurrentUserMessage) {
                     // 내가 보낸 메시지
+                    timeWrapper.innerHTML = '';
+
                     if (unreadCount > 0) {
-                        timeWrapper.innerHTML = `<span class="text-primary read-count me-1">${unreadCount}</span><span class="message-time">${timeText}</span>`;
-                    } else {
-                        timeWrapper.innerHTML = `<span class="message-time">${timeText}</span>`;
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'text-primary read-count me-1';
+                        countSpan.textContent = unreadCount;
+                        timeWrapper.appendChild(countSpan);
                     }
+
+                    const newTimeSpan = document.createElement('span');
+                    newTimeSpan.className = 'message-time';
+                    newTimeSpan.textContent = timeText;
+                    timeWrapper.appendChild(newTimeSpan);
                 } else {
                     // 상대방이 보낸 메시지
+                    timeWrapper.innerHTML = '';
+
+                    const newTimeSpan = document.createElement('span');
+                    newTimeSpan.className = 'message-time';
+                    newTimeSpan.textContent = timeText;
+                    timeWrapper.appendChild(newTimeSpan);
+
                     if (unreadCount > 0) {
-                        timeWrapper.innerHTML = `<span class="message-time">${timeText}</span><span class="text-primary read-count ms-1">${unreadCount}</span>`;
-                    } else {
-                        timeWrapper.innerHTML = `<span class="message-time">${timeText}</span>`;
+                        const countSpan = document.createElement('span');
+                        countSpan.className = 'text-primary read-count ms-1';
+                        countSpan.textContent = unreadCount;
+                        timeWrapper.appendChild(countSpan);
                     }
                 }
             }
         });
+    } else {
+        console.warn(`메시지 ID ${message.messageId}에 해당하는 요소를 찾을 수 없습니다.`);
     }
 }
 

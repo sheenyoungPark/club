@@ -87,6 +87,7 @@ public class ChatService {
     // 현재 로그인한 사용자의 채팅방 목록 조회
     public List<ChatRoomBean> getMyRooms() {
         if(loginMember != null && loginMember.isLogin()) {
+            // 개인 채팅방과 클럽 채팅방을 모두 가져오기
             return getChatRoomsByUserId(loginMember.getMember_id());
         }
         return new ArrayList<>();
@@ -145,6 +146,7 @@ public class ChatService {
     }
 
     // 클럽 채팅방 찾기 또는 생성하기
+    // 클럽 채팅방 생성 또는 조회 메서드에 참여 시간 기록 확인
     @Transactional
     public ChatRoomBean getOrCreateClubChatRoom(int clubId, String userId, String userType) {
         // 클럽 존재 여부 확인 (클럽 회원인지도 확인)
@@ -179,12 +181,13 @@ public class ChatService {
             // 사용자가 이미 참여자인지 확인
             ChatParticipantBean participant = chatRepository.getParticipant(chatRoom.getRoom_id(), userId);
             if (participant == null) {
-                // 참여자가 아니면 추가
+                // 참여자가 아니면 추가 (현재 시간으로 join_date 설정)
                 participant = new ChatParticipantBean();
                 participant.setRoom_id(chatRoom.getRoom_id());
                 participant.setUser_id(userId);
                 participant.setUser_type(userType);
                 participant.setUserNickname(usernickname);
+                participant.setJoinDate(LocalDateTime.now()); // join_date 명시적 설정
                 chatRepository.addParticipant(participant);
             }
         } else {
@@ -198,12 +201,13 @@ public class ChatService {
 
             chatRepository.createChatRoom(chatRoom);
 
-            // 현재 사용자를 참여자로 추가
+            // 현재 사용자를 참여자로 추가 (현재 시간으로 join_date 설정)
             ChatParticipantBean participant = new ChatParticipantBean();
             participant.setRoom_id(chatRoom.getRoom_id());
             participant.setUser_id(userId);
             participant.setUser_type(userType);
             participant.setUserNickname(usernickname);
+            participant.setJoinDate(LocalDateTime.now()); // join_date 명시적 설정
             chatRepository.addParticipant(participant);
 
             // 모든 클럽 회원을 참여자로 추가
@@ -216,6 +220,7 @@ public class ChatService {
                     memberParticipant.setUser_id(member.getUser_id());
                     memberParticipant.setUser_type("MEMBER");
                     memberParticipant.setUserNickname(memberNickname);
+                    memberParticipant.setJoinDate(LocalDateTime.now()); // join_date 명시적 설정
                     chatRepository.addParticipant(memberParticipant);
                 }
             }
@@ -279,7 +284,6 @@ public class ChatService {
         return chatRepository.getMessagesByRoomId(roomId, currentUserId);
     }
 
-    // 읽음 확인 관련 메서드
     @Transactional
     public void markAsRead(Long roomId, String userId, Long messageId) {
         // 이미 읽은 메시지인지 확인
@@ -290,18 +294,18 @@ public class ChatService {
             readReceipt.setReadTime(LocalDateTime.now());  // 현재 시간으로 설정
 
             // 읽음 표시 저장
-            chatRepository.markAsRead(readReceipt);
+            int result = chatRepository.markAsRead(readReceipt);
+            System.out.println("읽음 표시 저장 결과: " + result + ", 메시지 ID: " + messageId + ", 사용자: " + userId);
 
             // 메시지 읽음 수 증가
-            chatRepository.incrementReadCount(messageId);
+            int incrementResult = chatRepository.incrementReadCount(messageId);
+            System.out.println("읽음 수 증가 결과: " + incrementResult + ", 메시지 ID: " + messageId);
 
             // 참가자의 마지막으로 읽은 메시지 ID 업데이트
-            chatRepository.updateLastReadMsgId(roomId, userId, messageId);
-
-            // 메시지 정보 가져오기 (이 부분은 컨트롤러에서 처리)
-            // ChatMessageBean message = chatRepository.getMessageById(messageId);
-
-            // 여기서는 DB 업데이트만 처리하고 알림 전송은 컨트롤러에서 담당
+            int updateResult = chatRepository.updateLastReadMsgId(roomId, userId, messageId);
+            System.out.println("마지막 읽은 메시지 ID 업데이트 결과: " + updateResult + ", 룸 ID: " + roomId + ", 사용자: " + userId);
+        } else {
+            System.out.println("이미 읽은 메시지입니다. 메시지 ID: " + messageId + ", 사용자: " + userId);
         }
     }
 
@@ -356,16 +360,55 @@ public class ChatService {
      * @return 총 안 읽은 메시지 수
      */
     public int calculateTotalUnreadMessages(String userId) {
-        // 사용자의 모든 채팅방 조회
-        List<ChatRoomBean> rooms = chatRepository.getChatRoomsByUserId(userId);
+        // 사용자의 모든 채팅방 조회 - 분리된 메서드를 통해 조회
+        List<ChatRoomBean> personalRooms = chatRepository.getPersonalChatRoomsByUserId(userId);
+        List<ChatRoomBean> clubRooms = chatRepository.getClubChatRoomsByUserId(userId);
+
         int totalUnread = 0;
 
-        // 각 채팅방의 안 읽은 메시지 수 합산
-        for (ChatRoomBean room : rooms) {
+        // 개인 채팅방의 안 읽은 메시지 수 합산
+        for (ChatRoomBean room : personalRooms) {
+            totalUnread += room.getUnreadCount();
+        }
+
+        // 클럽 채팅방의 안 읽은 메시지 수 합산
+        for (ChatRoomBean room : clubRooms) {
             totalUnread += room.getUnreadCount();
         }
 
         return totalUnread;
+    }
+
+    @Transactional
+    public void markAllMessagesAsRead(Long roomId, String userId) {
+        // 현재 사용자의 참여 정보 확인
+        ChatParticipantBean participant = chatRepository.getParticipant(roomId.intValue(), userId);
+        if (participant == null) {
+            return; // 참여자가 아닌 경우 처리하지 않음
+        }
+
+        // 가장 최근 메시지 ID 조회
+        List<ChatMessageBean> messages = chatRepository.getMessagesByRoomId(roomId, userId);
+        if (messages == null || messages.isEmpty()) {
+            return; // 메시지가 없는 경우
+        }
+
+        // 가장 최근 메시지 ID
+        Long lastMessageId = messages.get(messages.size() - 1).getMessageId();
+
+        // last_read_msg_id 업데이트
+        chatRepository.updateLastReadMsgId(roomId, userId, lastMessageId);
+
+        // 읽지 않은 모든 메시지에 대해 읽음 처리
+        for (ChatMessageBean message : messages) {
+            if (!message.getSenderId().equals(userId) && !chatRepository.checkIfRead(message.getMessageId(), userId)) {
+                ChatReadReceiptBean readReceipt = new ChatReadReceiptBean();
+                readReceipt.setMessageId(message.getMessageId());
+                readReceipt.setReaderId(userId);
+                readReceipt.setReadTime(LocalDateTime.now());
+                chatRepository.markAsRead(readReceipt);
+            }
+        }
     }
 
 

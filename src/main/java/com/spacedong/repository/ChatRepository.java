@@ -1,5 +1,6 @@
 package com.spacedong.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.jdbc.Null;
@@ -30,8 +31,28 @@ public class ChatRepository {
         return chatMapper.getChatRoomById(roomId);
     }
 
+    // 모든 채팅방 가져오기 (기존 메서드)
     public List<ChatRoomBean> getChatRoomsByUserId(String userId) {
-        return chatMapper.getChatRoomsByUserId(userId);
+        // 개인 채팅방과 클럽 채팅방을 따로 가져와서 합치기
+        List<ChatRoomBean> personalRooms = chatMapper.getPersonalChatRoomsByUserId(userId);
+        List<ChatRoomBean> clubRooms = chatMapper.getClubChatRoomsByUserId(userId);
+
+        // 두 리스트 합치기
+        List<ChatRoomBean> allRooms = new ArrayList<>();
+        allRooms.addAll(personalRooms);
+        allRooms.addAll(clubRooms);
+
+        return allRooms;
+    }
+
+    // 개인 채팅방만 가져오기 (새 메서드)
+    public List<ChatRoomBean> getPersonalChatRoomsByUserId(String userId) {
+        return chatMapper.getPersonalChatRoomsByUserId(userId);
+    }
+
+    // 클럽 채팅방만 가져오기 (새 메서드)
+    public List<ChatRoomBean> getClubChatRoomsByUserId(String userId) {
+        return chatMapper.getClubChatRoomsByUserId(userId);
     }
 
     public List<ChatRoomBean> getChatRoomsByClubId(Long clubId) {
@@ -87,7 +108,31 @@ public class ChatRepository {
     }
 
     public List<ChatMessageBean> getMessagesByRoomId(Long roomId, String currentUserId) {
-        return chatMapper.getMessagesByRoomId(roomId, currentUserId);
+        // 해당 채팅방 정보 조회
+        ChatRoomBean room = chatMapper.getChatRoomById(roomId);
+
+        // 채팅방 타입에 따라 다른 메서드 호출
+        if (room != null) {
+            if ("CLUB".equals(room.getRoom_type())) {
+                // 클럽 채팅방인 경우 - 가입 시간 이후 메시지만
+                return chatMapper.getClubChatMessages(roomId, currentUserId);
+            } else {
+                // 개인 채팅방인 경우 - 모든 메시지
+                return chatMapper.getPersonalChatMessages(roomId, currentUserId);
+            }
+        }
+
+        // 채팅방이 없거나 타입을 알 수 없는 경우 빈 리스트 반환
+        return new ArrayList<>();
+    }
+
+    // 채팅방 타입별 메시지 조회 메서드 추가
+    public List<ChatMessageBean> getPersonalChatMessages(Long roomId, String currentUserId) {
+        return chatMapper.getPersonalChatMessages(roomId, currentUserId);
+    }
+
+    public List<ChatMessageBean> getClubChatMessages(Long roomId, String currentUserId) {
+        return chatMapper.getClubChatMessages(roomId, currentUserId);
     }
 
     public ChatMessageBean getMessageById(Long messageId) {
