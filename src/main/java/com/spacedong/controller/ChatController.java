@@ -699,15 +699,15 @@ public class ChatController {
                          @RequestParam("item_id") String itemId,
                          @RequestParam("business_id") String businessId) {
 
-        BusinessItemBean item = itemService.getItemById(itemId);
         if (!isUserLoggedIn()) {
             return "redirect:/member/login";
         }
 
+        BusinessItemBean item = itemService.getItemById(itemId);
         String itemTitle = (item != null) ? item.getItem_title() : "상품 문의";
 
         // 2. 채팅방 생성 또는 기존 채팅방 가져오기
-        ChatRoomCreationResult result = chatService.getOrCreatePersonalChatRoomWithResult(loginMember.getMember_id(), "MEMBER", businessId, "BUSINESS");
+        ChatRoomCreationResult result = chatService.getOrCreatePersonalChatRoomWithResult(loginMember.getMember_id(), "MEMBER", businessId.toString(), "BUSINESS");
         ChatRoomBean room = result.getRoom();
 
         // 새 채팅방 또는 새 참가자인 경우 알림 전송
