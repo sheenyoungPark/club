@@ -90,7 +90,11 @@
 
     </style>
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+                 background-size: cover;
+                 background-repeat: no-repeat;
+                 background-position: center;
+                 background-attachment: fixed;|">
 <!-- 상단 메뉴 -->
 <div th:replace="~{include/top_search :: top_search}"></div>
 
@@ -177,6 +181,7 @@
         }
     });
 </script>
-
+<script th:src="@{/js/top.js}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>

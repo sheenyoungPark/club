@@ -18,12 +18,12 @@
 
         .container {
             max-width: 1200px;
-            margin: 30px auto;
+            margin: 100px auto;
             padding: 0 20px;
         }
 
         .pending-members-container {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.92);
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 30px;
@@ -169,12 +169,16 @@
         }
     </style>
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+                 background-size: cover;
+                 background-repeat: no-repeat;
+                 background-position: center;
+                 background-attachment: fixed;|">
 <!-- 상단 메뉴 include -->
 <div th:replace="~{include/top_search :: top_search}"></div>
 
 <div class="container">
-    <a th:href="@{/club/info(club_id=${club_id})}" class="back-link">← 동호회 페이지로 돌아가기</a>
+
 
     <div class="pending-members-container">
         <h1 class="page-title">대기 중인 회원 관리</h1>
@@ -301,5 +305,6 @@
         });
     });
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>
