@@ -281,7 +281,7 @@ public class ReservationController {
         }
 
         // 예약 목록 가져오기
-        List<ReservationBean> reservations = reservationService.getReservationsByMemberId(loginMember.getMember_id());
+        List<ReservationBean> reservations = reservationService.getReservationsByMemberId2(loginMember.getMember_id());
 
         for (ReservationBean r : reservations){
             System.out.println(r.getItem_title());
@@ -400,4 +400,38 @@ public class ReservationController {
 
         return "redirect:/club/club_info?club_id=" + reservation.getClub_id();
     }
+
+    @PostMapping("/update-status")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateStatus(
+            @RequestParam("reservation_id") int reservationId,
+            @RequestParam("status") String status) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 예약 정보 가져오기
+            ReservationBean reservation = reservationService.getReservationById(reservationId);
+
+            if (reservation == null) {
+                response.put("success", false);
+                response.put("message", "예약 정보를 찾을 수 없습니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // 상태 업데이트
+            reservation.setStatus(status);
+            reservationService.updateReservation(reservation);
+
+            response.put("success", true);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("예약 상태 업데이트 오류: {}", e.getMessage(), e);
+            response.put("success", false);
+            response.put("message", "예약 상태 업데이트 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+
 }

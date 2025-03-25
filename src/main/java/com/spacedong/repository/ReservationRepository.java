@@ -81,5 +81,11 @@ public class ReservationRepository {
         return reservationMapper.getReservationsByClubId(clubId);
     }
 
+    //예약정보 업데이트
+    public void updateReservation(ReservationBean reservation){
+        reservationMapper.updateReservation(reservation);
+    }
+
+
 
 }

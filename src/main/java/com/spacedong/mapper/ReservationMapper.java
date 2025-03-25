@@ -121,4 +121,9 @@ public interface ReservationMapper {
     List<ReservationBean> getReservationsByClubId(int clubId);
 
 
+     // 예약 정보 업데이트
+    @Update("UPDATE reservation SET status = #{status} WHERE reservation_id = #{reservation_id}")
+    void updateReservation(ReservationBean reservation);
+
+
 }
