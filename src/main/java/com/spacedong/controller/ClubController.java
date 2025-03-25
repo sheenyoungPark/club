@@ -133,6 +133,7 @@ public class ClubController {
 			model.addAttribute("categoryType", categoryTypes);
 			model.addAttribute("clubBean", clubBean);
 			return "club/create";
+
 		} else {
 			return "club/join_fail";
 		}
