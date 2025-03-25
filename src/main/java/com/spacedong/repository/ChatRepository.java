@@ -160,4 +160,12 @@ public class ChatRepository {
     public boolean checkIfRead(Long messageId, String readerId) {
         return chatMapper.checkIfRead(messageId, readerId) > 0;
     }
+
+    public int getUnreadMessageCount(Long roomId, String userId) {
+        return chatMapper.getUnreadMessageCount(roomId, userId);
+    }
+
+    public int getTotalUnreadMessageCount(String userId) {
+        return chatMapper.getTotalUnreadMessageCount(userId);
+    }
 }

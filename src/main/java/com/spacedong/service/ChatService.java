@@ -470,6 +470,16 @@ public class ChatService {
         }
     }
 
+    public int getUnreadMessageCount(Long roomId, String userId) {
+        return chatRepository.getUnreadMessageCount(roomId, userId);
+    }
+
+    public int getTotalUnreadMessageCount(String userId) {
+        return chatRepository.getTotalUnreadMessageCount(userId);
+    }
+
+
+
 
     // 채팅 시스템에 필요한 초기 설정
     @Transactional

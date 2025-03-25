@@ -285,4 +285,17 @@ public interface ChatMapper {
     @Select("SELECT COUNT(*) FROM chat_read_receipt " +
             "WHERE message_id = #{messageId} AND reader_id = #{readerId}")
     int checkIfRead(@Param("messageId") Long messageId, @Param("readerId") String readerId);
+
+    @Select("SELECT get_unread_message_count(#{roomId}, #{userId}) FROM DUAL")
+    int getUnreadMessageCount(@Param("roomId") Long roomId, @Param("userId") String userId);
+
+    @Select("SELECT SUM((SELECT COUNT(*) FROM chat_message " +
+            "cm WHERE cm.room_id = cp.room_id AND cm.message_id > NVL(cp.last_read_msg_id, 0)" +
+            " AND cm.sender_id != #{userId})) AS total_unread_count FROM chat_participant cp" +
+            " WHERE cp.user_id = #{userId}")
+    int getTotalUnreadMessageCount(@Param("userId") String userId);
+
+
+
+
 }

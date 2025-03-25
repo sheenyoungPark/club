@@ -87,6 +87,59 @@ function connectWebSocket() {
     });
 }
 
+// 스크롤 시 읽음 처리를 위한 함수 추가
+function setupScrollReadDetection() {
+    const chatMessages = document.getElementById('chatMessages');
+
+    // 스크롤 이벤트 리스너 추가
+    chatMessages.addEventListener('scroll', debounce(function() {
+        checkVisibleMessages();
+    }, 300)); // 300ms 디바운스
+
+    // 초기 화면에 표시된 메시지 확인
+    setTimeout(checkVisibleMessages, 2000);
+}
+
+// 디바운스 함수 (스크롤 이벤트 최적화)
+function debounce(func, wait) {
+    let timeout;
+    return function() {
+        const context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            func.apply(context, args);
+        }, wait);
+    };
+}
+
+// 화면에 보이는 메시지 확인 및 읽음 처리
+function checkVisibleMessages() {
+    if (!isConnected) return;
+
+    const chatContainer = document.getElementById('chatMessages');
+    const messages = chatContainer.querySelectorAll('.message-received');
+
+    // 화면 내에 보이는 메시지만 확인
+    let visibleMessages = [];
+    let lastVisibleMessageId = null;
+
+    messages.forEach(message => {
+        const rect = message.getBoundingClientRect();
+        // 메시지가 화면에 보이는지 확인
+        if (rect.top >= 0 && rect.bottom <= window.innerHeight) {
+            visibleMessages.push(message);
+            lastVisibleMessageId = message.dataset.messageId;
+        }
+    });
+
+    // 보이는 메시지 중 가장 최신 메시지 ID가 있으면 읽음 처리
+    if (lastVisibleMessageId) {
+        console.log('화면에 보이는 마지막 메시지 읽음 처리:', lastVisibleMessageId);
+        markAsRead(lastVisibleMessageId);
+    }
+}
+
+
 // 주기적으로 읽음 상태 확인 (30초마다)
 function startPeriodicReadCheck() {
     // 이전 인터벌 제거
@@ -615,16 +668,38 @@ function updateTypingStatus(status) {
     }
 }
 
-// 메시지 읽음 표시
+// 읽음 표시 처리 개선 (성능 최적화)
 function markAsRead(messageId) {
-    if (isConnected) {
-        console.log('읽음 표시 메시지 전송:', messageId);
-        stompClient.send('/app/chat.markAsRead/' + roomId, {}, JSON.stringify({
-            userId: userId,
-            messageId: messageId
-        }));
+    if (!isConnected || !messageId) return;
+
+    // 세션 스토리지에서 읽은 메시지 목록 가져오기
+    const readMessageIds = JSON.parse(sessionStorage.getItem('readMessageIds') || '[]');
+
+    // 이미 읽은 메시지인지 확인
+    if (readMessageIds.includes(messageId)) {
+        return; // 이미 읽은 메시지면 처리하지 않음
     }
+
+    console.log('읽음 표시 전송:', messageId);
+
+    // 서버에 읽음 표시 전송
+    stompClient.send('/app/chat.markAsRead/' + roomId, {}, JSON.stringify({
+        userId: userId,
+        messageId: messageId
+    }));
+
+    // 읽은 메시지 목록에 추가
+    readMessageIds.push(messageId);
+    sessionStorage.setItem('readMessageIds', JSON.stringify(readMessageIds));
 }
+
+// 페이지 가시성 변경 감지 (브라우저 탭 전환 등)
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        // 페이지가 다시 보이면 현재 화면에 표시된 메시지 읽음 처리
+        setTimeout(checkVisibleMessages, 1000);
+    }
+});
 
 // updateReadReceipt 함수 수정
 function updateReadReceipt(message) {
