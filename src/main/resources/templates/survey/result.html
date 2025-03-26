@@ -28,6 +28,9 @@
 
         <div class="result-planet" th:text="${resultPlanet}">
         </div>
+        <div class="result-planet-image">
+            <img th:src="@{'/sources/picture/' + ${resultPlanet} + '.png'}" alt="행성 이미지" style="max-width: 300px; margin-top: 10px;" />
+        </div>
 
         <div class="result-description" th:text="${resultDescription}">
         </div>

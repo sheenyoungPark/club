@@ -8,19 +8,24 @@
     <link rel="stylesheet" th:href="@{/css/top.css}">
     <script th:src="@{/js/top.js}"></script>
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경.png}');
+                 background-size: cover;
+                 background-repeat: no-repeat;
+                 background-position: center;
+                 background-attachment: fixed;|">
+
 <div th:replace="~{include/top_search :: top_search}"></div>
 
-<div class="container">
+<div class="container type-select-box">
     <h2 th:text="'우티가 파악한 당신의 성향은 ' + ${tieCount} + '개에요!!!'">우티가 파악한 당신의 성향</h2>
     <p>아래에서 당신의 성향에 가장 맞는 유형을 선택해주세요.</p>
 
     <form th:action="@{/survey/tiebreakerproc}" method="post">
-        <button th:each="type : ${tieTypes}" type="submit" name="selectedType" th:value="${type}" class="btn" th:text="${type}"></button>
+        <button th:each="type : ${tieTypes}" type="submit" name="selectedType"
+                th:value="${type}" class="btn" th:text="${type}"></button>
     </form>
 </div>
 
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
-
 </body>
 </html>
