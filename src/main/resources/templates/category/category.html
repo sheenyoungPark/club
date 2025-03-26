@@ -15,11 +15,6 @@ background-attachment: fixed;|">
 <!-- 상단 메뉴 include -->
 <div th:replace="~{include/top_search :: top_search}"></div>
 
-<!-- 클럽 생성하기 버튼 -->
-<a th:href="@{/club/create}" class="create-club-button">
-  <i class="fas fa-plus"></i> 클럽 생성하기
-</a>
-
 <!-- 카테고리 컨테이너 -->
 <div class="category-container">
   <!-- 메인 카테고리 -->
@@ -43,6 +38,10 @@ background-attachment: fixed;|">
         </a>
       </li>
     </ul>
+    <!-- 클럽 생성하기 버튼 -->
+    <a th:href="@{/club/create}" class="create-club-button">
+      <i class="fas fa-plus"></i> 클럽 생성하기
+    </a>
   </div>
 
   <!-- 서브 카테고리 -->
