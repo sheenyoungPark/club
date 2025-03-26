@@ -158,23 +158,38 @@
   const roomId = [[${room.room_id}]];
   const userId = [[${loginMember.member_id}]];
 
-  // 참여자 목록에서 현재 사용자의 타입 찾기
-  const participants = [[${participants}]];
+  // 참여자 목록 초기화 - 빈 배열로 시작하고 나중에 업데이트
+  var participants = [];
+
+  // 서버에서 전달받은 참가자 정보를 저장 (loadMessages 함수에서 사용됨)
+  const serverParticipants = [[${participants}]];
+  console.log("서버에서 받은 참가자 목록:", serverParticipants);
+
   let userType = 'MEMBER'; // 기본값
   let currentUserNickname = userId; // 기본값은 ID
   let currentUserProfile = '/sources/picture/기본이미지.png'; // 기본 프로필 이미지
 
   // 참여자 목록에서 현재 사용자 정보 찾기
-  const currentUser = participants.find(participant => participant.user_id === userId);
-  if (currentUser) {
-    userType = currentUser.user_type;
-    if (currentUser.userNickname) {
-      currentUserNickname = currentUser.userNickname;
-    }
-    if (currentUser.userProfile) {
-      currentUserProfile = currentUser.userProfile;
+  if (serverParticipants && Array.isArray(serverParticipants) && serverParticipants.length > 0) {
+    // 참가자 목록 복사
+    participants = [...serverParticipants];
+
+    const currentUser = serverParticipants.find(p => p.user_id === userId);
+    if (currentUser) {
+      userType = currentUser.user_type || 'MEMBER';
+      currentUserNickname = currentUser.userNickname || userId;
+      currentUserProfile = currentUser.userProfile || '/sources/picture/기본이미지.png';
     }
   }
+
+  // 참여자 정보 디버깅
+  console.log("현재 참가자 수:", participants.length);
+  console.log("현재 사용자 정보:", {
+    userId: userId,
+    userType: userType,
+    nickname: currentUserNickname,
+    profile: currentUserProfile
+  });
 </script>
 
 <!-- 메인 JavaScript 파일 포함 -->

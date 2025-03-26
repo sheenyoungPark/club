@@ -6,6 +6,7 @@ import com.spacedong.beans.MemberBean;
 import com.spacedong.interceptor.BusinessInterceptor;
 import com.spacedong.interceptor.LocationInterceptor;
 import com.spacedong.interceptor.TopMenuInterceptor;
+import com.spacedong.service.ChatService;
 import com.spacedong.service.LocationService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,11 @@ public class WebContext implements WebMvcConfigurer {
     @Resource(name = "loginBusiness")  // ✅ @Resource 추가 (세션에서 주입)
     public BusinessBean loginBusiness;
 
+    @Autowired
+    private ChatService ChatService;
+    @Autowired
+    private ChatService chatService;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
@@ -36,7 +42,7 @@ public class WebContext implements WebMvcConfigurer {
         reg1.addPathPatterns("/**");
 
         // 2️⃣ 상단 메뉴 인터셉터 (일반 회원 + 판매자 로그인 정보 추가)
-        TopMenuInterceptor topMenuInterceptor = new TopMenuInterceptor(loginMember, loginBusiness); // ✅ 수정됨!
+        TopMenuInterceptor topMenuInterceptor = new TopMenuInterceptor(loginMember, loginBusiness, () -> chatService); // ✅ 수정됨!
         InterceptorRegistration reg2 = registry.addInterceptor(topMenuInterceptor);
         reg2.addPathPatterns("/**");
 

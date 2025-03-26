@@ -4,11 +4,14 @@ import com.spacedong.beans.AdminBean;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.interceptor.TopMenuInterceptor;
+import com.spacedong.service.ChatService;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +51,14 @@ public class AppContext implements WebMvcConfigurer {
         return adminBean;
     }
 
+    // ApplicationContext 주입
+    private final ApplicationContext applicationContext;
+
+    // 생성자 주입 방식으로 변경
+    public AppContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
     @Value("${spring.datasource.driver-class-name}")
     private String driverClass;
 
@@ -80,7 +91,12 @@ public class AppContext implements WebMvcConfigurer {
     // TopMenuInterceptor 빈 정의
     @Bean
     public TopMenuInterceptor topMenuInterceptor() {
-        return new TopMenuInterceptor(loginMember(), loginBusiness()); // ✅ 수정됨
+
+        MemberBean memberbean = loginMember();
+        BusinessBean businessbean = loginBusiness();
+
+        return new TopMenuInterceptor(memberbean, businessbean, () -> applicationContext.getBean("chatService", ChatService.class));
+
     }
     // 인터셉터 등록
     @Override

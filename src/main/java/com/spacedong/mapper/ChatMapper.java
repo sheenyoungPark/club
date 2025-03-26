@@ -30,6 +30,7 @@ public interface ChatMapper {
     @Select("SELECT * FROM chat_room WHERE room_id = #{roomId}")
     ChatRoomBean getChatRoomById(@Param("roomId") Long roomId);
 
+    // 모든 채팅방 조회 (기존 메서드)
     @Select("SELECT r.*, " +
             "(SELECT m.message_content FROM chat_message m WHERE m.room_id = r.room_id " +
             "ORDER BY m.send_time DESC FETCH FIRST 1 ROW ONLY) as last_message, " +
@@ -44,6 +45,41 @@ public interface ChatMapper {
             "JOIN chat_participant p ON r.room_id = p.room_id " +
             "WHERE p.user_id = #{userId}")
     List<ChatRoomBean> getChatRoomsByUserId(@Param("userId") String userId);
+
+    // 개인 채팅방만 조회 (새 메서드)
+    @Select("SELECT r.*, " +
+            "(SELECT m.message_content FROM chat_message m WHERE m.room_id = r.room_id " +
+            "ORDER BY m.send_time DESC FETCH FIRST 1 ROW ONLY) as last_message, " +
+            "(SELECT m.send_time FROM chat_message m WHERE m.room_id = r.room_id " +
+            "ORDER BY m.send_time DESC FETCH FIRST 1 ROW ONLY) as last_message_time, " +
+            "(SELECT COUNT(*) FROM chat_message m WHERE m.room_id = r.room_id " +
+            "AND m.send_time > (SELECT COALESCE(MAX(cr.read_time), TO_TIMESTAMP('1970-01-01', 'YYYY-MM-DD')) " +
+            "FROM chat_read_receipt cr " +
+            "JOIN chat_message cm ON cr.message_id = cm.message_id " +
+            "WHERE cm.room_id = r.room_id AND cr.reader_id = #{userId})) as unread_count " +
+            "FROM chat_room r " +
+            "JOIN chat_participant p ON r.room_id = p.room_id " +
+            "WHERE p.user_id = #{userId} AND r.room_type = 'PERSONAL'")
+    List<ChatRoomBean> getPersonalChatRoomsByUserId(@Param("userId") String userId);
+
+    // 클럽 채팅방만 조회 (새 메서드 - 참여 시간 이후의 메시지만 카운트)
+    @Select("SELECT r.*, " +
+            "(SELECT m.message_content FROM chat_message m WHERE m.room_id = r.room_id " +
+            "ORDER BY m.send_time DESC FETCH FIRST 1 ROW ONLY) as last_message, " +
+            "(SELECT m.send_time FROM chat_message m WHERE m.room_id = r.room_id " +
+            "ORDER BY m.send_time DESC FETCH FIRST 1 ROW ONLY) as last_message_time, " +
+            "(SELECT COUNT(*) FROM chat_message m WHERE m.room_id = r.room_id " +
+            "AND m.send_time > (SELECT COALESCE(MAX(cr.read_time), TO_TIMESTAMP('1970-01-01', 'YYYY-MM-DD')) " +
+            "FROM chat_read_receipt cr " +
+            "JOIN chat_message cm ON cr.message_id = cm.message_id " +
+            "WHERE cm.room_id = r.room_id AND cr.reader_id = #{userId}) " +
+            "AND m.send_time > (SELECT join_date FROM chat_participant " +
+            "WHERE room_id = r.room_id AND user_id = #{userId})) as unread_count " +
+            "FROM chat_room r " +
+            "JOIN chat_participant p ON r.room_id = p.room_id " +
+            "WHERE p.user_id = #{userId} AND r.room_type = 'CLUB'")
+    List<ChatRoomBean> getClubChatRoomsByUserId(@Param("userId") String userId);
+
 
     @Select("SELECT * FROM chat_room WHERE club_id = #{clubId}")
     List<ChatRoomBean> getChatRoomsByClubId(@Param("clubId") Long clubId);
@@ -135,6 +171,7 @@ public interface ChatMapper {
     @Options(useGeneratedKeys = true, keyProperty = "messageId", keyColumn = "message_id")
     int sendMessage(ChatMessageBean message);
 
+    // 기존 메시지 조회 메서드
     @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
             "cm.sender_id as senderId, cm.sender_type as senderType, " +
             "cm.message_content as messageContent, cm.message_type as messageType, " +
@@ -155,6 +192,56 @@ public interface ChatMapper {
             "WHERE cm.room_id = #{roomId} " +
             "ORDER BY cm.send_time ASC")
     List<ChatMessageBean> getMessagesByRoomId(@Param("roomId") Long roomId, @Param("currentUserId") String currentUserId);
+
+    // 개인 채팅방 메시지 조회 (모든 메시지)
+    @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
+            "cm.sender_id as senderId, cm.sender_type as senderType, " +
+            "cm.message_content as messageContent, cm.message_type as messageType, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, cm.read_count as readCount, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
+            "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cm.sender_id) " +
+            "END as senderNickname, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  ELSE NULL " +
+            "END as senderProfile, " +
+            "CASE WHEN EXISTS (SELECT 1 FROM chat_read_receipt crr WHERE crr.message_id = cm.message_id " +
+            "                 AND crr.reader_id = #{currentUserId}) " +
+            "THEN 1 ELSE 0 END as isRead " +
+            "FROM chat_message cm " +
+            "JOIN chat_room cr ON cm.room_id = cr.room_id " +
+            "WHERE cm.room_id = #{roomId} " +
+            "AND cr.room_type = 'PERSONAL' " +
+            "ORDER BY cm.send_time ASC")
+    List<ChatMessageBean> getPersonalChatMessages(@Param("roomId") Long roomId, @Param("currentUserId") String currentUserId);
+
+    // 클럽 채팅방 메시지 조회 (참가 시간 이후의 메시지만)
+    @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
+            "cm.sender_id as senderId, cm.sender_type as senderType, " +
+            "cm.message_content as messageContent, cm.message_type as messageType, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, cm.read_count as readCount, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
+            "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cm.sender_id) " +
+            "END as senderNickname, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  ELSE NULL " +
+            "END as senderProfile, " +
+            "CASE WHEN EXISTS (SELECT 1 FROM chat_read_receipt crr WHERE crr.message_id = cm.message_id " +
+            "                 AND crr.reader_id = #{currentUserId}) " +
+            "THEN 1 ELSE 0 END as isRead " +
+            "FROM chat_message cm " +
+            "JOIN chat_room cr ON cm.room_id = cr.room_id " +
+            "WHERE cm.room_id = #{roomId} " +
+            "AND cr.room_type = 'CLUB' " +
+            "AND cm.send_time >= (SELECT join_date FROM chat_participant " +
+            "                     WHERE room_id = #{roomId} AND user_id = #{currentUserId}) " +
+            "ORDER BY cm.send_time ASC")
+    List<ChatMessageBean> getClubChatMessages(@Param("roomId") Long roomId, @Param("currentUserId") String currentUserId);
 
     @Select("SELECT message_id as messageId, room_id as roomId, sender_id as senderId, " +
             "sender_type as senderType, message_content as messageContent, " +
@@ -198,4 +285,17 @@ public interface ChatMapper {
     @Select("SELECT COUNT(*) FROM chat_read_receipt " +
             "WHERE message_id = #{messageId} AND reader_id = #{readerId}")
     int checkIfRead(@Param("messageId") Long messageId, @Param("readerId") String readerId);
+
+    @Select("SELECT get_unread_message_count(#{roomId}, #{userId}) FROM DUAL")
+    int getUnreadMessageCount(@Param("roomId") Long roomId, @Param("userId") String userId);
+
+    @Select("SELECT SUM((SELECT COUNT(*) FROM chat_message " +
+            "cm WHERE cm.room_id = cp.room_id AND cm.message_id > NVL(cp.last_read_msg_id, 0)" +
+            " AND cm.sender_id != #{userId})) AS total_unread_count FROM chat_participant cp" +
+            " WHERE cp.user_id = #{userId}")
+    int getTotalUnreadMessageCount(@Param("userId") String userId);
+
+
+
+
 }
