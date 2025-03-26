@@ -38,14 +38,14 @@
         <div class="right-section">
             <!-- 일반 회원 로그인 상태 -->
             <div th:if="${loginMember != null && loginMember.login == true}">
-                <span th:text="${loginMember.member_nickname} + '님 환영합니다'"></span>
-                <button type="button" th:onclick="|location.href='@{/member/memberinfo}'|" class="login-btn">내정보</button>
+                <span th:text="${loginMember.member_nickname} + '님 환영합니다'" style="color: white;"></span>
+                <button type="button" th:onclick="|location.href='@{/member/memberinfo}'|" class="login-btn ">내정보</button>
                 <button type="button" th:onclick="|location.href='@{/member/logout}'|" class="login-btn">로그아웃</button>
             </div>
 
             <!-- 비즈니스 회원 로그인 상태 -->
             <div th:if="${loginBusiness != null && loginBusiness.login == true}">
-                <span th:text="${loginBusiness.business_name} + '님 환영합니다'"></span>
+                <span th:text="${loginBusiness.business_name} + '님 환영합니다'" style="color: white;"></span>
                 <button type="button" th:onclick="|location.href='@{/business/info}'|" class="login-btn">사업자정보</button>
                 <button type="button" th:onclick="|location.href='@{/business/logout}'|" class="login-btn">로그아웃</button>
             </div>

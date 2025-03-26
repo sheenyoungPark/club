@@ -5,15 +5,15 @@
     <title>설문조사</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" th:href="@{/css/test.css}">
-    <link rel="stylesheet" th:href="@{/css/bottom.css}">
-    <link rel="stylesheet" th:href="@{/css/top.css}">
+<!--    <link rel="stylesheet" th:href="@{/css/bottom.css}">-->
+<!--    <link rel="stylesheet" th:href="@{/css/top.css}">-->
 </head>
 <body th:style="|background-image: url('@{/sources/picture/우주배경.png}');
                  background-size: cover;
                  background-repeat: no-repeat;
                  background-position: center;
                  background-attachment: fixed;|">
-<div th:replace="~{include/top_search :: top_search}"></div>
+<!--<div th:replace="~{include/top_search :: top_search}"></div>-->
 
 <div th:if="${not #strings.isEmpty(title) and not #strings.isEmpty(story)}" class="intro-text">
     <div>
@@ -49,10 +49,10 @@
     </div>
 </div>
 
-<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<!--<div th:replace="~{include/bottom_info :: bottom_info}"></div>-->
 
 <script th:src="@{/js/test.js}"></script>
-<script th:src="@{/js/top.js}"></script>
+<!--<script th:src="@{/js/top.js}"></script>-->
 <script th:inline="javascript">
     /*<![CDATA[*/
     // Thymeleaf 변수를 JavaScript 변수로 전달

@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title>유형 선택</title>
     <link rel="stylesheet" th:href="@{/css/tiebreaker.css}">
-    <link rel="stylesheet" th:href="@{/css/bottom.css}">
-    <link rel="stylesheet" th:href="@{/css/top.css}">
-    <script th:src="@{/js/top.js}"></script>
+<!--    <link rel="stylesheet" th:href="@{/css/bottom.css}">-->
+<!--    <link rel="stylesheet" th:href="@{/css/top.css}">-->
+<!--    <script th:src="@{/js/top.js}"></script>-->
 </head>
 <body th:style="|background-image: url('@{/sources/picture/우주배경.png}');
                  background-size: cover;
@@ -14,7 +14,7 @@
                  background-position: center;
                  background-attachment: fixed;|">
 
-<div th:replace="~{include/top_search :: top_search}"></div>
+<!--<div th:replace="~{include/top_search :: top_search}"></div>-->
 
 <div class="container type-select-box">
     <h2 th:text="'우티가 파악한 당신의 성향은 ' + ${tieCount} + '개에요!!!'">우티가 파악한 당신의 성향</h2>
@@ -26,6 +26,6 @@
     </form>
 </div>
 
-<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<!--<div th:replace="~{include/bottom_info :: bottom_info}"></div>-->
 </body>
 </html>

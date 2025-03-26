@@ -89,14 +89,6 @@
 }
 
 /* 동호회 목록 스타일 */
-.clubs-container {
-    margin: 30px 20px;
-    padding: 20px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
 .clubs-title {
     color: #5d4b8c;
     font-size: 18px;
@@ -108,30 +100,67 @@
 
 .clubs-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr);  /* ✅ 한 줄에 2개 */
     gap: 20px;
     padding: 0;
     list-style: none;
 }
 
 .club-item {
-    border: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    padding: 30px;              /* ✅ 내부 여백 더 큼 */
+    min-height: 240px;          /* ✅ 기존 120px → 240px (2배) */
     border-radius: 8px;
-    padding: 15px;
-    transition: all 0.3s;
     background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s;
 }
 
 .club-item:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+}
+
+.club-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+.club-profile-box {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 12px; /* 원형 대신 사각형에 가까운 둥근 네모 */
+    margin-right: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.club-profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0; /* ✅ 둥근 테두리 제거하여 꽉 찬 느낌 */
+}
+
+
+.club-info {
+    display: flex;
+    flex-direction: column;
 }
 
 .club-name {
     font-weight: bold;
     color: #5d4b8c;
     font-size: 16px;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .club-category {
@@ -147,27 +176,21 @@
     display: none;
 }
 
-@media ( max-width : 768px) {
-    .category-container {
-        flex-direction: column;
-    }
-    .main-categories {
-        width: 100%;
-    }
-    .sub-category-list {
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    }
-    .clubs-list {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    }
-}
 .category-icon {
-    width: 16px;  /* 원하는 크기로 조절 */
+    width: 16px;
     height: auto;
-    margin-right: 5px;  /* 글씨와 간격 조절 */
+    margin-right: 5px;
     vertical-align: middle;
+    filter: invert(53%) sepia(97%) saturate(748%) hue-rotate(70deg) brightness(106%) contrast(103%);
+    transition: filter 0.3s ease;
 }
-/* 클럽 생성하기 버튼 스타일 */
+
+.category-item:hover .category-icon {
+    filter: invert(97%) sepia(94%) saturate(5020%) hue-rotate(1deg) brightness(103%) contrast(101%);
+}
+
+
+/* 클럽 생성하기 버튼 */
 .create-club-button {
     position: absolute;
     top: 200px;
@@ -201,51 +224,21 @@
 .create-club-button i {
     margin-right: 5px;
 }
-/* 클럽 링크 (전체 너비 차지) */
-.club-link {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    color: inherit;
-    width: 100%;
-}
 
-/* 클럽 목록 아이템 스타일 */
-.club-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    transition: background-color 0.2s ease-in-out;
-}
+@media (max-width: 768px) {
+    .category-container {
+        flex-direction: column;
+    }
 
-.club-item:hover {
-    background-color: #f9f9f9;
-}
+    .main-categories {
+        width: 100%;
+    }
 
-/* 클럽 프로필 이미지 박스 */
-.club-profile-box {
-    width: 50px;
-    height: 50px;
-    overflow: hidden;
-    border-radius: 50%;
-    margin-right: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f0f0;
-}
+    .sub-category-list {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
 
-/* 클럽 프로필 이미지 */
-.club-profile-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* 클럽 정보 (이름 + 카테고리) */
-.club-info {
-    display: flex;
-    flex-direction: column;
+    .clubs-list {
+        grid-template-columns: 1fr;  /* ✅ 모바일에서는 1개씩 */
+    }
 }

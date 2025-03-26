@@ -236,7 +236,7 @@
         // 환전 요청 승인
         $('.approve-exchange').click(function() {
             var bankId = $(this).data('bank-id');
-            if (confirm('이 환전 요청을 승인하시겠습니까? 승인 시 판매자의 포인트는 0으로 초기화됩니다.')) {
+            if (confirm('이 환전 요청을 승인하시겠습니까?')) {
                 approveExchange(bankId);
             }
         });

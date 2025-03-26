@@ -5,7 +5,11 @@
     <title>로그인 페이지</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경.png}');
+                 background-size: cover;
+                 background-repeat: no-repeat;
+                 background-position: center;
+                 background-attachment: fixed;|">
 <div class="login-container">
     <div class="login-tabs">
         <div class="tab active" data-tab="personal">개인회원</div>

@@ -14,7 +14,7 @@
                  background-repeat: no-repeat;
                  background-position: center;
                  background-attachment: fixed;|">
-<div th:replace="~{include/top_search :: top_search}"></div>
+<!--<div th:replace="~{include/top_search :: top_search}"></div>-->
 <div class="result-container">
     <div class="result-header">
         <h1>우주동 유형 결과</h1>
@@ -64,7 +64,24 @@
     </div>
 
     <a th:href="@{/survey/start}" class="btn-restart">다시 테스트하기</a>
-    <button th:onclick="'location.href=\'' + @{/survey/save(Type=${topResultType})} + '\''" class="btn-restart">내 결과 저장</button>
+    <!-- 결과 저장 버튼 -->
+    <button type="button" class="btn-restart" onclick="saveSurveyResult()">내 결과 저장</button>
+    <!-- 로그인 여부를 Thymeleaf에서 JS 변수로 전달 -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const isLogin = /*[[${loginMember != null && loginMember.login}]]*/ false;
+        const saveUrl = /*[[@{/survey/save(Type=${topResultType})}]]*/ "";
+        /*]]>*/
+
+        function saveSurveyResult() {
+            if (!isLogin) {
+                alert('로그인 후 다시 진행해주세요.');
+                location.href = '/member/login';
+            } else {
+                location.href = saveUrl;
+            }
+        }
+    </script>
 </div>
 
 <script th:inline="javascript">
@@ -120,6 +137,6 @@
     });
     /*]]>*/
 </script>
-<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+<!--<div th:replace="~{include/bottom_info :: bottom_info}"></div>-->
 </body>
 </html>

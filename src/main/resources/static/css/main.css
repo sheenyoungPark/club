@@ -1,5 +1,5 @@
 * {
-    user-select: none;/* 드래그 안되게 설정 */
+    user-select: none;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -11,7 +11,7 @@ body {
 }
 
 .header {
-    background-color: #5d4b8c;
+    background-color: transparent;
     padding: 15px 30px;
     display: flex;
     align-items: center;
@@ -32,7 +32,6 @@ body {
 .nav {
     display: flex;
     gap: 20px;
-    /* 네비게이션 위치를 중앙에 고정 */
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -47,7 +46,6 @@ body {
 .right-section {
     display: flex;
     align-items: center;
-    /* 우측 섹션의 최소 너비 지정 */
     min-width: 100px;
     justify-content: flex-end;
 }
@@ -154,49 +152,58 @@ body {
     padding: 30px;
 }
 
-.categories h2 {
+.categories h2,
+.recommended-clubs h2 {
     margin-bottom: 30px;
     font-size: 18px;
+    color: white;
 }
 
 .category-icons {
     display: flex;
-    justify-content: space-between;
     flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
 }
 
+/* 추천 카테고리 카드 완전 투명 */
 .category {
+    width: 19%;
+    min-height: 250px;
+    background: transparent;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    width: 18%;
+    justify-content: space-between;
+    box-shadow: none;
 }
 
 .category-icon {
-    width: 80px;
-    height: 80px;
-    background-color: #f0f0f7;
-    border-radius: 50%;
-    margin-bottom: 10px;
+    width: 100%;
+    height: 150px;
+    background-color: #ffffff;
     border: none;
-    display: flex; /* 아이템을 가운데 배치하려면 flex 사용 */
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
 }
 
 .category-icon img {
-    width: 60px; /* 이미지 크기 설정 */
-    height: 60px;
-    border-radius: 50%; /* 이미지도 원형으로 만들기 */
-}
-
-.category-icon:active {
-    transform: scale(0.98); /* 클릭 시 약간 줄어드는 효과 */
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
 }
 
 .category-name {
-    font-size: 14px;
-    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
 }
 
 .search-toggle {
@@ -207,16 +214,15 @@ body {
     color: white;
     cursor: pointer;
     font-size: 16px;
-    /* 위치 조정으로 겹침 해결 */
     position: relative;
 }
 
-@media ( max-width : 768px) {
+@media (max-width: 768px) {
     .category {
         width: 30%;
         margin-bottom: 20px;
     }
-    /* 모바일에서는 네비게이션 위치 조정 */
+
     .nav {
         position: static;
         transform: none;
@@ -229,11 +235,6 @@ body {
     padding: 30px;
 }
 
-.recommended-clubs h2 {
-    margin-bottom: 20px;
-    font-size: 18px;
-}
-
 .club-container {
     display: flex;
     flex-wrap: wrap;
@@ -241,23 +242,28 @@ body {
     justify-content: space-between;
 }
 
+/* 인기 동호회 카드 완전 투명 */
 .club-box {
-    width: 23%;
-    background: rgba(170, 150, 198, 0.92);
-    padding: 15px;
+    width: 19%;
+    min-height: 250px;
+    background: transparent;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
     border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: none;
 }
 
 button:hover {
-    transform: scale(1.05); /* 2.05 대신 1.05 정도가 적당 */
+    transform: scale(1.05);
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 button:active {
-    transform: scale(0.98); /* 클릭 시 약간 줄어드는 효과 */
+    transform: scale(0.98);
 }
 
 .club-image {
@@ -271,6 +277,7 @@ button:active {
     font-size: 16px;
     margin: 10px 0;
     font-weight: bold;
+    color: white;
 }
 
 .club-category, .club-location, .club-members {
@@ -278,13 +285,13 @@ button:active {
     color: gray;
 }
 
-@media ( max-width : 1024px) {
+@media (max-width: 1024px) {
     .club-box {
         width: 48%;
     }
 }
 
-@media ( max-width : 768px) {
+@media (max-width: 768px) {
     .club-box {
         width: 100%;
     }
@@ -292,13 +299,13 @@ button:active {
 
 .slider {
     background-color: #e6d7f9;
-    height: 500px; /* 슬라이더 전체 높이 */
-    width: 100%; /* 가로 폭을 전체로 설정 */
+    height: 500px;
+    width: 100%;
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden; /* 넘치는 이미지 숨김 */
+    overflow: hidden;
 }
 
 .slider-images {
@@ -310,19 +317,19 @@ button:active {
 
 .slider-image {
     width: 100%;
-    height: 100%; /* 부모 .slider 높이와 동일 */
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .slider-image img {
-    width: 100%; /* 부모 .slider에 맞춰 가로폭 100% */
-    height: auto; /* 비율을 유지하며 자동 조정 */
-    max-height: 100%; /* 부모 요소보다 크지 않게 제한 */
-    object-fit: contain; /* 이미지 비율 유지하며 꽉 차게 */
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
 }
-/* 클럽 이미지 컨테이너 */
+
 .club-image-container {
     width: 100%;
     height: 150px;
@@ -331,14 +338,12 @@ button:active {
     align-items: center;
     overflow: hidden;
     border-radius: 10px;
-    background-color: #ffffff; /* 기본 배경 */
+    background-color: #ffffff;
 }
 
-/* 클럽 대표 이미지 스타일 */
 .club-profile-image {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* 이미지를 영역에 꽉 채우되 비율 유지 */
+    object-fit: cover;
     border-radius: 10px;
 }
-

@@ -37,7 +37,7 @@ body {
         padding: 20px 15px;
     }
 }.bottom-info {
-     background-color: #333;
+     background-color: transparent;
      color: white;
      padding: 30px 20px;
      text-align: center;
