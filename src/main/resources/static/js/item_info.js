@@ -282,6 +282,35 @@ document.addEventListener('DOMContentLoaded', function() {
         selectElement.selectedIndex = 0;
     }
 
+    // 현재 시간 기준으로 지난 시간 비활성화 함수
+    function disablePastTimes() {
+        const selectedDate = new Date(dateInput.value);
+        const now = new Date();
+
+        // 선택된 날짜가 오늘인지 확인
+        const isToday = selectedDate.getDate() === now.getDate() &&
+            selectedDate.getMonth() === now.getMonth() &&
+            selectedDate.getFullYear() === now.getFullYear();
+
+        if (isToday) {
+            const currentHour = now.getHours();
+
+            // 시작 시간 옵션에서 현재 시간 이전의 옵션 비활성화
+            for (let i = 1; i < startTimeSelect.options.length; i++) {
+                const optionValue = parseInt(startTimeSelect.options[i].value);
+                if (optionValue <= currentHour) {
+                    startTimeSelect.options[i].disabled = true;
+                    console.log(`${optionValue}:00 시간은 이미 지났습니다. 비활성화합니다.`);
+                }
+            }
+
+            // 종료 시간 옵션도 함께 업데이트
+            if (startTimeSelect.value) {
+                updateEndTimeOptions();
+            }
+        }
+    }
+
     // 예약된 시간에 따라 옵션 업데이트
     function updateTimeOptions() {
         console.log('시간 옵션 업데이트 시작');
@@ -321,6 +350,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+
+        // 현재 시간 이전의 시간 비활성화
+        disablePastTimes();
 
         // 종료 시간 업데이트 (시작 시간이 이미 선택되어 있는 경우)
         if (startTimeSelect.value) {
