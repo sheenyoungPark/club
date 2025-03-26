@@ -1,21 +1,32 @@
+/* 문제 상자 전체 (반투명 흰 배경 + 그림자 효과) */
 .question-container {
-    margin: 20px auto;
+    margin: 40px auto;
     max-width: 800px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 30px;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* 제목 및 설명 영역 (흰 글씨, 가운데 정렬) */
+.intro-text {
+    text-align: center;
+    color: white;
+    margin-top: 40px;
+}
+
+/* 선택지 */
 .choice {
     margin: 10px 0;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #eee;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .choice:hover {
-    background-color: #f9f9f9;
+    background-color: #f5faff;
 }
 
 .selected {
@@ -23,18 +34,24 @@
     border-color: #1890ff;
 }
 
+/* 버튼 영역 */
 .btn-container {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 30px;
+}
+
+.btn-prev,
+.btn-next {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
 }
 
 .btn-prev {
-    padding: 10px 20px;
     background-color: #f0f0f0;
     color: #333;
     border: 1px solid #ddd;
-    border-radius: 4px;
     cursor: pointer;
 }
 
@@ -45,11 +62,9 @@
 }
 
 .btn-next {
-    padding: 10px 20px;
     background-color: #1890ff;
     color: white;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
 }
 
@@ -58,6 +73,7 @@
     cursor: not-allowed;
 }
 
+/* 진행 바 */
 .progress-bar {
     width: 100%;
     height: 10px;
@@ -73,8 +89,10 @@
     transition: width 0.3s ease;
 }
 
+/* 현재 문제 번호 */
 .question-number {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 15px;
 }
