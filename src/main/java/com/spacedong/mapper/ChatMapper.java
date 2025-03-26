@@ -101,8 +101,8 @@ public interface ChatMapper {
 
     // === 채팅 참여자 관련 쿼리 ===
 
-    @Insert("INSERT INTO chat_participant (room_id, user_id, user_type) " +
-            "VALUES (#{room_id}, #{user_id}, #{user_type})")
+    @Insert("INSERT INTO chat_participant (room_id, user_id, user_type, userNickname) " +
+            "VALUES (#{room_id}, #{user_id}, #{user_type}, #{userNickname})")
     int addParticipant(ChatParticipantBean participant);
 
     @Select("SELECT cp.*, " +
@@ -300,6 +300,28 @@ public interface ChatMapper {
     int getTotalUnreadMessageCount(@Param("userId") String userId);
 
 
+    /**
+     * 참여자의 닉네임을 업데이트
+     */
+    @Update("UPDATE chat_participant SET userNickname = #{userNickname} WHERE room_id = #{room_id} AND user_id = #{user_id}")
+    int updateParticipantNickname(ChatParticipantBean participant);
+
+    /**
+     * 사용자 닉네임이 없는 참여자 목록 조회
+     */
+    @Select("SELECT * FROM chat_participant WHERE userNickname IS NULL OR userNickname = ''")
+    List<ChatParticipantBean> getParticipantsWithoutNickname();
+
+    /**
+     * 모든 참여자의 정보 업데이트
+     */
+    @Update("<script>UPDATE chat_participant SET userNickname = CASE user_type " +
+            "WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = chat_participant.user_id) " +
+            "WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = chat_participant.user_id) " +
+            "WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = chat_participant.user_id) " +
+            "ELSE userNickname END " +
+            "WHERE userNickname IS NULL OR userNickname = ''</script>")
+    int updateAllParticipantsNickname();
 
 
 }

@@ -18,20 +18,36 @@
       <span>연결 끊김</span>
     </div>
 
-    <!-- 채팅 헤더 -->
+    <!-- 채팅방 헤더 부분에서 방 이름 표시 수정 -->
     <div class="chat-header d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center">
         <a th:href="@{/chat/view/rooms}" class="btn btn-sm btn-link text-dark me-2">
           <i class="fas fa-arrow-left"></i>
         </a>
         <div th:if="${room.club_id != null}" class="me-2">
+          <!-- 동호회 채팅방 - 클럽 프로필 이미지 사용 -->
           <img th:src="@{/sources/picture/기본이미지.png}" alt="Club" class="avatar">
         </div>
-        <div th:if="${room.club_id == null}" class="me-2">
+        <div th:if="${room.club_id == null && participants != null && participants.size() > 1}" class="me-2">
+          <!-- 1:1 채팅방 - 상대방 프로필 이미지 표시 (절대 경로 사용) -->
+          <img th:with="otherUser=${participants.?[user_id != #vars.loginMember.member_id].size() > 0 ? participants.?[user_id != #vars.loginMember.member_id][0] : null},
+                  filename=${otherUser != null && otherUser.userProfile != null ? (#strings.contains(otherUser.userProfile, '/') ? #strings.substringAfterLast(otherUser.userProfile, '/') : otherUser.userProfile) : ''}"
+               th:src="${otherUser != null && otherUser.userProfile != null && !otherUser.userProfile.isEmpty()} ? @{/profile/{file}(file=${filename})} : @{/sources/picture/기본이미지.png}"
+               alt="User" class="avatar">
+        </div>
+        <div th:if="${room.club_id == null && (participants == null || participants.size() <= 1)}" class="me-2">
+          <!-- 프로필 정보가 없는 경우 기본 이미지 -->
           <img th:src="@{/sources/picture/기본이미지.png}" alt="User" class="avatar">
         </div>
         <div>
-          <h5 class="mb-0" th:text="${room.room_name}">채팅방 이름</h5>
+          <!-- 방 이름 표시 로직 수정 - 콤마(,)로 분리된 닉네임 처리 -->
+          <h5 class="mb-0"
+              th:with="roomNameParts=${room.room_name != null && room.room_name.contains(',') ?
+                      room.room_name.split(',') : null},
+                  displayName=${room.room_name != null && room.room_name.contains(',') ?
+                      ((roomNameParts[0] == loginMember.member_nickname ? roomNameParts[1] : roomNameParts[0]) + '님과의 대화') :
+                      room.room_name}"
+              th:text="${displayName}">채팅방 이름</h5>
           <small th:text="${participants.size()} + '명 참여 중'">2명 참여 중</small>
         </div>
       </div>
@@ -77,7 +93,7 @@
   </div>
 </div>
 
-<!-- 참여자 목록 모달 -->
+<!-- 참여자 목록 모달 수정 -->
 <div class="modal fade" id="participantsModal" tabindex="-1" aria-labelledby="participantsModalTitle">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -88,8 +104,16 @@
       <div class="modal-body">
         <ul class="list-group">
           <li th:each="participant : ${participants}" class="list-group-item d-flex align-items-center">
-            <img th:src="${participant.userProfile != null} ? ${participant.userProfile} : @{/sources/picture/기본이미지.png}" alt="User" class="avatar me-3">
+            <!-- 사용자 타입에 따라 프로필 이미지 경로 처리 -->
+            <img th:if="${participant.userProfile != null && !participant.userProfile.isEmpty()}"
+                 th:with="filename=${#strings.contains(participant.userProfile, '/') ? #strings.substringAfterLast(participant.userProfile, '/') : participant.userProfile}"
+                 th:src="@{/profile/{filename}(filename=${filename})}"
+                 alt="User" class="avatar me-3">
+            <img th:unless="${participant.userProfile != null && !participant.userProfile.isEmpty()}"
+                 th:src="@{/sources/picture/기본이미지.png}"
+                 alt="User" class="avatar me-3">
             <div>
+              <!-- 닉네임 표시 로직 개선 - 값이 없으면 ID 표시 -->
               <h6 class="mb-0" th:text="${participant.userNickname != null && participant.userNickname != ''} ? ${participant.userNickname} : ${participant.user_id}">사용자 이름</h6>
               <small th:text="${participant.user_type == 'MEMBER' ? '일반 회원' : (participant.user_type == 'BUSINESS' ? '판매자' : '관리자')}">일반 회원</small>
             </div>

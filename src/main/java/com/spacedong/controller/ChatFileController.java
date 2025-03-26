@@ -60,8 +60,8 @@ public class ChatFileController {
             // 파일 저장
             Files.copy(file.getInputStream(), filePath);
 
-            // 파일 URL 생성 (상대 경로)
-            String fileUrl = "/uploads/chat/" + newFilename;
+            // 파일 URL 생성 (웹에서 접근 가능한 상대 경로로 수정)
+            String fileUrl = "/upload/chat/" + newFilename;
 
             // 메시지 타입 결정 (이미지인지 일반 파일인지)
             String messageType = "FILE";
@@ -77,6 +77,10 @@ public class ChatFileController {
             message.setSenderType("MEMBER"); // 현재는 MEMBER만 지원, 필요시 확장
             message.setMessageType(messageType);
             message.setFilePath(fileUrl);
+
+            // 추가: 보내는 사용자의 프로필 정보 설정
+            message.setSenderNickname(loginMember.getMember_nickname());
+            message.setSenderProfile(loginMember.getMember_profile());
 
             if (messageType.equals("IMAGE")) {
                 message.setMessageContent("[이미지]");

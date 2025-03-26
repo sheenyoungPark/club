@@ -547,6 +547,7 @@ function shouldShowTime(message, lastMessageTime) {
         currentMessageTime.getFullYear() !== lastMessageTime.getFullYear();
 }
 
+// 메시지 표시 함수 수정 - appendMessage 함수 일부
 function appendMessage(message, animate = true, isFirstInGroup = true, isLastInGroup = true, showTime = true) {
     const chatMessages = document.getElementById('chatMessages');
     const isCurrentUser = message.senderId === userId;
@@ -571,8 +572,11 @@ function appendMessage(message, animate = true, isFirstInGroup = true, isLastInG
     // 클라이언트의 현지 시간대로 형식화
     const formattedTime = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // 프로필 이미지 - 기본 이미지로 고정
+    // 프로필 이미지 설정 (기본 이미지 경로 포함)
     const defaultProfile = '/sources/picture/기본이미지.png';
+
+    // 전체 경로에서 파일명만 추출
+    const senderProfile = getProfileImageUrl(message.senderProfile);
 
     // 메시지 HTML 구성
     let messageHtml = '';
@@ -581,7 +585,7 @@ function appendMessage(message, animate = true, isFirstInGroup = true, isLastInG
     if (!isCurrentUser && isFirstInGroup) {
         messageHtml += `
             <div class="me-2">
-                <img src="${defaultProfile}" alt="Profile" class="avatar">
+                <img src="${senderProfile}" alt="Profile" class="avatar">
             </div>
             <div class="message-content-wrapper">
                 <div class="small text-muted mb-1">${message.senderNickname || message.senderId}</div>
@@ -597,16 +601,31 @@ function appendMessage(message, animate = true, isFirstInGroup = true, isLastInG
         messageHtml += `<div class="message-content-wrapper">`;
     }
 
-    // 메시지 본문
-    messageHtml += `
-        <div class="message-bubble">
-            ${message.messageType === 'TEXT' ? message.messageContent : ''}
-            ${message.messageType === 'IMAGE' ? `<img src="${message.filePath}" alt="Image" class="img-fluid rounded">` : ''}
-            ${message.messageType === 'FILE' ? `<a href="${message.filePath}" target="_blank" class="btn btn-sm btn-light"><i class="fas fa-file"></i> 파일 다운로드</a>` : ''}
-        </div>
-    `;
+    // 메시지 본문 - 특히 이미지 처리 부분 수정
+    if (message.messageType === 'TEXT') {
+        messageHtml += `
+            <div class="message-bubble">
+                ${message.messageContent}
+            </div>
+        `;
+    } else if (message.messageType === 'IMAGE') {
+        // 이미지 파일 경로 처리 - 웹 접근 경로 사용
+        messageHtml += `
+            <div class="message-bubble">
+                <img src="${message.filePath}" alt="Image" class="img-fluid rounded" style="max-width: 200px;">
+            </div>
+        `;
+    } else if (message.messageType === 'FILE') {
+        messageHtml += `
+            <div class="message-bubble">
+                <a href="${message.filePath}" target="_blank" class="btn btn-sm btn-light">
+                    <i class="fas fa-file"></i> 파일 다운로드
+                </a>
+            </div>
+        `;
+    }
 
-    // 시간 및 읽음 상태 표시 - 항상 실제 시간 사용
+    // 시간 및 읽음 상태 표시 부분은 그대로 유지
     // 그룹의 마지막 메시지인 경우에만 시간 표시
     if (isLastInGroup && showTime) {
         // 클럽 채팅일 경우 시간만 표시
@@ -726,7 +745,7 @@ function sendMessage() {
     }
 }
 
-// 파일 업로드
+// Fixed uploadFile function to prevent duplicate messages
 function uploadFile() {
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
@@ -744,8 +763,9 @@ function uploadFile() {
         })
             .then(response => response.json())
             .then(message => {
-                // 업로드된 파일 정보를 사용하여 메시지 전송
-                stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(message));
+                // The server has already sent the message via WebSocket in ChatFileController
+                // No need to send it again, just log that the upload was successful
+                console.log('File upload successful:', message);
             })
             .catch(error => {
                 console.error('파일 업로드 실패: ', error);
@@ -918,13 +938,15 @@ function updateMessageTimeDisplay(messageElement, unreadCount) {
     }
 }
 
-// 알림 표시
+// showNotification 함수 수정
 function showNotification(message) {
-    // 브라우저 알림 권한 요청 및 표시
     if (Notification.permission === 'granted') {
+        // 프로필 이미지 URL 설정 - 수정된 방식
+        const profileImage = getProfileImageUrl(message.senderProfile);
+
         const notification = new Notification(message.senderNickname || message.senderId, {
             body: message.messageContent,
-            icon: message.senderProfile || '/sources/picture/기본이미지.png'
+            icon: profileImage
         });
 
         notification.onclick = function() {
@@ -1096,4 +1118,20 @@ function updateAllPreviousMessages(messageId, unreadCount) {
             }
         }
     }
+}
+
+function getProfileImageUrl(profilePath) {
+    // 기본 이미지 경로
+    const defaultImage = '/sources/picture/기본이미지.png';
+
+    // 프로필 경로가 없으면 기본 이미지 반환
+    if (!profilePath) {
+        return defaultImage;
+    }
+
+    // 상대 경로가 아닌 파일명만 있는 경우 (데이터베이스에 파일명만 저장된 경우)
+    if (!profilePath.includes('/')) {
+        return `/profile/${profilePath}`;
+    }
+
 }

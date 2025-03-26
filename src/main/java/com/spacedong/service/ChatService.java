@@ -11,6 +11,7 @@ import com.spacedong.beans.*;
 import com.spacedong.repository.AdminRepository;
 import com.spacedong.repository.BusinessRepository;
 import com.spacedong.repository.MemberRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,9 @@ public class ChatService {
 
     @Autowired
     private AdminRepository adminRepository;
+
+    @Autowired
+    private MemberService memberService;
 
     // 채팅방 관련 메서드
     @Transactional
@@ -94,13 +98,16 @@ public class ChatService {
         return new ArrayList<>();
     }
 
-    // Also modify the getOrCreatePersonalChatRoom method to include similar logic
     @Transactional
     public ChatRoomBean getOrCreatePersonalChatRoom(String userId1, String userType1, String userId2, String userType2) {
         ChatRoomBean chatRoom = chatRepository.getPersonalChatRoom(userId1, userType1, userId2, userType2);
 
-        String user1nickname = chatRepository.searchUsers(userId1).get(0).getNickname();
-        String user2nickname = chatRepository.searchUsers(userId2).get(0).getNickname();
+        // 사용자 닉네임 조회 (MemberService 사용)
+        MemberBean user1 = memberService.getMemberById(userId1);
+        MemberBean user2 = memberService.getMemberById(userId2);
+
+        String user1nickname = user1 != null ? user1.getMember_nickname() : userId1;
+        String user2nickname = user2 != null ? user2.getMember_nickname() : userId2;
 
         boolean isNewRoom = false;
 
@@ -112,9 +119,8 @@ public class ChatService {
             // Room name based on user types
             String roomName = "";
             if(userType2.equals("MEMBER")) {
-                MemberBean mem1 = memberRepository.getMemberById(userId1);
-                MemberBean mem2 = memberRepository.getMemberById(userId2);
-                roomName = mem1.getMember_nickname() + mem2.getMember_nickname()+"의 대화";
+                // 채팅방 이름을 "닉네임1,닉네임2" 형식으로 저장
+                roomName = user1nickname + "," + user2nickname;
             } else if(userType2.equals("BUSINESS")) {
                 roomName = "판매자와의 대화";
             } else if(userType2.equals("ADMIN")) {
@@ -141,6 +147,15 @@ public class ChatService {
             participant2.setJoinDate(LocalDateTime.now()); // Set join date
             chatRepository.addParticipant(participant2);
         } else {
+            // 기존 룸 이름이 닉네임 형식이 아니면 업데이트
+            if(userType2.equals("MEMBER") && chatRoom.getRoom_name() != null
+                    && !chatRoom.getRoom_name().contains(",")) {
+                // 채팅방 이름을 "닉네임1,닉네임2" 형식으로 업데이트
+                String newRoomName = user1nickname + "," + user2nickname;
+                chatRoom.setRoom_name(newRoomName);
+                chatRepository.updateChatRoomName(Long.valueOf(chatRoom.getRoom_id()), newRoomName);
+            }
+
             // Check if users are already participants, if not add them
             // This covers the case where a user was removed and is rejoining
             ChatParticipantBean participant1 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId1);
@@ -155,6 +170,10 @@ public class ChatService {
 
                 // Mark all previous messages as read for the new participant
                 markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId1);
+            } else if (participant1.getUserNickname() == null || participant1.getUserNickname().isEmpty()) {
+                // 닉네임이 없는 경우, 업데이트
+                participant1.setUserNickname(user1nickname);
+                chatRepository.updateParticipantNickname(participant1);
             }
 
             ChatParticipantBean participant2 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId2);
@@ -169,6 +188,10 @@ public class ChatService {
 
                 // Mark all previous messages as read for the new participant
                 markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId2);
+            } else if (participant2.getUserNickname() == null || participant2.getUserNickname().isEmpty()) {
+                // 닉네임이 없는 경우, 업데이트
+                participant2.setUserNickname(user2nickname);
+                chatRepository.updateParticipantNickname(participant2);
             }
         }
 
@@ -339,7 +362,7 @@ public class ChatService {
 
     // New method to mark all previous messages as read for a new participant
     @Transactional
-    private void markPreviousMessagesAsRead(int roomId, String userId) {
+    public void markPreviousMessagesAsRead(int roomId, String userId) {
         // Get all messages in the room
         List<ChatMessageBean> allMessages = chatRepository.getMessagesByRoomId((long)roomId, userId);
 
@@ -486,8 +509,75 @@ public class ChatService {
         return chatRepository.getTotalUnreadMessageCount(userId);
     }
 
+    /**
+     * 채팅방에서 현재 사용자를 제외한 다른 참여자 정보를 가져옵니다.
+     * 주로 1:1 채팅에서 상대방 정보를 가져오는 데 사용됩니다.
+     *
+     * @param roomId 채팅방 ID
+     * @param currentUserId 현재 사용자 ID
+     * @return 상대방 참여자 정보 (없으면 null)
+     */
+    public ChatParticipantBean getOtherParticipant(long roomId, String currentUserId) {
+        List<ChatParticipantBean> participants = chatRepository.getParticipantsByRoomId(roomId);
 
+        if (participants != null && !participants.isEmpty()) {
+            // 현재 사용자가 아닌 참여자 찾기
+            for (ChatParticipantBean participant : participants) {
+                if (!participant.getUser_id().equals(currentUserId)) {
+                    return participant;
+                }
+            }
+        }
 
+        return null; // 다른 참여자가 없는 경우
+    }
+
+    @PostConstruct
+    public void initChatSystem() {
+        try {
+            // 닉네임이 비어있는 참여자들의 정보 업데이트
+            int updatedRows = chatRepository.updateAllParticipantsNickname();
+
+            if (updatedRows > 0) {
+                System.out.println("채팅 참여자 닉네임 자동 업데이트 완료: " + updatedRows + "명");
+            }
+
+            // 남아있는 닉네임 없는 참여자 확인
+            List<ChatParticipantBean> emptyNicknameParticipants = chatRepository.getParticipantsWithoutNickname();
+
+            // 개별 처리
+            for (ChatParticipantBean participant : emptyNicknameParticipants) {
+                if (participant.getUser_type().equals("MEMBER")) {
+                    MemberBean member = memberService.getMemberById(participant.getUser_id());
+                    if (member != null) {
+                        participant.setUserNickname(member.getMember_nickname());
+                        chatRepository.updateParticipantNickname(participant);
+                        System.out.println("참여자 닉네임 업데이트: " + participant.getUser_id() + " -> " + member.getMember_nickname());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("채팅 시스템 초기화 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
+
+    // ClubService.java에 추가할 메서드
+    /**
+     * 클럽 ID로 클럽 프로필 이미지 경로 조회
+     *
+     * @param clubId 클럽 ID
+     * @return 클럽 프로필 이미지 경로 (없으면 null)
+     */
+    public String getClubProfile(Integer clubId) {
+        if (clubId == null) {
+            return null;
+        }
+
+        ClubBean club = clubService.oneClubInfo(clubId);
+        return club != null ? club.getClub_profile() : null;
+    }
 
     // 채팅 시스템에 필요한 초기 설정
     @Transactional

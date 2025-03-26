@@ -139,21 +139,17 @@
                   <img th:if="${room.club_id != null}" th:src="@{/sources/picture/기본이미지.png}" alt="Club" class="user-avatar">
                   <img th:if="${room.club_id == null}" th:src="@{/sources/picture/기본이미지.png}" alt="User" class="user-avatar">
                 </div>
-                <!-- Chat room info -->
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                      <h5 class="chat-title mb-0" th:text="${room.room_name}">채팅방 이름</h5>
-                      <span th:if="${room.club_id != null}" class="chat-type-tag club-tag">동호회</span>
-                      <span th:if="${room.club_id == null}" class="chat-type-tag personal-tag">개인</span>
-                    </div>
-                    <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mt-1">
-                    <p class="chat-preview mb-0" th:text="${room.lastMessage != null ? room.lastMessage : '새로운 대화를 시작하세요.'}">마지막 메시지</p>
-                    <!-- 카카오톡 스타일 읽지 않은 메시지 수 -->
-                    <div th:if="${room.unreadCount > 0}" class="unread-badge" th:text="${room.unreadCount}">1</div>
-                  </div>
+                <!-- 채팅방 목록에서 방 이름 표시 부분 수정 -->
+                <div class="d-flex align-items-center">
+                  <h5 class="chat-title mb-0"
+                      th:with="roomNameParts=${room.room_name != null && room.room_name.contains(',') ?
+                  room.room_name.split(',') : null},
+              displayName=${room.room_name != null && room.room_name.contains(',') ?
+                  ((roomNameParts[0] == loginMember.member_nickname ? roomNameParts[1] : roomNameParts[0]) + '님과의 대화') :
+                  room.room_name}"
+                      th:text="${displayName}">채팅방 이름</h5>
+                  <span th:if="${room.club_id != null}" class="chat-type-tag club-tag">동호회</span>
+                  <span th:if="${room.club_id == null}" class="chat-type-tag personal-tag">개인</span>
                 </div>
               </div>
             </div>
@@ -177,14 +173,21 @@
                th:onclick="'location.href=\'' + @{/chat/view/room/{roomId}(roomId=${room.room_id})} + '\''">
             <div class="d-flex justify-content-between align-items-start">
               <div class="d-flex" style="width: 100%">
-                <!-- Profile image -->
+                <!-- Profile image - 단순화 -->
                 <div class="me-3">
                   <img th:src="@{/sources/picture/기본이미지.png}" alt="User" class="user-avatar">
                 </div>
                 <!-- Chat room info -->
                 <div class="flex-grow-1">
                   <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="chat-title mb-0" th:text="${room.room_name}">채팅방 이름</h5>
+                    <!-- 채팅방 이름 로직 -->
+                    <h5 class="chat-title mb-0"
+                        th:with="roomNameParts=${room.room_name != null && room.room_name.contains(',') ?
+                                room.room_name.split(',') : null},
+                            displayName=${room.room_name != null && room.room_name.contains(',') ?
+                                ((roomNameParts[0] == loginMember.member_nickname ? roomNameParts[1] : roomNameParts[0]) + '님과의 대화') :
+                                room.room_name}"
+                        th:text="${displayName}">채팅방 이름</h5>
                     <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
                   </div>
                   <div class="d-flex justify-content-between align-items-center mt-1">
@@ -215,7 +218,7 @@
                th:onclick="'location.href=\'' + @{/chat/view/room/{roomId}(roomId=${room.room_id})} + '\''">
             <div class="d-flex justify-content-between align-items-start">
               <div class="d-flex" style="width: 100%">
-                <!-- Profile image -->
+                <!-- Profile image - 단순화 -->
                 <div class="me-3">
                   <img th:src="@{/sources/picture/기본이미지.png}" alt="Club" class="user-avatar">
                 </div>
