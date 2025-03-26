@@ -48,6 +48,9 @@ public class ClubController {
 	@Autowired
 	private AdminNotificationService adminNotificationService;
 
+    @Autowired
+    private ChatService chatService;
+
 	// ✅ 클럽 정보 페이지
 	@GetMapping("/club_info")
 	public String club_info(@RequestParam("club_id") int club_id, Model model) {
@@ -221,7 +224,7 @@ public class ClubController {
 
 		// ✅ 관리자에게 알림 전송
 		adminNotificationService.sendApprovalNotification("admin", "ADMIN", "REQUEST2",
-				"클럽" + clubBean.getClub_name(), "새로운 동호회가 생성되었습니다.");
+				"클럽 " + clubBean.getClub_name(), "");
 
 
 

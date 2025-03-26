@@ -481,3 +481,120 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 코드는 유지하고, 햄버거 메뉴 관련 코드를 추가합니다
+
+    // 햄버거 메뉴 요소 선택
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const mobileMenuContainer = document.getElementById('mobileMenuContainer');
+    const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+
+    // 햄버거 메뉴 토글 함수
+    function toggleMobileMenu() {
+        hamburgerMenu.classList.toggle('active');
+        mobileMenuContainer.classList.toggle('active');
+        mobileMenuOverlay.classList.toggle('active');
+
+        // 스크롤 막기/허용
+        if (mobileMenuContainer.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+
+    // 햄버거 메뉴 클릭 이벤트
+    if (hamburgerMenu) {
+        hamburgerMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleMobileMenu();
+        });
+    }
+
+    // 오버레이 클릭 시 메뉴 닫기
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener('click', function() {
+            toggleMobileMenu();
+        });
+    }
+
+    // 모바일 메뉴 내부 링크 클릭 시 메뉴 닫기
+    if (mobileMenuContainer) {
+        const mobileMenuLinks = mobileMenuContainer.querySelectorAll('a');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                toggleMobileMenu();
+            });
+        });
+    }
+
+    // 창 크기 변경 시 모바일 메뉴 상태 관리
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            // 모바일 메뉴가 열려있다면 닫기
+            if (mobileMenuContainer && mobileMenuContainer.classList.contains('active')) {
+                hamburgerMenu.classList.remove('active');
+                mobileMenuContainer.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+    });
+
+    // 페이지 스크롤 시 모바일 메뉴 닫기
+    window.addEventListener('scroll', function() {
+        if (mobileMenuContainer && mobileMenuContainer.classList.contains('active')) {
+            hamburgerMenu.classList.remove('active');
+            mobileMenuContainer.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // 검색 컨테이너와 모바일 메뉴 상호작용
+    const searchToggle = document.getElementById('searchToggle');
+    const searchContainer = document.getElementById('searchContainer');
+
+    if (searchToggle && searchContainer) {
+        searchToggle.addEventListener('click', function() {
+            // 모바일 메뉴가 열려있다면 닫기
+            if (mobileMenuContainer && mobileMenuContainer.classList.contains('active')) {
+                hamburgerMenu.classList.remove('active');
+                mobileMenuContainer.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
+    // 모바일 메뉴에서 unreadChatCount 동기화
+    function syncUnreadChatCount() {
+        const originalBadge = document.getElementById('unreadChatCount');
+        const mobileBadge = document.getElementById('mobileUnreadChatCount');
+
+        if (originalBadge && mobileBadge) {
+            // 내용 동기화
+            mobileBadge.textContent = originalBadge.textContent;
+
+            // 표시 상태 동기화
+            if (originalBadge.style.display === 'none') {
+                mobileBadge.style.display = 'none';
+            } else {
+                mobileBadge.style.display = 'inline-flex';
+            }
+        }
+    }
+
+    // 페이지 로드 시 배지 상태 동기화
+    syncUnreadChatCount();
+
+    // WebSocket으로 새 메시지를 받았을 때 배지 상태 동기화 (만약 notification.js에서 updateUnreadCount 함수가 있다면)
+    if (window.updateUnreadCount) {
+        const originalUpdateUnreadCount = window.updateUnreadCount;
+        window.updateUnreadCount = function(count) {
+            originalUpdateUnreadCount(count);
+            syncUnreadChatCount();
+        };
+    }
+});

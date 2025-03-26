@@ -649,3 +649,191 @@ body {
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
 }
+/* top.css에 추가할 햄버거 메뉴 관련 스타일 */
+
+/* top.css에 추가할 햄버거 메뉴 관련 스타일 */
+
+/* 햄버거 메뉴 버튼 */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 21px;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.hamburger-menu span {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background-color: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* 모바일 메뉴 컨테이너 */
+.mobile-menu-container {
+    display: none;
+    position: fixed;
+    top: 75px;
+    right: -300px;
+    width: 300px;
+    height: calc(100vh - 75px);
+    background-color: white;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 999;
+    overflow-y: auto;
+}
+
+.mobile-menu-container.active {
+    right: 0;
+}
+
+/* 모바일 메뉴 스타일 */
+.mobile-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.mobile-menu a {
+    padding: 15px;
+    color: #333;
+    text-decoration: none;
+    border-bottom: 1px solid #eee;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu a:hover {
+    background-color: #f5f5f5;
+    color: #9cee69;
+}
+
+.mobile-menu a i {
+    margin-right: 10px;
+    color: #9cee69;
+}
+
+/* 배지 스타일 수정 */
+.mobile-menu a {
+    position: relative; /* 배지의 위치 기준점 */
+}
+
+.mobile-menu .mobile-unread-count {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background-color: #ff3366;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
+/* 오버레이 효과 */
+.mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 75px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 75px);
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-menu-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* 모바일 메뉴 내 로그인 섹션 */
+.mobile-login-section {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+
+.mobile-login-section .login-info {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+.mobile-login-section .mobile-btn {
+    display: inline-block;
+    background-color: #9cee69;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.mobile-login-section .mobile-btn:hover {
+    background-color: #8bdd58;
+    transform: translateY(-2px);
+}
+
+/* 햄버거 버튼 활성화 시 애니메이션 */
+.hamburger-menu.active span:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+/* 미디어 쿼리 수정 */
+@media (max-width: 768px) {
+    .nav {
+        display: none; /* 기존 코드 유지 */
+    }
+
+    .hamburger-menu {
+        display: flex; /* 768px 이하에서 햄버거 메뉴 표시 */
+    }
+
+    .mobile-menu-container {
+        display: block; /* 모바일 메뉴 컨테이너 활성화 */
+    }
+
+    .right-section {
+        display: none; /* 오른쪽 로그인 섹션 숨김 */
+    }
+
+    .logo-img {
+        margin-left: 15px; /* 로고 마진 줄임 */
+    }
+
+    /* 모바일에서 검색 토글 위치 조정 */
+    .search-toggle {
+        position: absolute;
+        right: 60px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}

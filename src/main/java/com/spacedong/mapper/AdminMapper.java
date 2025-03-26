@@ -28,5 +28,8 @@ public interface AdminMapper {
 
 	@Select("SELECT COUNT(*) FROM club WHERE TRUNC(club_joindate, 'MM') < TRUNC(SYSDATE, 'MM')")
 	int getPreviousMonthClubCount();
+
+	@Select("SELECT COUNT(*) FROM admin WHERE admin_id = #{admin_id}")
+	int countAdminById(String admin_id);
 	
 }

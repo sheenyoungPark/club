@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>결제 성공</title>
+    <title>우주동</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-spacedong.png" />
   <link rel="stylesheet" th:href="@{/css/top.css}">
   <link rel="stylesheet" th:href="@{/css/bottom.css}">
   <style>
@@ -137,22 +138,9 @@
   </style>
 </head>
 <body>
-<a th:href="@{/}" class="logo-container">
-  <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
-  <div class="logo-hover-text">
-    <div><span class="first-letter">우</span>리</div>
-    <div><span class="first-letter">주</span>변의</div>
-    <div><span class="first-letter">동</span>호회</div>
-  </div>
-</a>
-<div class="payment-container">
-  <h2>결제 성공!</h2>
-  <p th:text="${message}">결제가 정상적으로 처리되었습니다.</p>
-  <p>충전 금액: <span th:text="${amount}">0</span>원</p>
-  <a href="/" class="home-button">홈으로 가기</a>
-</div>
-
-<div th:replace="~{include/bottom_info :: bottom_info}"></div>
-
+<h2>결제 성공!</h2>
+<p th:text="${message}"></p>
+<p>충전 금액: <span th:text="${amount}"></span>원</p>
+<a href="/">홈으로 가기</a>
 </body>
 </html>

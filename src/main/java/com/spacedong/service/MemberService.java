@@ -2,6 +2,7 @@ package com.spacedong.service;
 
 import com.spacedong.beans.BoardBean;
 import com.spacedong.beans.ClubBean;
+import com.spacedong.mapper.AdminMapper;
 import jakarta.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ public class MemberService {
 
 	@Autowired
 	private MemberRepository memberRepository;
+    @Autowired
+    private AdminMapper adminMapper;
 
 	@Transactional
 	public void signupMember(MemberBean memberBean) {
@@ -308,6 +311,15 @@ public class MemberService {
 		return memberRepository.getMemberIdbyNickname(member_nickname);
 	}
 
+	/**
+	 * 주어진 아이디가 관리자 아이디인지 확인
+	 * @param memberId 확인할 아이디
+	 * @return 관리자 아이디이면 true, 아니면 false
+	 */
+	public boolean isAdminId(String memberId) {
+		// 관리자 테이블에서 해당 아이디가 존재하는지 확인
+		return adminMapper.countAdminById(memberId) > 0;
+	}
 
 
 }

@@ -2,11 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>설문조사</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우주동</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-spacedong.png" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" th:href="@{/css/test.css}">
-<!--    <link rel="stylesheet" th:href="@{/css/bottom.css}">-->
-<!--    <link rel="stylesheet" th:href="@{/css/top.css}">-->
+    <!--    <link rel="stylesheet" th:href="@{/css/bottom.css}">-->
+    <!--    <link rel="stylesheet" th:href="@{/css/top.css}">-->
 </head>
 <body th:style="|background-image: url('@{/sources/picture/우주배경.png}');
                  background-size: cover;
@@ -14,7 +16,7 @@
                  background-position: center;
                  background-attachment: fixed;|">
 
-<!-- 로고만 추가 -->
+<!-- 로고 컨테이너 - 원래 스타일 유지 -->
 <a th:href="@{/}" class="logo-container" style="position: fixed; top: 20px; left: 60px; z-index: 1000; display: flex; align-items: center; height: 60px;">
     <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
     <div class="logo-hover-text">
@@ -24,14 +26,13 @@
     </div>
 </a>
 
-<!--<div th:replace="~{include/top_search :: top_search}"></div>-->
-
+<!-- 소개 텍스트 영역 - 이 부분이 모바일에서 로고 아래로 배치됨 -->
 <div th:if="${not #strings.isEmpty(title) and not #strings.isEmpty(story)}" class="intro-text">
     <div>
-        <h2 th:text="${title}"></h2>
+        <h2 th:text="${title}">주 성격 유형 테스트: 당신은 어떤 탐험가인가요?</h2>
     </div>
     <div>
-        <p th:text="${story}"></p>
+        <p th:text="${story}">우티와 함께 먼 우주의 미지의 행성을 탐사하러 떠나는 여정! 이 모험에서 당신은 어떤 선택을 할까요? 당신의 선택이 곧 당신의 우주 성격 유형을 결정합니다.</p>
     </div>
 </div>
 

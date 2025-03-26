@@ -105,7 +105,7 @@ public class ChatService {
     }
 
     /**
-     * 1:1 채팅방 생성 또는 조회 (확장된 결과 반환 버전)
+     * 1:1 채팅방 생성 또는 조회
      */
     @Transactional
     public ChatRoomCreationResult getOrCreatePersonalChatRoomWithResult(String userId1, String userType1, String userId2, String userType2) {
@@ -161,7 +161,7 @@ public class ChatService {
 
             // 채팅방 이름 설정 - 항상 "nickname1,nickname2" 형식으로 설정
             // 멤버와 비즈니스가 대화할 경우 "멤버닉네임,판매자명"으로 저장
-            
+
             String roomName = "";
             if ((userType1.equals("BUSINESS") && userType2.equals("MEMBER"))) {
                 roomName = "판매자 " + user1nickname + ",일반회원 " + user2nickname;
@@ -217,8 +217,37 @@ public class ChatService {
             participant2.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant2);
         } else {
-            // 기존 룸 이름 업데이트 - 항상 최신 닉네임으로 유지
-            String newRoomName = user1nickname + "," + user2nickname;
+            // 기존 룸 이름 업데이트 - 항상 채팅방 유형 포맷을 유지
+            String newRoomName = "";
+
+            // 채팅방 타입에 맞게 이름 포맷 유지
+            if ((userType1.equals("BUSINESS") && userType2.equals("MEMBER"))) {
+                newRoomName = "판매자 " + user1nickname + ",일반회원 " + user2nickname;
+            }
+            else if ((userType2.equals("BUSINESS") && userType1.equals("MEMBER"))) {
+                newRoomName = "판매자 " + user2nickname + ",일반회원 " + user1nickname;
+            }
+            // 관리자-일반회원 대화인 경우
+            else if ((userType1.equals("ADMIN") && userType2.equals("MEMBER"))) {
+                newRoomName = "관리자 " + user1nickname + ",일반회원 " + user2nickname;
+            }
+            else if ((userType2.equals("ADMIN") && userType1.equals("MEMBER"))) {
+                newRoomName = "관리자 " + user2nickname + ",일반회원 " + user1nickname;
+            }
+            // 관리자-판매자 대화인 경우
+            else if ((userType1.equals("ADMIN") && userType2.equals("BUSINESS"))) {
+                newRoomName = "관리자 " + user1nickname + ",판매자 " + user2nickname;
+            }
+            else if ((userType2.equals("ADMIN") && userType1.equals("BUSINESS"))) {
+                newRoomName = "관리자 " + user2nickname + ",판매자 " + user1nickname;
+            }
+            else if((userType1.equals("ADMIN") && userType2.equals("ADMIN"))) {
+                newRoomName = "관리자 " + user1nickname + ",관리자 " + user2nickname;
+            }
+            // 일반회원-일반회원 대화인 경우
+            else {
+                newRoomName = "일반회원 " + user1nickname + "," + "일반회원 " + user2nickname;
+            }
 
             if (!newRoomName.equals(chatRoom.getRoom_name())) {
                 chatRoom.setRoom_name(newRoomName);
@@ -345,6 +374,14 @@ public class ChatService {
         boolean isNewRoom = false;
         boolean isNewParticipant = false;
 
+        // 현재 사용자 프로필 정보 가져오기
+        String userProfile = null;
+        if (userType.equals("MEMBER")) {
+            MemberBean user = memberService.getMemberById(userId);
+            userProfile = user != null ? user.getMember_profile() : null;
+        }
+        // 관리자 프로필은 일반적으로 null로 처리
+
         // Existing code for finding or creating a room
         if (!clubRooms.isEmpty()) {
             chatRoom = clubRooms.get(0);
@@ -359,11 +396,41 @@ public class ChatService {
                 participant.setUser_id(userId);
                 participant.setUser_type(userType);
                 participant.setUser_nickname(User_nickname);
+                participant.setUserProfile(userProfile); // 프로필 정보 추가
                 participant.setJoinDate(LocalDateTime.now()); // Set join date to current time
                 chatRepository.addParticipant(participant);
 
-                // Mark all previous messages as read for the new participant
-                markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId);
+                // 채팅방의 메시지 목록 조회
+                List<ChatMessageBean> messages = chatRepository.getMessagesByRoomId((long)chatRoom.getRoom_id(), userId);
+
+                // 메시지가 있는 경우만 읽음 처리
+                if (messages != null && !messages.isEmpty()) {
+                    // 이전 메시지 읽음 처리
+                    markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId);
+                } else {
+                    // 메시지가 없는 경우, 마지막 읽은 메시지 ID를 0으로 설정 (기준점 설정)
+                    chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), userId, 0L);
+                }
+            } else {
+                // 기존 참여자 정보 업데이트 (프로필이 변경되었을 수 있음)
+                boolean needUpdate = false;
+
+                // 닉네임 업데이트 필요시
+                if (!User_nickname.equals(participant.getUser_nickname())) {
+                    participant.setUser_nickname(User_nickname);
+                    needUpdate = true;
+                }
+
+                // 프로필 정보가 없거나 비어있는 경우에만 업데이트
+                if ((participant.getUserProfile() == null || participant.getUserProfile().isEmpty())
+                        && userProfile != null && !userProfile.isEmpty()) {
+                    participant.setUserProfile(userProfile);
+                    needUpdate = true;
+                }
+
+                if (needUpdate) {
+                    chatRepository.updateParticipant(participant);
+                }
             }
         } else {
             // Create new room if none exists
@@ -380,24 +447,39 @@ public class ChatService {
             participant.setUser_id(userId);
             participant.setUser_type(userType);
             participant.setUser_nickname(User_nickname);
+            participant.setUserProfile(userProfile); // 프로필 정보 추가
             participant.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant);
+
+            // 새 채팅방이므로 마지막 읽은 메시지 ID를 0으로 설정 (기준점 설정)
+            chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), userId, 0L);
 
             // Add all club members as participants
             List<ChatUserBean> clubMembers = chatRepository.getClubMembers((long)clubId);
             for (ChatUserBean member : clubMembers) {
-                String memberNickname = chatRepository.searchUsers(member.getUser_id()).get(0).getNickname();
-                if (!member.getUser_id().equals(userId)) {  // Skip current user as they're already added
-                    ChatParticipantBean memberParticipant = new ChatParticipantBean();
-                    memberParticipant.setRoom_id(chatRoom.getRoom_id());
-                    memberParticipant.setUser_id(member.getUser_id());
-                    memberParticipant.setUser_type("MEMBER");
-                    memberParticipant.setUser_nickname(memberNickname);
-                    memberParticipant.setJoinDate(LocalDateTime.now());
-                    chatRepository.addParticipant(memberParticipant);
-
-                    // No need to mark messages as read for a new room (no messages yet)
+                // 현재 사용자는 건너뛰기 (이미 추가됨)
+                if (member.getUser_id().equals(userId)) {
+                    continue;
                 }
+
+                // 멤버 정보 가져오기
+                String memberNickname = chatRepository.searchUsers(member.getUser_id()).get(0).getNickname();
+
+                // 멤버 프로필 정보 가져오기
+                MemberBean memberInfo = memberService.getMemberById(member.getUser_id());
+                String memberProfile = memberInfo != null ? memberInfo.getMember_profile() : null;
+
+                ChatParticipantBean memberParticipant = new ChatParticipantBean();
+                memberParticipant.setRoom_id(chatRoom.getRoom_id());
+                memberParticipant.setUser_id(member.getUser_id());
+                memberParticipant.setUser_type("MEMBER");
+                memberParticipant.setUser_nickname(memberNickname);
+                memberParticipant.setUserProfile(memberProfile); // 프로필 정보 추가
+                memberParticipant.setJoinDate(LocalDateTime.now());
+                chatRepository.addParticipant(memberParticipant);
+
+                // 새 채팅방이므로 각 멤버의 마지막 읽은 메시지 ID를 0으로 설정
+                chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), member.getUser_id(), 0L);
             }
         }
 

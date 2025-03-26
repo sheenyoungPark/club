@@ -57,25 +57,41 @@ public class AdminController {
     @Autowired
     private AdminNotificationService adminNotificationService;
 
+    @Autowired
+    private ChatService chatService;
+    @Autowired
+    private SessionService sessionService;
+
     @GetMapping("/init")
     public String admininit() {
         return "admin/init";
     }
 
     @GetMapping("/login")
-    public String login(@ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin) {
+    public String login(@ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin,
+                        Model model,
+                        @ModelAttribute("adminId") String adminId) {
+        // 리다이렉트된 관리자 ID가 있으면 폼에 설정
+        if (adminId != null && !adminId.isEmpty()) {
+            tempLoginAdmin.setAdmin_id(adminId);
+            model.addAttribute("redirectedFromMember", true);
+        }
+
+        // 인터셉터에서 이미 로그인 상태를 확인하고 리다이렉트하므로 여기서는 체크하지 않음
         return "admin/login";
     }
 
     @PostMapping("/loginproc")
-    public String loginPro(@Valid @ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin, Model model,
-                           BindingResult result) {
-        System.out.println(result.hasErrors());
+    public String loginPro(@Valid @ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin,
+                           BindingResult result,
+                           Model model) {
         if (result.hasErrors()) {
             return "admin/login";
         }
+
+        // adminService.getLoginAdmin 메서드는 loginAdmin 객체를 설정함
         if (adminService.getLoginAdmin(tempLoginAdmin)) {
-            return "admin/main";
+            return "redirect:/admin/dashboard";
         } else {
             model.addAttribute("loginfail", true);
             return "admin/login";
@@ -183,13 +199,22 @@ public class AdminController {
             clubService.updateClubStatus(club_id, "PASS");
             response.put("success", true);
             List<ClubMemberBean> clubmembers =  clubMemberService.getClubMemberList(club_id);
+
+            // 동호회 승인 알림 전송
             for(ClubMemberBean cmb : clubmembers) {
                 adminNotificationService.sendApprovalNotification(cmb.getMember_id(), "MEMBER", "APPROVED", "동호회 생성", "");
             }
+            //동호회 채팅방 생성
+            ClubBean selectedclub = clubService.oneClubInfo(club_id);
+            String masterId = clubMemberService.getMasterMember(club_id);
+            chatService.getOrCreateClubChatRoom(club_id, masterId, "MEMBER");
+
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", e.getMessage());
         }
+
+
 
         return response;
     }
