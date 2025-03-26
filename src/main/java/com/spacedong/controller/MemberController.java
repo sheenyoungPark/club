@@ -71,7 +71,8 @@ public class MemberController {
 			System.out.println("관리자 로그인 성공: " + loginAdmin.getAdmin_id());
 
 			// 관리자 대시보드로 리다이렉트
-			return "admin/dashboard";
+			//return "admin/dashboard";
+			return "redirect:/admin/dashboard";
 		}
 
 		// 2. 일반 회원 로그인 시도

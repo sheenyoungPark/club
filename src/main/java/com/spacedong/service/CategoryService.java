@@ -45,6 +45,10 @@ public class CategoryService {
    public List<CategoryBean> categoryTypeCount(){
       return categoryRepository.categoryTypeCount();
    }
+
+   public List<CategoryBean> getCategoryTypeCount() {
+      return categoryRepository.categoryTypeCount();
+   }
    
    
 }

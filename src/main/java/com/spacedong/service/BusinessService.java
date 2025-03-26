@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BusinessService {
@@ -285,6 +286,12 @@ public class BusinessService {
         }
 
         businessRepository.updateBusinessStatus(businessId, status);
+    }
+    // 대기 중인 판매자 목록만 조회
+    public List<BusinessBean> getPendingBusiness() {
+        return businessRepository.getAllBusiness().stream()
+                .filter(business -> "WAIT".equals(business.getBusiness_public()))
+                .collect(Collectors.toList());
     }
     //===============================================================
 }

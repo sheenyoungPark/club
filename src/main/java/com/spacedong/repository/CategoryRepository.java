@@ -48,5 +48,9 @@ public class CategoryRepository {
       return categoryMapper.categoryTypeCount();
    }
 
+   public List<CategoryBean> getCategoryTypeCount() {
+      return categoryMapper.categoryTypeCount();
+   }
+
 
 }

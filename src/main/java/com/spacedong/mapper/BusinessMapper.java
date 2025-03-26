@@ -226,5 +226,13 @@ public interface BusinessMapper {
     // 판매자 상태 업데이트
     @Update("UPDATE business SET business_public = #{param2} WHERE business_id = #{param1}")
     void updateBusinessStatus(String businessId, String status);
+
+    @Select("SELECT COUNT(*) FROM business")
+    int getBusinessCount();
+    @Select("SELECT COUNT(*) FROM business WHERE TRUNC(business_joindate, 'MM') < TRUNC(SYSDATE, 'MM')")
+    int getPreviousMonthBusinessCount();
+    @Select("SELECT COUNT(*) FROM business WHERE EXTRACT(MONTH FROM business_joindate) = #{month} AND EXTRACT(YEAR FROM business_joindate) = EXTRACT(YEAR FROM SYSDATE)")
+    int getBusinessCountByMonth(int month);
+
     //===============================================================
 }

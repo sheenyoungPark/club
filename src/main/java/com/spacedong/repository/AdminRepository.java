@@ -26,6 +26,15 @@ public class AdminRepository {
 	public AdminBean getAdminById(String adminId) {
 		return adminMapper.getAdminById(adminId);
 	}
-	
+
+	// 전체 동호회 수 조회
+	public int getClubCount() {
+		return adminMapper.getClubCount();
+	}
+
+	// 이전 달 동호회 수 조회
+	public int getPreviousMonthClubCount() {
+		return adminMapper.getPreviousMonthClubCount();
+	}
 	
 }

@@ -121,4 +121,10 @@ public interface MemberMapper {
             "member_nickname LIKE '%' || #{keyword} || '%' " +
             "ORDER BY member_joindate DESC")
     List<MemberBean> searchMembersByAllFields(@Param("keyword") String keyword);
+    @Select("SELECT COUNT(*) FROM member")
+    int getMemberCount();
+    @Select("SELECT COUNT(*) FROM member WHERE TRUNC(member_joindate, 'MM') < TRUNC(SYSDATE, 'MM')")
+    int getPreviousMonthMemberCount();
+    @Select("SELECT COUNT(*) FROM member WHERE EXTRACT(MONTH FROM member_joindate) = #{month} AND EXTRACT(YEAR FROM member_joindate) = EXTRACT(YEAR FROM SYSDATE)")
+    int getMemberCountByMonth(int month);
 }

@@ -188,4 +188,6 @@
         List<ClubDonationBean> getRecentDonations(@Param("club_id") int club_id);
 
 
+
+
     }
