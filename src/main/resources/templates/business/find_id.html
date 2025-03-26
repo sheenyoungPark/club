@@ -6,7 +6,20 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-spacedong.png" />
     <link rel="stylesheet" th:href="@{/css/find.css}">
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center;
+background-attachment: fixed;|">
+<a th:href="@{/}" class="logo-container">
+    <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
+    <div class="logo-hover-text">
+        <div><span class="first-letter">우</span>리</div>
+        <div><span class="first-letter">주</span>변의</div>
+        <div><span class="first-letter">동</span>호회</div>
+    </div>
+</a>
+
 <div class="find-container">
     <h2>기업회원 아이디 찾기</h2>
 
