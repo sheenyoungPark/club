@@ -226,12 +226,12 @@ public class ChatController {
                 .filter(room -> room.getClub_id() != null)
                 .collect(Collectors.toList());
 
-        if(personalRooms.size() > 0 && clubRooms.size() > 0) {
-            for(ChatRoomBean room : personalRooms) {
+        if (personalRooms.size() > 0 && clubRooms.size() > 0) {
+            for (ChatRoomBean room : personalRooms) {
                 int personalunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
                 room.setUnreadCount(personalunreadcount);
             }
-            for(ChatRoomBean room : clubRooms) {
+            for (ChatRoomBean room : clubRooms) {
                 int clubunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
                 room.setUnreadCount(clubunreadcount);
             }
@@ -273,7 +273,6 @@ public class ChatController {
         chatService.sendMessage(message);
     }
 
-    // 메시지 읽음 표시
     @MessageMapping("/chat.markAsRead/{roomId}")
     public void markAsRead(@DestinationVariable Long roomId,
                            @Payload Map<String, Object> payload,
@@ -397,12 +396,12 @@ public class ChatController {
                 .filter(room -> room.getClub_id() != null)
                 .collect(Collectors.toList());
 
-        if(personalRooms.size() > 0 && clubRooms.size() > 0) {
-            for(ChatRoomBean room : personalRooms) {
+        if (personalRooms.size() > 0 && clubRooms.size() > 0) {
+            for (ChatRoomBean room : personalRooms) {
                 int personalunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
                 room.setUnreadCount(personalunreadcount);
             }
-            for(ChatRoomBean room : clubRooms) {
+            for (ChatRoomBean room : clubRooms) {
                 int clubunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
                 room.setUnreadCount(clubunreadcount);
             }
@@ -441,13 +440,12 @@ public class ChatController {
         if (room == null) {
             return "redirect:/chat/view/rooms";
         }
-        chatService.markAllMessagesAsRead((long)roomId, loginMember.getMember_id());
+        chatService.markAllMessagesAsRead((long) roomId, loginMember.getMember_id());
 
         model.addAttribute("room", room);
         model.addAttribute("participants", chatService.getRoomParticipants(roomId));
         return "chat/roomDetail";
     }
-
 
 
     // 새 채팅 시작 페이지 (사용자 검색)
@@ -460,20 +458,34 @@ public class ChatController {
         return "chat/newChat";
     }
 
+    // ChatController.java - markAllMessagesAsRead 메소드 수정
     @MessageMapping("/chat.markAllAsRead/{roomId}")
     public void markAllAsRead(@DestinationVariable Long roomId,
                               @Payload Map<String, Object> payload) {
         String userId = (String) payload.get("userId");
 
         // 모든 메시지 읽음 처리
-        chatService.markAllMessagesAsRead((long)roomId, userId);
+        chatService.markAllMessagesAsRead(roomId, userId);
 
         // 채팅방의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
         List<ChatMessageBean> messages = chatService.getRoomMessages(roomId, userId);
         for (ChatMessageBean message : messages) {
-            messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+            // 발신자가 현재 사용자가 아닌 메시지만 브로드캐스트
+            if (!message.getSenderId().equals(userId)) {
+                // 읽음 상태 정보 갱신
+                List<ChatReadReceiptBean> readReceipts = chatService.getReadReceiptsByMessageId(message.getMessageId());
+                message.setReadCount(readReceipts.size());
+
+                messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+
+                // 원래 발신자에게도 개인 알림
+                messagingTemplate.convertAndSendToUser(
+                        message.getSenderId(),
+                        "/queue/read-receipts",
+                        message
+                );
+            }
         }
     }
-
 
 }

@@ -74,7 +74,7 @@ function startPeriodicUnreadCheck() {
         if (isConnected) {
             fetchUnreadCounts();
         }
-    }, 5000);
+    }, 1000);
 }
 
 // 안 읽은 메시지 수 업데이트를 위한 API 호출

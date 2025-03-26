@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.spacedong.beans.*;
 import com.spacedong.repository.AdminRepository;
@@ -446,26 +447,33 @@ public class ChatService {
             return; // 참여자가 아닌 경우 처리하지 않음
         }
 
-        // 가장 최근 메시지 ID 조회
-        List<ChatMessageBean> messages = chatRepository.getMessagesByRoomId(roomId, userId);
-        if (messages == null || messages.isEmpty()) {
-            return; // 메시지가 없는 경우
+        // 읽지 않은 메시지 가져오기 (자신이 보낸 메시지 제외)
+        List<ChatMessageBean> unreadMessages = chatRepository.getMessagesByRoomId(roomId, userId)
+                .stream()
+                .filter(m -> !m.getSenderId().equals(userId) && !m.isRead())
+                .collect(Collectors.toList());
+
+        if (unreadMessages.isEmpty()) {
+            return;
         }
 
-        // 가장 최근 메시지 ID
-        Long lastMessageId = messages.get(messages.size() - 1).getMessageId();
+        // 가장 최근 메시지 ID 조회
+        Long lastMessageId = unreadMessages.get(unreadMessages.size() - 1).getMessageId();
 
         // last_read_msg_id 업데이트
         chatRepository.updateLastReadMsgId(roomId, userId, lastMessageId);
 
-        // 읽지 않은 모든 메시지에 대해 읽음 처리
-        for (ChatMessageBean message : messages) {
-            if (!message.getSenderId().equals(userId) && !chatRepository.checkIfRead(message.getMessageId(), userId)) {
+        // 모든 메시지에 대해 읽음 처리
+        for (ChatMessageBean message : unreadMessages) {
+            if (!chatRepository.checkIfRead(message.getMessageId(), userId)) {
                 ChatReadReceiptBean readReceipt = new ChatReadReceiptBean();
                 readReceipt.setMessageId(message.getMessageId());
                 readReceipt.setReaderId(userId);
                 readReceipt.setReadTime(LocalDateTime.now());
                 chatRepository.markAsRead(readReceipt);
+
+                // 메시지 읽음 카운트 증가
+                chatRepository.incrementReadCount(message.getMessageId());
             }
         }
     }
