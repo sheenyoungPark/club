@@ -1,420 +1,469 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>동호회 상세 정보</title>
-    <link rel="stylesheet" th:href="@{/css/bottom.css}">
-    <link rel="stylesheet" th:href="@{/css/top.css}">
-    <link rel="stylesheet" th:href="@{/css/club_info.css}">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .master-controls {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
+    <!DOCTYPE html>
+    <html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>동호회 상세 정보</title>
+        <link rel="stylesheet" th:href="@{/css/bottom.css}">
+        <link rel="stylesheet" th:href="@{/css/top.css}">
+        <link rel="stylesheet" th:href="@{/css/club_info.css}">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+        <style>
+            .master-controls {
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+                border: 1px solid #e0e0e0;
+            }
 
-        .master-controls h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 18px;
-            color: #333;
-        }
+            .master-controls h3 {
+                margin-top: 0;
+                margin-bottom: 15px;
+                font-size: 18px;
+                color: #333;
+            }
 
-        .master-controls .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            margin-right: 10px;
-            transition: all 0.2s;
-        }
+            .master-controls .btn {
+                display: inline-block;
+                padding: 8px 16px;
+                border-radius: 4px;
+                text-decoration: none;
+                font-weight: 500;
+                margin-right: 10px;
+                transition: all 0.2s;
+            }
 
-        .master-controls .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
+            .master-controls .btn-secondary {
+                background-color: #6c757d;
+                color: white;
+            }
 
-        .master-controls .btn-secondary:hover {
-            background-color: #5a6268;
-        }
+            .master-controls .btn-secondary:hover {
+                background-color: #5a6268;
+            }
 
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 8px;
-            background-color: #ff5722;
-            color: white;
-        }
+            .badge {
+                display: inline-block;
+                padding: 3px 8px;
+                border-radius: 50px;
+                font-size: 12px;
+                font-weight: 600;
+                margin-left: 8px;
+                background-color: #ff5722;
+                color: white;
+            }
 
-        /* 하단 버튼 위치 조정을 위한 스타일 */
-        .button-footer {
-            display: flex;
-            gap: 10px;
-            padding: 15px 30px;
-            justify-content: flex-start;
-            border-top: 1px solid #eee;
-            background-color: #f9f9f9;
-        }
+            /* 하단 버튼 위치 조정을 위한 스타일 */
+            .button-footer {
+                display: flex;
+                gap: 10px;
+                padding: 15px 30px;
+                justify-content: flex-start;
+                border-top: 1px solid #eee;
+                background-color: #f9f9f9;
+            }
 
-        .admin-footer {
-            align-items: center;
-            flex-wrap: wrap;
-        }
+            .admin-footer {
+                align-items: center;
+                flex-wrap: wrap;
+            }
 
-        .admin-label {
-            font-size: 14px;
-            font-weight: 500;
-            margin-right: 10px;
-            color: #555;
-        }
+            .admin-label {
+                font-size: 14px;
+                font-weight: 500;
+                margin-right: 10px;
+                color: #555;
+            }
 
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 14px;
-            min-width: 90px;
-        }
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 14px;
+                min-width: 90px;
+            }
 
-        /* 목록으로 돌아가기 버튼 컨테이너 스타일 */
-        .back-container {
-            width: 100%;
-            padding: 0 40px 30px 40px;
-            box-sizing: border-box;
-        }
+            /* 목록으로 돌아가기 버튼 컨테이너 스타일 */
+            .back-container {
+                width: 100%;
+                padding: 0 40px 30px 40px;
+                box-sizing: border-box;
+            }
 
-        /* 클럽 예약 목록 스타일 */
-        .club-reservations-box {
-            margin-top: 25px;
-            margin-bottom: 25px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+            /* 클럽 예약 목록 스타일 */
+            .club-reservations-box {
+                margin-top: 25px;
+                margin-bottom: 25px;
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
 
-        .club-reservations-header {
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            background-color: #f8f9fa;
-        }
+            .club-reservations-header {
+                padding: 15px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid #eee;
+                background-color: #f8f9fa;
+            }
 
-        .club-reservations-title {
-            margin: 0;
-            font-size: 18px;
-            color: #333;
-        }
+            .club-reservations-title {
+                margin: 0;
+                font-size: 18px;
+                color: #333;
+            }
 
-        .club-reservations-content {
-            padding: 0;
-        }
+            .club-reservations-content {
+                padding: 0;
+            }
 
-        .reservation-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+            .reservation-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
 
-        .reservation-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.2s;
-        }
+            .reservation-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 20px;
+                border-bottom: 1px solid #eee;
+                transition: background-color 0.2s;
+            }
 
-        .reservation-item:hover {
-            background-color: #f8f9fa;
-        }
+            .reservation-item:hover {
+                background-color: #f8f9fa;
+            }
 
-        .reservation-info {
-            flex: 1;
-        }
+            .reservation-info {
+                flex: 1;
+            }
 
-        .reservation-title {
-            font-weight: 500;
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
+            .reservation-title {
+                font-weight: 500;
+                margin-bottom: 5px;
+                font-size: 16px;
+            }
 
-        .reservation-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 14px;
-            color: #666;
-        }
+            .reservation-meta {
+                display: flex;
+                gap: 15px;
+                font-size: 14px;
+                color: #666;
+            }
 
-        .reservation-date {
-            white-space: nowrap;
-        }
+            .reservation-date {
+                white-space: nowrap;
+            }
 
-        .reservation-time {
-            white-space: nowrap;
-        }
+            .reservation-time {
+                white-space: nowrap;
+            }
 
-        .reservation-price {
-            font-weight: 500;
-            color: #0066cc;
-        }
+            .reservation-price {
+                font-weight: 500;
+                color: #0066cc;
+            }
 
-        .reservation-status {
-            margin-left: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
+            .reservation-status {
+                margin-left: 10px;
+                font-size: 14px;
+                font-weight: 500;
+                padding: 3px 8px;
+                border-radius: 4px;
+            }
 
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
+            .status-pending {
+                background-color: #fff3cd;
+                color: #856404;
+            }
 
-        .status-confirmed {
-            background-color: #d1e7dd;
-            color: #0f5132;
-        }
+            .status-confirmed {
+                background-color: #d1e7dd;
+                color: #0f5132;
+            }
 
-        .status-cancelled {
-            background-color: #f8d7da;
-            color: #842029;
-        }
+            .status-cancelled {
+                background-color: #f8d7da;
+                color: #842029;
+            }
 
-        .status-completed {
-            background-color: #cfe2ff;
-            color: #084298;
-        }
+            .status-completed {
+                background-color: #cfe2ff;
+                color: #084298;
+            }
 
-        .reservation-actions {
-            display: flex;
-            gap: 10px;
-        }
+            .reservation-actions {
+                display: flex;
+                gap: 10px;
+            }
 
-        .btn-cancel {
-            padding: 5px 10px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
+            .btn-cancel {
+                padding: 5px 10px;
+                background-color: #dc3545;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background-color 0.2s;
+            }
 
-        .btn-cancel:hover {
-            background-color: #c82333;
-        }
+            .btn-cancel:hover {
+                background-color: #c82333;
+            }
 
-        .btn-view {
-            padding: 5px 10px;
-            background-color: #0d6efd;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
+            .btn-view {
+                padding: 5px 10px;
+                background-color: #0d6efd;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                text-decoration: none;
+                font-size: 14px;
+                transition: background-color 0.2s;
+            }
 
-        .btn-view:hover {
-            background-color: #0b5ed7;
-        }
+            .btn-view:hover {
+                background-color: #0b5ed7;
+            }
 
-        .btn-disabled {
-            padding: 5px 10px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: not-allowed;
-        }
+            .btn-disabled {
+                padding: 5px 10px;
+                background-color: #6c757d;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 14px;
+                cursor: not-allowed;
+            }
 
-        .no-reservations {
-            padding: 20px;
-            text-align: center;
-            color: #6c757d;
-        }
+            .no-reservations {
+                padding: 20px;
+                text-align: center;
+                color: #6c757d;
+            }
 
-        /* 모달 스타일 */
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+            /* 모달 스타일 */
+            .modal-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
 
-        .modal {
-            background-color: white;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
+            .modal {
+                background-color: white;
+                border-radius: 8px;
+                width: 90%;
+                max-width: 500px;
+                overflow: hidden;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            }
 
-        .modal-header {
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            .modal-header {
+                padding: 1rem;
+                background-color: #f8f9fa;
+                border-bottom: 1px solid #e9ecef;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
 
-        .modal-title {
-            font-size: 1.25rem;
-            margin: 0;
-            color: #343a40;
-        }
+            .modal-title {
+                font-size: 1.25rem;
+                margin: 0;
+                color: #343a40;
+            }
 
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6c757d;
-        }
+            .close-modal {
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: #6c757d;
+            }
 
-        .modal-body {
-            padding: 1.5rem;
-        }
+            .modal-body {
+                padding: 1.5rem;
+            }
 
-        .modal-footer {
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
-        }
+            .modal-footer {
+                padding: 1rem;
+                background-color: #f8f9fa;
+                border-top: 1px solid #e9ecef;
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.5rem;
+            }
 
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
+            .btn-secondary {
+                background-color: #6c757d;
+                color: white;
+            }
 
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
+            .btn-secondary:hover {
+                background-color: #5a6268;
+            }
 
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
+            .btn-danger {
+                background-color: #dc3545;
+                color: white;
+            }
 
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-    </style>
-</head>
-<body>
-<!-- 상단 메뉴 include -->
-<div th:replace="~{include/top_search :: top_search}"></div>
+            .btn-danger:hover {
+                background-color: #c82333;
+            }
+        </style>
+    </head>
+    <body>
+    <!-- 상단 메뉴 include -->
+    <div th:replace="~{include/top_search :: top_search}"></div>
 
-<div class="container">
-    <div class="club-detail-container">
-        <div class="club-image-container">
-            <img th:if="${club.club_profile != null}"
-                 th:src="@{/image/clubprofile/{img}(img=${club.club_profile})}"
-                 alt="클럽 대표 이미지"
-                 class="club-profile-image">
+    <div class="container">
+        <div class="club-detail-container">
+            <div class="club-image-container">
+                <img th:if="${club.club_profile != null}"
+                     th:src="@{/image/clubprofile/{img}(img=${club.club_profile})}"
+                     alt="클럽 대표 이미지"
+                     class="club-profile-image">
 
-            <img th:unless="${club.club_profile != null}"
-                 th:src="@{/sources/picture/기본이미지.png}"
-                 alt="기본 이미지"
-                 class="club-profile-image">
-        </div>
-
-        <div class="club-header">
-            <div class="club-title-section">
-                <h1 class="club-title" th:text="${club.club_name}">동호회 이름</h1>
-                <div class="club-category" th:text="${club.club_category}">카테고리</div>
+                <img th:unless="${club.club_profile != null}"
+                     th:src="@{/sources/picture/기본이미지.png}"
+                     alt="기본 이미지"
+                     class="club-profile-image">
             </div>
 
-            <div class="club-stats">
-                <div th:if="${isMember}" class="stat-box">
-                    <div class="stat-value" th:text="${club.club_point}">100</div>
-                    <div class="stat-label">활동 포인트</div>
+            <div class="club-header">
+                <div class="club-title-section">
+                    <h1 class="club-title" th:text="${club.club_name}">동호회 이름</h1>
+                    <div class="club-category" th:text="${club.club_category}">카테고리</div>
                 </div>
-                <!-- ✅ 모금하기 버튼 추가 -->
-                <a th:if="${isMember}" th:href="@{/club/donate(clubId=${club.club_id})}" class="stat-box">
-                    모금하기
-                </a>
-                <div class="stat-box">
-                    <div class="stat-value" th:text="${#dates.format(club.club_joindate, 'yyyy.MM.dd')}">2023.01.01</div>
-                    <div class="stat-label">개설일</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value">
-                        <span th:with="today=${#dates.createNow()},
-                               joinDate=${club.club_joindate},
-                               diffMillis=${today.time - joinDate.time},
-                               diffDays=${(diffMillis / (1000 * 60 * 60 * 24)+1)}"
-                              th:text="${#numbers.formatInteger(diffDays, 0)}">365</span><span>일</span>
+
+                <div class="club-stats">
+                    <div th:if="${isMember}" class="stat-box">
+                        <div class="stat-value" th:text="${club.club_point}">100</div>
+                        <div class="stat-label">활동 포인트</div>
                     </div>
-                    <div class="stat-label">활동 기간</div>
+                    <!-- ✅ 모금하기 버튼 추가 -->
+                    <a th:if="${isMember}" th:href="@{/club/donate(clubId=${club.club_id})}" class="stat-box">
+                        모금하기
+                    </a>
+                    <div class="stat-box">
+                        <div class="stat-value" th:text="${#dates.format(club.club_joindate, 'yyyy.MM.dd')}">2023.01.01</div>
+                        <div class="stat-label">개설일</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">
+                            <span th:with="today=${#dates.createNow()},
+                                   joinDate=${club.club_joindate},
+                                   diffMillis=${today.time - joinDate.time},
+                                   diffDays=${(diffMillis / (1000 * 60 * 60 * 24)+1)}"
+                                  th:text="${#numbers.formatInteger(diffDays, 0)}">365</span><span>일</span>
+                        </div>
+                        <div class="stat-label">활동 기간</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="club-body">
-            <div class="club-content-wrapper">
-                <!-- 동호회 소개 -->
-                <div class="club-info-container">
-                    <div class="club-info-box">
-                        <h3 class="club-info-title">동호회 소개</h3>
-                        <div class="club-info-content">
-                            <p th:if="${#strings.isEmpty(club.club_info)}">등록된 소개 내용이 없습니다.</p>
-                            <p th:unless="${#strings.isEmpty(club.club_info)}" th:text="${club.club_info}">
-                                동호회 소개 내용이 여기에 표시됩니다. 이 동호회는 다양한 활동을 통해 회원들간의 친목을 도모하고 취미를 공유하는 모임입니다. 함께 즐겁게 활동하며 소중한 추억을 만들어보세요!
-                            </p>
+            <div class="club-body">
+                <div class="club-content-wrapper">
+                    <!-- 동호회 소개 -->
+                    <div class="club-info-container">
+                        <div class="club-info-box">
+                            <h3 class="club-info-title">동호회 소개</h3>
+                            <div class="club-info-content">
+                                <p th:if="${#strings.isEmpty(club.club_info)}">등록된 소개 내용이 없습니다.</p>
+                                <p th:unless="${#strings.isEmpty(club.club_info)}" th:text="${club.club_info}">
+                                    동호회 소개 내용이 여기에 표시됩니다. 이 동호회는 다양한 활동을 통해 회원들간의 친목을 도모하고 취미를 공유하는 모임입니다. 함께 즐겁게 활동하며 소중한 추억을 만들어보세요!
+                                </p>
+                            </div>
+                        </div>
+                        <!-- 동호회원 리스트 -->
+                        <div th:if="${isMember}" class="club-info-box">
+                            <h3 class="club-info-title">동호회원 리스트</h3>
+                            <div class="club-info-content">
+                                <ul th:if="${#lists.isEmpty(clubMemberList)}">
+                                    <li>등록된 회원이 없습니다.</li>
+                                </ul>
+
+                                <div th:unless="${#lists.isEmpty(clubMemberList)}" class="club-post-sidebar">
+                                    <ul class="club-post-list">
+                                        <li th:each="member : ${clubMemberList}" class="club-post-item">
+                                            <div class="post-thumbnail">
+                                                <img th:src="${(member.member_profile != null && member.member_profile != '')
+                                                            ? '/image/profile/' + member.member_profile
+                                                               : '/sources/picture/기본이미지.png'}"
+                                                     alt="회원 이미지" />
+                                            </div>
+
+                                            <div class="post-info">
+                                                <span class="post-title" th:text="${member.member_nickname}">회원닉네임</span>
+                                                <span class="post-date" th:if="${member.member_role == 'master'}" style="color: #5d4b8c; font-weight: bold;">회장</span>
+                                            </div>
+                                            <!-- 회장만 탈퇴 버튼 보이게 -->
+                                            <div class="post-actions" th:if="${member_role == 'master' and member.member_role != 'master'}">
+                                                <form th:action="@{/club/reject}" method="post" onsubmit="return confirm('정말로 이 회원을 탈퇴시키겠습니까?');">
+                                                    <input type="hidden" name="club_id" th:value="${club.club_id}" />
+                                                    <input type="hidden" name="member_ids" th:value="${member.member_id}" />
+                                                    <button type="submit" class="btn-delete">탈퇴시키기</button>
+                                                </form>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <!-- 동호회원 리스트 -->
-                    <div th:if="${isMember}" class="club-info-box">
-                        <h3 class="club-info-title">동호회원 리스트</h3>
-                        <div class="club-info-content">
-                            <ul th:if="${#lists.isEmpty(clubMemberList)}">
-                                <li>등록된 회원이 없습니다.</li>
-                            </ul>
 
-                            <div th:unless="${#lists.isEmpty(clubMemberList)}" class="club-post-sidebar">
+                    <!-- 동호회 게시글 칸 -->
+                    <div class="club-posts-box">
+                        <div class="club-posts-header">
+                            <h3 class="club-posts-title">동호회 한마디</h3>
+                            <!-- 사용자가 동호회 회원일 때만 글쓰기 버튼 표시 -->
+                            <a th:if="${isMember}" th:href="@{/club/board_write(club_id=${club.club_id})}" class="btn btn-write">글쓰기</a>
+                        </div>
+
+                        <div class="club-posts-content">
+                            <p th:if="${#lists.isEmpty(clubBoardList)}">등록된 한마디가 없습니다.</p>
+
+                            <div th:unless="${#lists.isEmpty(clubBoardList)}" class="club-post-sidebar">
                                 <ul class="club-post-list">
-                                    <li th:each="member : ${clubMemberList}" class="club-post-item">
+                                    <li th:each="board : ${clubBoardList}" class="club-post-item">
                                         <div class="post-thumbnail">
-                                            <img th:src="${(member.member_profile != null && member.member_profile != '')
-                                                        ? '/image/profile/' + member.member_profile
-                                                           : '/sources/picture/기본이미지.png'}"
-                                                 alt="회원 이미지" />
+                                            <img th:if="${board.board_img != null}"
+                                                 th:src="@{/image/clubBoardImg/{img}(img=${#strings.substringAfter(board.board_img, 'clubBoardImg/')})}"
+                                                 alt="게시글 이미지">
+
+                                            <img th:unless="${board.board_img != null}"
+                                                 th:src="@{/sources/picture/기본이미지.png}"
+                                                 alt="기본 이미지">
                                         </div>
 
+                                        <!-- 게시글 제목 및 날짜 -->
                                         <div class="post-info">
-                                            <span class="post-title" th:text="${member.member_nickname}">회원닉네임</span>
-                                            <span class="post-date" th:if="${member.member_role == 'master'}" style="color: #5d4b8c; font-weight: bold;">회장</span>
+                                            <span class="post-title" th:text="${board.board_title}">게시글 제목</span>
+                                            <div class="post-meta">
+                                                <span class="post-author" th:text="${board.board_writer_nickname}">작성자</span>
+                                                <span class="post-date" th:text="${#temporals.format(board.create_date, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                                            </div>
                                         </div>
-                                        <!-- 회장만 탈퇴 버튼 보이게 -->
-                                        <div class="post-actions" th:if="${member_role == 'master' and member.member_role != 'master'}">
-                                            <form th:action="@{/club/reject}" method="post" onsubmit="return confirm('정말로 이 회원을 탈퇴시키겠습니까?');">
-                                                <input type="hidden" name="club_id" th:value="${club.club_id}" />
-                                                <input type="hidden" name="member_ids" th:value="${member.member_id}" />
-                                                <button type="submit" class="btn-delete">탈퇴시키기</button>
+
+                                        <!-- 삭제 버튼 (내가 작성한 글이거나 동호회 관리자인 경우만 표시) -->
+                                        <div class="post-actions" th:if="${member_role == 'master' || (member_role != null && board.board_writer_id == loginMember.member_id)}">
+                                            <form th:action="@{/club/board_delete}" method="post"
+                                                  onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                                                <input type="hidden" name="board_id" th:value="${board.board_id}">
+                                                <input type="hidden" name="club_id" th:value="${club.club_id}">
+                                                <button type="submit" class="btn-delete">삭제</button>
                                             </form>
                                         </div>
                                     </li>
@@ -422,125 +471,76 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 동호회 게시글 칸 -->
-                <div class="club-posts-box">
-                    <div class="club-posts-header">
-                        <h3 class="club-posts-title">동호회 한마디</h3>
-                        <!-- 사용자가 동호회 회원일 때만 글쓰기 버튼 표시 -->
-                        <a th:if="${isMember}" th:href="@{/club/board_write(club_id=${club.club_id})}" class="btn btn-write">글쓰기</a>
-                    </div>
-
-                    <div class="club-posts-content">
-                        <p th:if="${#lists.isEmpty(clubBoardList)}">등록된 한마디가 없습니다.</p>
-
-                        <div th:unless="${#lists.isEmpty(clubBoardList)}" class="club-post-sidebar">
-                            <ul class="club-post-list">
-                                <li th:each="board : ${clubBoardList}" class="club-post-item">
-                                    <div class="post-thumbnail">
-                                        <img th:if="${board.board_img != null}"
-                                             th:src="@{/image/clubBoardImg/{img}(img=${#strings.substringAfter(board.board_img, 'clubBoardImg/')})}"
-                                             alt="게시글 이미지">
-
-                                        <img th:unless="${board.board_img != null}"
-                                             th:src="@{/sources/picture/기본이미지.png}"
-                                             alt="기본 이미지">
-                                    </div>
-
-                                    <!-- 게시글 제목 및 날짜 -->
-                                    <div class="post-info">
-                                        <span class="post-title" th:text="${board.board_title}">게시글 제목</span>
-                                        <div class="post-meta">
-                                            <span class="post-author" th:text="${board.board_writer_nickname}">작성자</span>
-                                            <span class="post-date" th:text="${#temporals.format(board.create_date, 'yyyy-MM-dd HH:mm')}">날짜</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- 삭제 버튼 (내가 작성한 글이거나 동호회 관리자인 경우만 표시) -->
-                                    <div class="post-actions" th:if="${member_role == 'master' || (member_role != null && board.board_writer_id == loginMember.member_id)}">
-                                        <form th:action="@{/club/board_delete}" method="post"
-                                              onsubmit="return confirm('정말로 삭제하시겠습니까?');">
-                                            <input type="hidden" name="board_id" th:value="${board.board_id}">
-                                            <input type="hidden" name="club_id" th:value="${club.club_id}">
-                                            <button type="submit" class="btn-delete">삭제</button>
-                                        </form>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 최근 포인트 모금 내역 -->
-                <div th:if="${isMember}" class="club-info-container">
-                    <div class="club-info-box">
-                        <h3 class="club-info-title">최근 포인트 모금 내역</h3>
-                        <div class="club-info-content">
-                            <ul th:if="${#lists.isEmpty(donationList)}">
-                                <li>최근 모금 내역이 없습니다.</li>
-                            </ul>
-                            <ul th:unless="${#lists.isEmpty(donationList)}">
-                                <li th:each="donation : ${donationList}">
-                                    <p th:text="${#dates.format(donation.donation_date, 'yyyy.MM.dd HH:mm')}"></p>
-                                    <span th:text="${donation.member_nickname}">닉네임</span> 님이
-                                    <span th:text="${donation.donation_point}">500</span>P 후원하셨습니다.
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 클럽 예약 목록 추가 - 여기로 위치 이동 -->
-        <div th:if="${isMember}" class="club-reservations-box">
-            <div class="club-reservations-header">
-                <h3 class="club-reservations-title">클럽 예약 내역</h3>
-            </div>
-
-            <div class="club-reservations-content">
-                <p th:if="${#lists.isEmpty(clubReservation)}" class="no-reservations">예약 내역이 없습니다.</p>
-
-                <ul th:unless="${#lists.isEmpty(clubReservation)}" class="reservation-list">
-                    <li th:each="reservation : ${clubReservation}" class="reservation-item">
-                        <div class="reservation-info">
-                            <div class="reservation-title" th:text="${reservation.item_title}">예약 제목</div>
-                            <div class="reservation-meta">
-                                <span class="reservation-date" th:text="${#dates.format(reservation.reservation_date, 'yyyy년 MM월 dd일')}">2023년 07월 15일</span>
-                                <span class="reservation-time" th:text="${reservation.start_time} + ':00 ~ ' + ${reservation.end_time} + ':00'">10:00 ~ 12:00</span>
-                                <span class="reservation-price" th:text="${#numbers.formatInteger(reservation.total_price, 0, 'COMMA') + '원'}">20,000원</span>
-                                <span th:with="status=${reservation.status}"
-                                      th:class="'reservation-status ' + ${status == 'PENDING' ? 'status-pending' :
-                                                       (status == 'CONFIRMED' ? 'status-confirmed' :
-                                                       (status == 'CANCELLED' ? 'status-cancelled' : 'status-completed'))}"
-                                      th:text="${status == 'PENDING' ? '대기중' :
-                                            (status == 'CONFIRMED' ? '예약완료' :
-                                            (status == 'CANCELLED' ? '취소됨' : '이용완료'))}">상태</span>
+                    <!-- 최근 포인트 모금 내역 -->
+                    <div th:if="${isMember}" class="club-info-container">
+                        <div class="club-info-box">
+                            <h3 class="club-info-title">최근 포인트 모금 내역</h3>
+                            <div class="club-info-content">
+                                <ul th:if="${#lists.isEmpty(donationList)}">
+                                    <li>최근 모금 내역이 없습니다.</li>
+                                </ul>
+                                <ul th:unless="${#lists.isEmpty(donationList)}">
+                                    <li th:each="donation : ${donationList}">
+                                        <p th:text="${#dates.format(donation.donation_date, 'yyyy.MM.dd HH:mm')}"></p>
+                                        <span th:text="${donation.member_nickname}">닉네임</span> 님이
+                                        <span th:text="${donation.donation_point}">500</span>P 후원하셨습니다.
+                                    </li>
+                                </ul>
                             </div>
                         </div>
-                        <div class="reservation-actions">
-                            <!-- 클럽 회장만 보이는 취소 버튼 -->
-                            <button th:if="${member_role == 'master' && reservation.status == 'PENDING'}"
-                                    th:onclick="'openCancelModal(' + ${reservation.reservation_id} + ')'"
-                                    class="btn-cancel">
-                                예약 취소
-                            </button>
-                            <button th:if="${member_role == 'master' && reservation.status != 'PENDING'}"
-                                    class="btn-disabled" disabled>
-                                예약 취소
-                            </button>
+                    </div>
+                </div>
+            </div>
 
-                            <a th:if="${reservation.status == 'COMPLETED' and reviewExistsMap != null and !reviewExistsMap[reservation.reservation_id]}"
-                               th:href="@{/reservation/write_review(reservation_id=${reservation.reservation_id})}"
-                               class="btn btn-secondary">
-                                리뷰 남기기
-                            </a>
+            <!-- 클럽 예약 목록 추가 - 여기로 위치 이동 -->
+            <div th:if="${isMember}" class="club-reservations-box">
+                <div class="club-reservations-header">
+                    <h3 class="club-reservations-title">클럽 예약 내역</h3>
+                </div>
 
-                            <button th:if="${reservation.status == 'COMPLETED' and reviewExistsMap != null and reviewExistsMap[reservation.reservation_id]}"
-                                    class="btn btn-disabled" disabled>
-                                리뷰 완료
-                            </button>
+                <div class="club-reservations-content">
+                    <p th:if="${#lists.isEmpty(clubReservation)}" class="no-reservations">예약 내역이 없습니다.</p>
+
+                    <ul th:unless="${#lists.isEmpty(clubReservation)}" class="reservation-list">
+                        <li th:each="reservation : ${clubReservation}" class="reservation-item">
+                            <div class="reservation-info">
+                                <div class="reservation-title" th:text="${reservation.item_title}">예약 제목</div>
+                                <div class="reservation-meta">
+                                <span class="reservation-date" th:text="${#dates.format(reservation.reservation_date, 'yyyy년 MM월 dd일')}">2023년 07월 15일</span>
+                                    <span class="reservation-time" th:text="${reservation.start_time} + ':00 ~ ' + ${reservation.end_time} + ':00'">10:00 ~ 12:00</span>
+                                    <span class="reservation-price" th:text="${#numbers.formatInteger(reservation.total_price, 0, 'COMMA') + '원'}">20,000원</span>
+                                    <span th:with="status=${reservation.status}"
+                                          th:class="'reservation-status ' + ${status == 'PENDING' ? 'status-pending' :
+                                                           (status == 'CONFIRMED' ? 'status-confirmed' :
+                                                           (status == 'CANCELLED' ? 'status-cancelled' : 'status-completed'))}"
+                                          th:text="${status == 'PENDING' ? '대기중' :
+                                                (status == 'CONFIRMED' ? '예약완료' :
+                                                (status == 'CANCELLED' ? '취소됨' : '이용완료'))}">상태</span>
+                                </div>
+                            </div>
+                            <div class="reservation-actions">
+                                <!-- 클럽 회장만 보이는 취소 버튼 -->
+                                <button th:if="${member_role == 'master' && reservation.status == 'PENDING'}"
+                                        th:onclick="'openCancelModal(' + ${reservation.reservation_id} + ')'"
+                                        class="btn-cancel">
+                                    예약 취소
+                                </button>
+                                <button th:if="${member_role == 'master' && reservation.status != 'PENDING'}"
+                                        class="btn-disabled" disabled>
+                                    예약 취소
+                                </button>
+
+                                <a th:if="${reservation.status == 'COMPLETED' and reviewExistsMap != null and !reviewExistsMap[reservation.reservation_id]}"
+                                   th:href="@{/reservation/write_review(reservation_id=${reservation.reservation_id})}"
+                                   class="btn btn-secondary">
+                                    리뷰 남기기
+                                </a>
+
+                                <button th:if="${reservation.status == 'COMPLETED' and reviewExistsMap != null and reviewExistsMap[reservation.reservation_id]}"
+                                        class="btn btn-disabled" disabled>
+                                    리뷰 완료
+                                </button>
 
 
 
@@ -549,166 +549,171 @@
 
 
 
-                            <a th:href="@{/reservation/confirmation(reservation_id=${reservation.reservation_id})}"
-                               class="btn-view">상세 보기</a>
-                        </div>
-                    </li>
-                </ul>
+                                <a th:href="@{/reservation/confirmation(reservation_id=${reservation.reservation_id})}"
+                                   class="btn-view">상세 보기</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 하단에 버튼 배치 -->
+            <div class="button-footer" th:if="${member_role == null}">
+                <a th:href="@{/club/club_join(club_id=${club.club_id})}" class="btn btn-sm btn-primary">가입 신청하기</a>
+                <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-sm btn-outline">문의하기</a>
+            </div>
+
+            <!-- 회원 전용 버튼 위치 조정 -->
+            <div class="button-footer" th:if="${member_role != null && member_role != 'master'}">
+                <a th:href="@{/club/myinfo(club_id=${club.club_id})}" class="btn btn-sm btn-primary">내 정보 보기</a>
+                <a th:href="@{/club/contact(club_id=${club.club_id})}" class="btn btn-sm btn-outline">문의하기</a>
+                <a th:if="${isMember}" th:href="@{/club/leaveClub(club_id=${club.club_id})}"
+                   onclick="return confirm('정말로 탈퇴하시겠습니까?');"
+                   class="btn btn-sm btn-danger">
+                    탈퇴하기</a>
+            </div>
+
+            <!-- 관리자 메뉴를 하단으로 이동 -->
+            <div class="button-footer admin-footer" th:if="${member_role == 'master'}">
+                <div class="admin-label">동호회 관리자 메뉴:</div>
+                <a th:href="@{/club/pending(club_id=${club.club_id})}" class="btn btn-sm btn-secondary">
+                    대기 중인 회원 관리
+                    <span th:if="${pendingCount > 0}" class="badge" th:text="${pendingCount}">3</span>
+                </a>
+                <a th:href="@{/club/edit(club_id=${club.club_id})}" class="btn btn-sm btn-secondary">동호회 정보 수정</a>
             </div>
         </div>
 
-        <!-- 하단에 버튼 배치 -->
-        <div class="button-footer" th:if="${member_role == null}">
-            <a th:href="@{/club/club_join(club_id=${club.club_id})}" class="btn btn-sm btn-primary">가입 신청하기</a>
-            <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-sm btn-outline">문의하기</a>
+        <!-- 취소 확인 모달 -->
+        <div class="modal-backdrop" id="cancelModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h4 class="modal-title">예약 취소 확인</h4>
+                    <button type="button" class="close-modal" onclick="closeCancelModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>정말로 이 예약을 취소하시겠습니까?</p>
+                    <p>취소 후에는 복구할 수 없습니다.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeCancelModal()">취소</button>
+                    <form id="cancelForm" th:action="@{/reservation/clubcancel}" method="post">
+                        <input type="hidden" id="reservationIdToCancel" name="reservation_id">
+                        <input type="hidden" id="clubIdToCancel" name="club_id">
+                        <button type="submit" class="btn-danger">예약 취소하기</button>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <!-- 회원 전용 버튼 위치 조정 -->
-        <div class="button-footer" th:if="${member_role != null && member_role != 'master'}">
-            <a th:href="@{/club/myinfo(club_id=${club.club_id})}" class="btn btn-sm btn-primary">내 정보 보기</a>
-            <a th:href="@{/club/contact(club_id=${club.club_id})}" class="btn btn-sm btn-outline">문의하기</a>
-            <a th:if="${isMember}" th:href="@{/club/leaveClub(club_id=${club.club_id})}"
-               onclick="return confirm('정말로 탈퇴하시겠습니까?');"
-               class="btn btn-sm btn-danger">
-                탈퇴하기</a>
-        </div>
-
-        <!-- 관리자 메뉴를 하단으로 이동 -->
-        <div class="button-footer admin-footer" th:if="${member_role == 'master'}">
-            <div class="admin-label">동호회 관리자 메뉴:</div>
-            <a th:href="@{/club/pending(club_id=${club.club_id})}" class="btn btn-sm btn-secondary">
-                대기 중인 회원 관리
-                <span th:if="${pendingCount > 0}" class="badge" th:text="${pendingCount}">3</span>
-            </a>
-            <a th:href="@{/club/edit(club_id=${club.club_id})}" class="btn btn-sm btn-secondary">동호회 정보 수정</a>
+        <div class="back-container">
+            <a href="javascript:history.back()" class="back-link">← 목록으로 돌아가기</a>
         </div>
     </div>
 
-    <!-- 취소 확인 모달 -->
-    <div class="modal-backdrop" id="cancelModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h4 class="modal-title">예약 취소 확인</h4>
-                <button type="button" class="close-modal" onclick="closeCancelModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>정말로 이 예약을 취소하시겠습니까?</p>
-                <p>취소 후에는 복구할 수 없습니다.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeCancelModal()">취소</button>
-                <form id="cancelForm" th:action="@{/reservation/clubcancel}" method="post">
-                    <input type="hidden" id="reservationIdToCancel" name="reservation_id">
-                    <input type="hidden" id="clubIdToCancel" name="club_id">
-                    <button type="submit" class="btn-danger">예약 취소하기</button>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- 하단 정보바 -->
+    <div th:replace="~{include/bottom_info :: bottom_info}"></div>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const postList = document.querySelector('.club-post-list');
+            const sidebarContainer = document.querySelector('.club-post-sidebar');
+            const postItems = document.querySelectorAll('.club-post-item');
 
-    <div class="back-container">
-        <a href="javascript:history.back()" class="back-link">← 목록으로 돌아가기</a>
-    </div>
-</div>
+            // 한마디가 5개 이상일 때만 스크롤바 활성화
+            if (postItems && sidebarContainer && postItems.length >= 5) {
+                sidebarContainer.classList.add('scrollable');
+            }
 
-<!-- 하단 정보바 -->
-<div th:replace="~{include/bottom_info :: bottom_info}"></div>
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        const postList = document.querySelector('.club-post-list');
-        const sidebarContainer = document.querySelector('.club-post-sidebar');
-        const postItems = document.querySelectorAll('.club-post-item');
+            // 날짜가 지난 예약의 상태를 '이용완료됨'으로 변경하는 함수
+            // 날짜가 지난 예약의 상태를 자동으로 변경하는 함수
+            function updateCompletedReservations() {
+                const today = new Date();
+                console.log("현재 날짜:", today);
 
-        // 한마디가 5개 이상일 때만 스크롤바 활성화
-        if (postItems && sidebarContainer && postItems.length >= 5) {
-            sidebarContainer.classList.add('scrollable');
-        }
+                const reservationItems = document.querySelectorAll('.reservation-item');
+                if (!reservationItems || reservationItems.length === 0) return;
 
-        // 날짜가 지난 예약의 상태를 '이용완료됨'으로 변경하는 함수
-        function updateCompletedReservations() {
-            const today = new Date();
-            console.log("현재 날짜:", today);
+                reservationItems.forEach(item => {
+                    const statusElement = item.querySelector('.reservation-status');
+                    if (!statusElement) return;
 
-            // 모든 예약 아이템 가져오기
-            const reservationItems = document.querySelectorAll('.reservation-item');
-            if (!reservationItems || reservationItems.length === 0) return;
+                    const status = statusElement.textContent.trim();
+                    if (status !== '대기중' && status !== '예약완료') return;
 
-            reservationItems.forEach(item => {
-                // 상태 요소
-                const statusElement = item.querySelector('.reservation-status');
-                if (!statusElement) return;
+                    const dateElement = item.querySelector('.reservation-date');
+                    if (!dateElement) return;
 
-                // 상태가 '대기중' 또는 '예약완료'인 경우만 확인
-                const status = statusElement.textContent.trim();
-                if (status !== '대기중' && status !== '예약완료') return;
+                    const dateText = dateElement.textContent.trim();
+                    const dateParts = dateText.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+                    if (!dateParts) return;
 
-                // 카드의 예약 날짜 텍스트 추출
-                const dateElement = item.querySelector('.reservation-date');
-                if (!dateElement) return;
+                    const year = parseInt(dateParts[1]);
+                    const month = parseInt(dateParts[2]) - 1;
+                    const day = parseInt(dateParts[3]);
 
-                const dateText = dateElement.textContent.trim();
-                console.log("예약 날짜 텍스트:", dateText);
+                    const timeElement = item.querySelector('.reservation-time');
+                    if (!timeElement) return;
 
-                // yyyy년 MM월 dd일 형식에서 날짜 추출
-                const dateParts = dateText.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-                if (!dateParts) {
-                    console.log("날짜 형식 불일치:", dateText);
-                    return;
-                }
+                    const timeText = timeElement.textContent.trim();
+                    const timeParts = timeText.match(/(\d{1,2}):00\s*~\s*(\d{1,2}):00/);
+                    if (!timeParts) return;
 
-                // 예약 날짜 생성
-                const year = parseInt(dateParts[1]);
-                const month = parseInt(dateParts[2]) - 1;  // JavaScript에서 월은 0부터 시작
-                const day = parseInt(dateParts[3]);
+                    const endHour = parseInt(timeParts[2]);
 
-                // 시간 추출
-                const timeElement = item.querySelector('.reservation-time');
-                if (!timeElement) return;
+                    const reservationEndTime = new Date(year, month, day, endHour, 0, 0);
+                    if (today <= reservationEndTime) return;
 
-                const timeText = timeElement.textContent.trim();
-                console.log("예약 시간 텍스트:", timeText);
-
-                const timeParts = timeText.match(/(\d{1,2}):00\s*~\s*(\d{1,2}):00/);
-                if (!timeParts) {
-                    console.log("시간 형식 불일치:", timeText);
-                    return;
-                }
-
-                const endHour = parseInt(timeParts[2]);
-
-                // 예약 종료 시간 설정
-                const reservationEndTime = new Date(year, month, day, endHour, 0, 0);
-                console.log("예약 종료 시간:", reservationEndTime);
-                console.log("현재 시간과 비교:", today > reservationEndTime);
-
-                // 현재 날짜가 예약 종료 시간보다 나중이면 (예약 시간이 지났으면)
-                if (today > reservationEndTime) {
-                    console.log("상태 업데이트: 이용완료됨");
-
-                    // 상태 업데이트
-                    statusElement.textContent = '이용완료됨';
-
-                    // 기존 클래스 제거 후 completed 클래스 추가
-                    statusElement.classList.remove('status-pending', 'status-confirmed');
-                    statusElement.classList.add('status-completed');
-
-                    // 취소 버튼 비활성화
-                    const cancelBtn = item.querySelector('.btn-cancel');
-                    if (cancelBtn) {
-                        const disabledBtn = document.createElement('button');
-                        disabledBtn.className = 'btn-disabled';
-                        disabledBtn.disabled = true;
-                        disabledBtn.textContent = '예약 취소';
-                        cancelBtn.parentNode.replaceChild(disabledBtn, cancelBtn);
-                    }
-
-                    // 서버에 상태 업데이트 요청
                     const cancelModalFn = item.querySelector('[onclick*="openCancelModal"]');
                     const reservationId = cancelModalFn ?
                         cancelModalFn.getAttribute('onclick').match(/\d+/)?.[0] : null;
 
-                    if (reservationId) {
-                        console.log("서버에 상태 업데이트 요청:", reservationId);
+                    if (!reservationId) return;
+
+                    if (status === '대기중') {
+                        console.log(`⛔ 자동 취소 처리: 예약 ID = ${reservationId}`);
+
+                        // 프론트 상태 변경
+                        statusElement.textContent = '취소됨';
+                        statusElement.classList.remove('status-pending', 'status-confirmed');
+                        statusElement.classList.add('status-cancelled');
+
+                        const cancelBtn = item.querySelector('.btn-cancel');
+                        if (cancelBtn) {
+                            const disabledBtn = document.createElement('button');
+                            disabledBtn.className = 'btn-disabled';
+                            disabledBtn.disabled = true;
+                            disabledBtn.textContent = '예약 취소';
+                            cancelBtn.parentNode.replaceChild(disabledBtn, cancelBtn);
+                        }
+
+                        // 서버 요청: 예약 취소
+                        fetch('/reservation/clubcancel', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `reservation_id=${reservationId}`
+                        }).catch(err => {
+                            console.error('❌ 자동 취소 실패:', err);
+                        });
+
+                    } else if (status === '예약완료') {
+                        console.log(`✅ 자동 이용완료 처리: 예약 ID = ${reservationId}`);
+
+                        statusElement.textContent = '이용완료됨';
+                        statusElement.classList.remove('status-pending', 'status-confirmed');
+                        statusElement.classList.add('status-completed');
+
+                        const cancelBtn = item.querySelector('.btn-cancel');
+                        if (cancelBtn) {
+                            const disabledBtn = document.createElement('button');
+                            disabledBtn.className = 'btn-disabled';
+                            disabledBtn.disabled = true;
+                            disabledBtn.textContent = '예약 취소';
+                            cancelBtn.parentNode.replaceChild(disabledBtn, cancelBtn);
+                        }
+
+                        // 서버 요청: 상태 업데이트
                         fetch('/reservation/update-status', {
                             method: 'POST',
                             headers: {
@@ -717,52 +722,49 @@
                             body: `reservation_id=${reservationId}&status=COMPLETED`
                         }).catch(error => console.error('상태 업데이트 실패:', error));
                     }
-                }
-            });
+                });
+            }
+
+// 페이지 로드 시 예약 상태 자동 업데이트
+            if (document.querySelector('.reservation-item')) {
+                updateCompletedReservations();
+                setInterval(updateCompletedReservations, 60000);
+            }
+
+        });
+
+        function setFormValues(reservationId, clubId) {
+            document.getElementById('reservationIdToCancel').value = reservationId;
+            document.getElementById('clubIdToCancel').value = clubId;
+            document.getElementById('cancelForm').submit();
         }
 
-        // 페이지 로드 시 예약 상태 자동 업데이트
-        if (document.querySelector('.reservation-item')) {
-            // 처음 로드 시 상태 업데이트
-            updateCompletedReservations();
-
-            // 1분마다 상태 업데이트 (선택적)
-            setInterval(updateCompletedReservations, 60000);
+        // 모달 관련 함수
+        function openCancelModal(reservationId) {
+            document.getElementById('reservationIdToCancel').value = reservationId;
+            document.getElementById('clubIdToCancel').value = document.querySelector('[name="club_id"]').value;
+            document.getElementById('cancelModal').style.display = 'flex';
         }
-    });
 
-    function setFormValues(reservationId, clubId) {
-        document.getElementById('reservationIdToCancel').value = reservationId;
-        document.getElementById('clubIdToCancel').value = clubId;
-        document.getElementById('cancelForm').submit();
-    }
-
-    // 모달 관련 함수
-    function openCancelModal(reservationId) {
-        document.getElementById('reservationIdToCancel').value = reservationId;
-        document.getElementById('clubIdToCancel').value = document.querySelector('[name="club_id"]').value;
-        document.getElementById('cancelModal').style.display = 'flex';
-    }
-
-    function closeCancelModal() {
-        document.getElementById('cancelModal').style.display = 'none';
-    }
-
-    // ESC 키로 모달 닫기
-    window.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeCancelModal();
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
         }
-    });
 
-    // 모달 바깥 클릭 시 닫기
-    window.onclick = function(event) {
-        const modal = document.getElementById('cancelModal');
-        if (event.target === modal) {
-            closeCancelModal();
-        }
-    };
-</script>
-<script th:src="@{/js/top.js}"></script>
-</body>
-</html>
+        // ESC 키로 모달 닫기
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeCancelModal();
+            }
+        });
+
+        // 모달 바깥 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('cancelModal');
+            if (event.target === modal) {
+                closeCancelModal();
+            }
+        };
+    </script>
+    <script th:src="@{/js/top.js}"></script>
+    </body>
+    </html>

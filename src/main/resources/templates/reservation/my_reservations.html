@@ -402,6 +402,7 @@
         <!-- 예약 카드 반복 - 클럽 ID가 null이 아닌 경우 숨김 -->
         <div class="reservation-card"
              th:each="reservation : ${reservations}"
+             th:data-reservation-id="${reservation.reservation_id}"
              th:data-page="1"
              th:data-club-id="${reservation.club_id}"
              th:style="${reservation.club_id != null && reservation.club_id > 0} ? 'display: none;' : ''">
@@ -428,6 +429,7 @@
                                         (status == 'CONFIRMED' ? 'status-confirmed' :
                                         (status == 'CANCELLED' ? 'status-cancelled' :
                                         (status == 'COMPLETED' ? 'status-completed' : '')))}"
+                        th:data-status="${status}"
                         th:text="${status == 'PENDING' ? '대기중' :
                                  (status == 'CONFIRMED' ? '예약완료' :
                                  (status == 'CANCELLED' ? '취소됨' :
@@ -528,97 +530,94 @@
         const prevPageBtn = document.getElementById('prev-page');
         const nextPageBtn = document.getElementById('next-page');
 
-        // 날짜가 지난 예약의 상태를 '완료됨'으로 변경하는 함수
+        // 날짜가 지난 예약의 상태를 자동으로 변경하는 함수
+        // 날짜가 지난 예약의 상태를 자동으로 변경하는 함수
         function updateCompletedReservations() {
             const today = new Date();
-            console.log("현재 날짜:", today);
 
             reservationCards.forEach(card => {
-                // 상태 요소
                 const statusElement = card.querySelector('.status-badge');
                 if (!statusElement) return;
 
-                // 상태가 '대기중' 또는 '예약완료'인 경우만 확인
-                const status = statusElement.textContent.trim();
-                if (status !== '대기중' && status !== '예약완료') return;
+                const status = statusElement.getAttribute('data-status');
+                if (status !== 'PENDING' && status !== 'CONFIRMED') return;
 
-                // 카드의 예약 날짜 텍스트 추출
                 const dateElement = card.querySelectorAll('.detail-value')[0];
-                if (!dateElement) return;
+                const timeElement = card.querySelectorAll('.detail-value')[1];
+                if (!dateElement || !timeElement) return;
 
                 const dateText = dateElement.textContent.trim();
-                console.log("예약 날짜 텍스트:", dateText);
-
-                // yyyy년 MM월 dd일 형식에서 날짜 추출
-                const dateParts = dateText.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-                if (!dateParts) {
-                    console.log("날짜 형식 불일치:", dateText);
-                    return;
-                }
-
-                // 예약 날짜 생성
-                const year = parseInt(dateParts[1]);
-                const month = parseInt(dateParts[2]) - 1;  // JavaScript에서 월은 0부터 시작
-                const day = parseInt(dateParts[3]);
-
-                // 시간 추출
-                const timeElement = card.querySelectorAll('.detail-value')[1];
-                if (!timeElement) return;
-
                 const timeText = timeElement.textContent.trim();
-                console.log("예약 시간 텍스트:", timeText);
 
+                const dateParts = dateText.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
                 const timeParts = timeText.match(/(\d{1,2}):00\s*~\s*(\d{1,2}):00/);
-                if (!timeParts) {
-                    console.log("시간 형식 불일치:", timeText);
-                    return;
-                }
+                if (!dateParts || !timeParts) return;
 
+                const year = parseInt(dateParts[1]);
+                const month = parseInt(dateParts[2]) - 1;
+                const day = parseInt(dateParts[3]);
                 const endHour = parseInt(timeParts[2]);
 
-                // 예약 종료 시간 설정
                 const reservationEndTime = new Date(year, month, day, endHour, 0, 0);
-                console.log("예약 종료 시간:", reservationEndTime);
-                console.log("현재 시간과 비교:", today > reservationEndTime);
+                const reservationId = card.getAttribute('data-reservation-id');
+                if (!reservationId) return;
 
-                // 현재 날짜가 예약 종료 시간보다 나중이면 (예약 시간이 지났으면)
                 if (today > reservationEndTime) {
-                    console.log("상태 업데이트: 완료됨");
+                    if (status === 'PENDING') {
+                        console.log(`⛔ 자동 취소 처리: 예약 ID = ${reservationId}`);
 
-                    // 상태 업데이트
-                    statusElement.textContent = '완료됨';
-                    statusElement.className = statusElement.className.replace(
-                        /status-pending|status-confirmed/g, 'status-completed'
-                    );
+                        // 서버에 취소 요청 (환불 포함)
+                        fetch('/reservation/cancel', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `reservation_id=${reservationId}`
+                        }).then(res => {
+                            if (res.ok) {
+                                statusElement.textContent = '취소됨';
+                                statusElement.className = 'status-badge status-cancelled';
+                                statusElement.setAttribute('data-status', 'CANCELLED');
 
-                    // 취소 버튼 비활성화
-                    const cancelBtn = card.querySelector('.btn-cancel');
-                    if (cancelBtn) {
-                        const disabledBtn = document.createElement('button');
-                        disabledBtn.className = 'btn btn-disabled';
-                        disabledBtn.disabled = true;
-                        disabledBtn.textContent = '예약 취소';
-                        cancelBtn.parentNode.replaceChild(disabledBtn, cancelBtn);
-                    }
+                                const cancelBtn = card.querySelector('.btn-cancel');
+                                if (cancelBtn) {
+                                    const disabledBtn = document.createElement('button');
+                                    disabledBtn.className = 'btn btn-disabled';
+                                    disabledBtn.disabled = true;
+                                    disabledBtn.textContent = '예약 취소';
+                                    cancelBtn.parentNode.replaceChild(disabledBtn, cancelBtn);
+                                }
+                            } else {
+                                console.error('❌ 자동 취소 실패:', res.status);
+                            }
+                        });
 
-                    // 서버에 상태 업데이트 요청
-                    const reservationId = card.querySelector('[onclick*="openCancelModal"]')?.
-                    getAttribute('onclick')?.
-                    match(/\d+/)?.[0];
+                    } else if (status === 'CONFIRMED') {
+                        console.log(`✅ 자동 완료 처리: 예약 ID = ${reservationId}`);
 
-                    if (reservationId) {
-                        console.log("서버에 상태 업데이트 요청:", reservationId);
+                        statusElement.textContent = '완료됨';
+                        statusElement.className = 'status-badge status-completed';
+                        statusElement.setAttribute('data-status', 'COMPLETED');
+
                         fetch('/reservation/update-status', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded',
                             },
                             body: `reservation_id=${reservationId}&status=COMPLETED`
-                        }).catch(error => console.error('상태 업데이트 실패:', error));
+                        }).catch(err => {
+                            console.error('❌ 상태 업데이트 실패:', err);
+                        });
                     }
                 }
             });
         }
+
+
+
+
+
+
 
         // 클럽 ID가 있는 예약을 필터링하는 함수
         function hideClubReservations() {
