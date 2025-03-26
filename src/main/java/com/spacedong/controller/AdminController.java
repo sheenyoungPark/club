@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
@@ -45,6 +47,9 @@ public class AdminController {
 
     @Autowired
     private BankService bankService;
+
+    @Autowired
+    private CategoryService categoryService;
 
     @GetMapping("/init")
     public String admininit() {
@@ -72,8 +77,57 @@ public class AdminController {
     }
 
     @GetMapping("/dashboard")
-    public String dashboard() {
+    public String dashboard(Model model) {
+        try {
+            // 전체 회원 수 (회원 + 사업자) 가져오기
+            int totalUsers = adminService.getTotalUsersCount();
+            System.out.println("총 회원 수: " + totalUsers);
+            model.addAttribute("totalMembers", totalUsers);
+
+            // 회원 성장률
+            double memberGrowthRate = adminService.getMemberGrowthRate();
+            model.addAttribute("memberGrowthRate", memberGrowthRate);
+
+            // 전체 동호회 수
+            int totalClubs = adminService.getTotalClubsCount();
+            model.addAttribute("totalClubs", totalClubs);
+
+            // 동호회 성장률
+            double clubGrowthRate = adminService.getClubGrowthRate();
+            model.addAttribute("clubGrowthRate", clubGrowthRate);
+
+            // 월별 회원 수 데이터 추가
+            List<Map<String, Object>> monthlyMemberCounts = adminService.getMonthlyMemberCounts();
+            model.addAttribute("monthlyMemberCounts", monthlyMemberCounts);
+
+        } catch (Exception e) {
+            System.err.println("대시보드 로딩 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("totalMembers", 0);
+            model.addAttribute("memberGrowthRate", 0.0);
+            model.addAttribute("totalClubs", 0);
+            model.addAttribute("clubGrowthRate", 0.0);
+            model.addAttribute("monthlyMemberCounts", new ArrayList<>());
+        }
         return "admin/dashboard";
+    }
+    @GetMapping("/monthly_member_counts")
+    @ResponseBody
+    public Map<String, Object> getMonthlyMemberCounts() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            List<Map<String, Object>> monthlyData = adminService.getMonthlyMemberCounts();
+            response.put("success", true);
+            response.put("data", monthlyData);
+        } catch (Exception e) {
+            System.err.println("월별 회원 수 조회 중 오류: " + e.getMessage());
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
     }
 
     // 동호회 관리 페이지
@@ -147,6 +201,27 @@ public class AdminController {
             clubService.updateClubStatus(club_id, dbStatus);
             response.put("success", true);
         } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 동호회 카테고리 분포 데이터 조회
+    @GetMapping("/club_category_distribution")
+    @ResponseBody
+    public Map<String, Object> getClubCategoryDistribution() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // CategoryMapper의 categoryTypeCount 메서드를 사용하여 카테고리 분포 데이터 가져오기
+            List<CategoryBean> categoryDistribution = categoryService.getCategoryTypeCount();
+            response.put("success", true);
+            response.put("data", categoryDistribution);
+        } catch (Exception e) {
+            System.err.println("카테고리 분포 조회 중 오류: " + e.getMessage());
+            e.printStackTrace();
             response.put("success", false);
             response.put("message", e.getMessage());
         }
@@ -649,4 +724,114 @@ public class AdminController {
 
         return response;
     }
+    // 대기 중인 판매자 목록 조회
+    @GetMapping("/pending_business")
+    @ResponseBody
+    public Map<String, Object> getPendingBusiness() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 승인 대기 중인 판매자만 필터링
+            List<BusinessBean> businessList = businessService.getAllBusiness().stream()
+                    .filter(b -> "WAIT".equals(b.getBusiness_public()))
+                    .collect(Collectors.toList());
+
+            response.put("success", true);
+            response.put("businessList", businessList);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+    /**
+     * 대기 중인 클럽 목록 조회
+     */
+    @GetMapping("/pending_clubs")
+    @ResponseBody
+    public Map<String, Object> getPendingClubs() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 승인 대기 중인 클럽만 필터링 (club_public = 'WAIT')
+            List<ClubBean> clubList = clubService.getAllClubForAdmin().stream()
+                    .filter(c -> "WAIT".equals(c.getClub_public()))
+                    .collect(Collectors.toList());
+
+            response.put("success", true);
+            response.put("clubList", clubList);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+    /**
+     * 승인 대기 건수 API
+     * - 전체 승인 대기 건수
+     * - 오늘 신규 승인 대기 건수
+     */
+    @GetMapping("/pending_counts")
+    @ResponseBody
+    public Map<String, Object> getPendingCounts() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 현재 날짜 생성 (오늘 00:00:00)
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            Date today = calendar.getTime();
+
+            // 1. 클럽 데이터 가져오기
+            List<ClubBean> allClubs = clubService.getAllClubForAdmin();
+
+            // 2. 승인 대기 중인 클럽 필터링
+            List<ClubBean> pendingClubs = allClubs.stream()
+                    .filter(c -> "WAIT".equals(c.getClub_public()))
+                    .collect(Collectors.toList());
+
+            // 3. 오늘 생성된 승인 대기 클럽 필터링
+            List<ClubBean> todayNewClubs = pendingClubs.stream()
+                    .filter(c -> c.getClub_joindate().after(today))
+                    .collect(Collectors.toList());
+
+            // 4. 판매자 데이터 가져오기
+            List<BusinessBean> allBusinesses = businessService.getAllBusiness();
+
+            // 5. 승인 대기 중인 판매자 필터링
+            List<BusinessBean> pendingBusinesses = allBusinesses.stream()
+                    .filter(b -> "WAIT".equals(b.getBusiness_public()))
+                    .collect(Collectors.toList());
+
+            // 6. 오늘 생성된 승인 대기 판매자 필터링
+            List<BusinessBean> todayNewBusinesses = pendingBusinesses.stream()
+                    .filter(b -> b.getBusiness_joindate().after(today))
+                    .collect(Collectors.toList());
+
+            // 7. 전체 승인 대기 건수 계산 (클럽 + 판매자)
+            int totalPending = pendingClubs.size() + pendingBusinesses.size();
+
+            // 8. 오늘 신규 승인 대기 건수 계산 (클럽 + 판매자)
+            int todayNew = todayNewClubs.size() + todayNewBusinesses.size();
+
+            response.put("success", true);
+            response.put("totalPending", totalPending);
+            response.put("todayNew", todayNew);
+            response.put("pendingClubs", pendingClubs.size());
+            response.put("pendingBusinesses", pendingBusinesses.size());
+            response.put("todayNewClubs", todayNewClubs.size());
+            response.put("todayNewBusinesses", todayNewBusinesses.size());
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
 }

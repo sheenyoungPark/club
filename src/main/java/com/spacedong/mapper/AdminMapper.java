@@ -22,5 +22,11 @@ public interface AdminMapper {
 
 	@Select("SELECT * FROM admin WHERE admin_id=#{adminId}")
 	AdminBean getAdminById(String adminId);
+
+	@Select("SELECT COUNT(*) FROM club")
+	int getClubCount();
+
+	@Select("SELECT COUNT(*) FROM club WHERE TRUNC(club_joindate, 'MM') < TRUNC(SYSDATE, 'MM')")
+	int getPreviousMonthClubCount();
 	
 }
