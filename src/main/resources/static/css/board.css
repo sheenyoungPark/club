@@ -169,6 +169,15 @@
 .pagination a:hover {
     background-color: #f0ffdd;
 }
+/* 게시글 제목 링크 색 고정 및 밑줄 제거 */
+.board-table a,
+.board-table a:visited,
+.board-table a:hover,
+.board-table a:active {
+    color: #14191f;      /* 검정색 */
+    text-decoration: none;  /* 밑줄 제거 */
+}
+
 
 
 

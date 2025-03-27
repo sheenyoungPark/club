@@ -274,7 +274,8 @@
     <div class="action-footer">
         <!-- 비회원용 버튼 -->
         <div th:if="${member_role == null}" class="action-buttons">
-            <a th:href="@{/chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
+            <a href="javascript:void(0);" class="btn btn-outline club-inquiry-btn"
+               th:data-club-id="${club.club_id}">
                 <i class="fas fa-envelope"></i> 문의하기
             </a>
             <a th:if="${loginBusiness == null or loginBusiness.login == false}"
@@ -286,7 +287,8 @@
 
         <!-- 일반 회원용 버튼 -->
         <div th:if="${member_role != null && member_role != 'master'}" class="action-buttons">
-            <a th:href="@{/chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
+            <a href="javascript:void(0);" class="btn btn-outline club-inquiry-btn"
+               th:data-club-id="${club.club_id}">
                 <i class="fas fa-envelope"></i> 문의하기
             </a>
             <a th:if="${isMember}" th:href="@{/club/leaveClub(club_id=${club.club_id})}"
@@ -605,8 +607,8 @@
         }
 
         // 팝업 창의 크기와 위치 설정
-        const width = 700;
-        const height = 600;
+        const width = 500;
+        const height = 700;
         const left = (window.innerWidth - width) / 2;
         const top = (window.innerHeight - height) / 2;
 
