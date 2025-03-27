@@ -41,9 +41,8 @@ public class ItemRepository {
     }
 
 
-
-
-
-
-
+    //아이템 리스트를 랜덤 순으로
+    public List<BusinessItemBean> randomItemList(){
+        return itemMapper.randomItemList();
+    }
 }
