@@ -158,9 +158,7 @@ public class MemberController {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
-
 		MemberBean member =  memberService.getMemberById(loginMember.getMember_id());
-
 		loginMember.setMember_point(member.getMember_point());
 
 		model.addAttribute("loginMember", loginMember);
