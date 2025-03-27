@@ -74,5 +74,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
 });

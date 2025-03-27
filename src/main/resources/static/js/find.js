@@ -1,6 +1,5 @@
-// find.js
 document.addEventListener('DOMContentLoaded', function() {
-    // 비밀번호 찾기 페이지에서 비밀번호 확인 로직
+    // 비밀번호 재설정 로직 (개인 및 기업회원 공통)
     const resetPasswordForm = document.getElementById('reset-password-form');
     if (resetPasswordForm) {
         resetPasswordForm.addEventListener('submit', function(e) {
@@ -14,28 +13,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
 
-            // 비밀번호 규칙 검증 (8자 이상)
+            // 비밀번호 길이 검증 (8자 이상)
             if (newPassword.length < 8) {
                 e.preventDefault();
                 alert('비밀번호는 8자 이상이어야 합니다.');
                 return false;
             }
 
+            // 현재 페이지가 기업회원인지 개인회원인지 확인
+            const isBusinessPage = window.location.pathname.includes('/business/');
+
+            // 기업회원 페이지인 경우 16자 이하 제한 적용
+            if (isBusinessPage && newPassword.length > 16) {
+                e.preventDefault();
+                alert('비밀번호는 16자 이하여야 합니다.');
+                return false;
+            }
+
+            // 개인회원 페이지인 경우 영문, 숫자, 특수문자 포함 검증
+            if (!isBusinessPage) {
+                const hasLetter = /[a-zA-Z]/.test(newPassword);
+                const hasNumber = /[0-9]/.test(newPassword);
+                const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
+
+                if (!(hasLetter && hasNumber && hasSpecial)) {
+                    e.preventDefault();
+                    alert('비밀번호는 영문, 숫자, 특수문자를 모두 포함해야 합니다.');
+                    return false;
+                }
+            }
+
             return true;
         });
     }
 
-    // 휴대폰 번호 입력 시 형식 처리
-    // 사용자가 입력할 때는 숫자만 입력하도록 하고, 서버로 전송할 때도 숫자만 전송
-    // DB에서는 010-1111-2222 형식으로 저장되어 있으므로 서버에서 변환 처리
-    const phoneInputs = document.querySelectorAll('input[name="phone"]');
+    // 본인확인 폼 숨기기 로직
+    const findPasswordForm = document.getElementById('find-password-form');
+    const resetPasswordFormExists = document.getElementById('reset-password-form');
+
+    // 재설정 폼이 표시되고 있으면 본인확인 폼 숨기기
+    if (findPasswordForm && resetPasswordFormExists && resetPasswordFormExists.style.display !== 'none') {
+        findPasswordForm.style.display = 'none';
+    }
+
+    // 휴대폰 번호 입력 시 형식 처리 (개인 및 기업 공통)
+    const phoneInputs = document.querySelectorAll('input[name="phone"], input[name="business_phone"]');
     if (phoneInputs.length > 0) {
         phoneInputs.forEach(input => {
             input.addEventListener('input', function(e) {
                 // 숫자만 남기고 모든 특수문자 제거
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
-
         });
     }
 
