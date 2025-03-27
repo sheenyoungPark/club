@@ -354,6 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const regionButton = document.createElement('button');
         regionButton.id = 'regionButton';
         regionButton.className = 'region-button';
+        regionButton.type = 'button';
         regionButton.innerHTML = '<span>지역</span> <i class="fas fa-chevron-down"></i>';
 
         // 버튼 스타일 적용
