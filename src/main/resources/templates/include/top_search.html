@@ -22,8 +22,8 @@
             <a th:if="${loginBusiness == null || loginBusiness.login == false}" th:href="@{/survey/start}">유형검사</a>
             <a th:if="${loginBusiness != null && loginBusiness.login == true}" th:href="@{/business/create_item}">아이템 등록하기</a>
             <li class="nav-item" th:if="${(loginMember != null && loginMember.isLogin) || (loginBusiness != null && loginBusiness.isLogin)}">
-                <a th:href="@{/chat/view/rooms}" class="nav-link position-relative">
-                    <i class="fas fa-comments"></i> 채팅
+                <a href="#" onclick="openChatWindow(); return false;" class="nav-link position-relative">
+                <i class="fas fa-comments"></i> 채팅
                     <!-- 안 읽은 메시지 배지 -->
                     <span id="unreadChatCount"
                           class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
@@ -111,7 +111,7 @@
             </a>
 
             <!-- 채팅 메뉴 - 로그인 상태일 때만 표시 -->
-            <a th:if="${loginMember.isLogin || loginBusiness.isLogin}" th:href="@{/chat/view/rooms}">
+            <a th:if="${loginMember.isLogin || loginBusiness.isLogin}" href="#" onclick="openChatWindow(); return false;">
                 <i class="fas fa-comments"></i> 채팅
                 <!-- 안 읽은 메시지 배지 -->
                 <span id="mobileUnreadChatCount"

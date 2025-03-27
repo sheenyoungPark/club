@@ -598,3 +598,29 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 });
+// 채팅 창 팝업 함수
+function openChatWindow() {
+    // 팝업 창의 크기와 위치 설정
+    const width = 800;
+    const height = 600;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+
+    // 현재 사용자 ID가 필요한 경우 URL에 추가
+    const userId = window.userId || '';
+
+    // 팝업 창 열기
+    const chatWindow = window.open(
+        '/chat/view/rooms',
+        'chatWindow',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
+    );
+
+    // 팝업 창 포커스
+    if (chatWindow) {
+        chatWindow.focus();
+    } else {
+        // 팝업이 차단된 경우 알림
+        alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+    }
+}
