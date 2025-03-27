@@ -152,6 +152,8 @@ public class ClubMemberController {
         // 선택된 회원들 거부 처리 (삭제)
         for (String memberId : memberIds) {
             clubMemberService.deleteMember(clubId, memberId);
+            adminNotificationService.sendApprovalNotification(memberId, "MEMBER", "REJECTED1",
+                    "클럽 가입 신청", "");
 
         }
 
