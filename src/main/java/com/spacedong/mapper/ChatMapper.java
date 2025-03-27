@@ -101,8 +101,8 @@ public interface ChatMapper {
 
     // === 채팅 참여자 관련 쿼리 ===
 
-    @Insert("INSERT INTO chat_participant (room_id, user_id, user_type, userNickname) " +
-            "VALUES (#{room_id}, #{user_id}, #{user_type}, #{userNickname})")
+    @Insert("INSERT INTO chat_participant (room_id, user_id, user_type, user_nickname, userProfile) " +
+            "VALUES (#{room_id}, #{user_id}, #{user_type}, #{user_nickname}, #{userProfile})")
     int addParticipant(ChatParticipantBean participant);
 
     @Select("SELECT cp.*, " +
@@ -110,7 +110,7 @@ public interface ChatMapper {
             "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cp.user_id) " +
             "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cp.user_id) " +
             "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cp.user_id) " +
-            "END as userNickname, " +
+            "END as user_nickname, " +
             "CASE cp.user_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cp.user_id) " +
             "  ELSE NULL " +
@@ -303,25 +303,31 @@ public interface ChatMapper {
     /**
      * 참여자의 닉네임을 업데이트
      */
-    @Update("UPDATE chat_participant SET userNickname = #{userNickname} WHERE room_id = #{room_id} AND user_id = #{user_id}")
+    @Update("UPDATE chat_participant SET user_nickname = #{user_nickname} WHERE room_id = #{room_id} AND user_id = #{user_id}")
     int updateParticipantNickname(ChatParticipantBean participant);
 
     /**
      * 사용자 닉네임이 없는 참여자 목록 조회
      */
-    @Select("SELECT * FROM chat_participant WHERE userNickname IS NULL OR userNickname = ''")
+    @Select("SELECT * FROM chat_participant WHERE user_nickname IS NULL OR user_nickname = ''")
     List<ChatParticipantBean> getParticipantsWithoutNickname();
 
     /**
      * 모든 참여자의 정보 업데이트
      */
-    @Update("<script>UPDATE chat_participant SET userNickname = CASE user_type " +
+    @Update("<script>UPDATE chat_participant SET user_nickname = CASE user_type " +
             "WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = chat_participant.user_id) " +
             "WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = chat_participant.user_id) " +
             "WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = chat_participant.user_id) " +
-            "ELSE userNickname END " +
-            "WHERE userNickname IS NULL OR userNickname = ''</script>")
+            "ELSE user_nickname END " +
+            "WHERE user_nickname IS NULL OR user_nickname = ''</script>")
     int updateAllParticipantsNickname();
+
+    @Update("UPDATE chat_participant SET user_nickname = #{user_nickname}, userProfile = #{userProfile} " +
+            "WHERE room_id = #{room_id} AND user_id = #{user_id}")
+    int updateParticipant(ChatParticipantBean participant);
+
+
 
 
 }

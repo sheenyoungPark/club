@@ -800,7 +800,7 @@ function updateTypingStatus(status) {
 
     if (status.isTyping) {
         userTyping.classList.remove('d-none');
-        userTyping.querySelector('span').textContent = `${status.userNickname || status.userId}님이 입력 중입니다...`;
+        userTyping.querySelector('span').textContent = `${status.user_nickname || status.userId}님이 입력 중입니다...`;
     } else {
         userTyping.classList.add('d-none');
     }

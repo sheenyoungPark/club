@@ -48,6 +48,12 @@ public class ChatService {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private AdminService adminService;
+
+    @Autowired
+    private BusinessService businessService;
+
     // 채팅방 관련 메서드
     @Transactional
     public ChatRoomBean createChatRoom(ChatRoomBean chatRoom, List<ChatParticipantBean> participants) {
@@ -67,7 +73,7 @@ public class ChatService {
                 // searchUsers 메서드를 통해 사용자의 닉네임을 가져옴
                 List<ChatUserBean> users = chatRepository.searchUsers(userId);
                 if (users != null && !users.isEmpty()) {
-                    participant.setUserNickname(users.get(0).getNickname());
+                    participant.setUser_nickname(users.get(0).getNickname());
                 }
             }
 
@@ -100,98 +106,167 @@ public class ChatService {
 
     @Transactional
     public ChatRoomBean getOrCreatePersonalChatRoom(String userId1, String userType1, String userId2, String userType2) {
+        // 비즈니스-비즈니스 채팅 방지
+        if (userType1.equals("BUSINESS") && userType2.equals("BUSINESS")) {
+            throw new RuntimeException("비즈니스 계정 간 채팅은 지원되지 않습니다.");
+        }
+
         ChatRoomBean chatRoom = chatRepository.getPersonalChatRoom(userId1, userType1, userId2, userType2);
 
-        // 사용자 닉네임 조회 (MemberService 사용)
-        MemberBean user1 = memberService.getMemberById(userId1);
-        MemberBean user2 = memberService.getMemberById(userId2);
-
-        String user1nickname = user1 != null ? user1.getMember_nickname() : userId1;
-        String user2nickname = user2 != null ? user2.getMember_nickname() : userId2;
+        String user1nickname = "";
+        String user2nickname = "";
+        String user1profile = "";
+        String user2profile = "";
 
         boolean isNewRoom = false;
+
+        // 사용자 정보 초기화 (유형별로 다르게 처리)
+        if (userType1.equals("MEMBER")) {
+            MemberBean user1 = memberService.getMemberById(userId1);
+            user1nickname = user1 != null ? user1.getMember_nickname() : userId1;
+            user1profile = user1 != null ? user1.getMember_profile() : null;
+            System.out.println("user1의 프로필 : "+user1profile);
+        } else if (userType1.equals("BUSINESS")) {
+            BusinessBean user1 = businessService.getBusinessById(userId1);
+            user1nickname = user1 != null ? user1.getBusiness_name() : userId1;
+            user1profile = user1 != null ? user1.getBusiness_profile() : null;
+        } else if (userType1.equals("ADMIN")) {
+            AdminBean user1 = adminRepository.getAdminById(userId1);
+            user1nickname = user1 != null ? user1.getAdmin_name() : userId1;
+            user1profile = null; // 관리자는 프로필 없음
+        }
+
+        if (userType2.equals("MEMBER")) {
+            MemberBean user2 = memberService.getMemberById(userId2);
+            user2nickname = user2 != null ? user2.getMember_nickname() : userId2;
+            user2profile = user2 != null ? user2.getMember_profile() : null;
+        } else if (userType2.equals("BUSINESS")) {
+            BusinessBean user2 = businessService.getBusinessById(userId2);
+            user2nickname = user2 != null ? user2.getBusiness_name() : userId2;
+            user2profile = user2 != null ? user2.getBusiness_profile() : null;
+        } else if (userType2.equals("ADMIN")) {
+            AdminBean user2 = adminRepository.getAdminById(userId2);
+            user2nickname = user2 != null ? user2.getAdmin_name() : userId2;
+            user2profile = null; // 관리자는 프로필 없음
+        }
 
         if (chatRoom == null) {
             isNewRoom = true;
             chatRoom = new ChatRoomBean();
             chatRoom.setRoom_type("PERSONAL");
 
-            // Room name based on user types
+            // 채팅방 이름 설정
             String roomName = "";
-            if(userType2.equals("MEMBER")) {
-                // 채팅방 이름을 "닉네임1,닉네임2" 형식으로 저장
+
+            // 일반 회원 간의 채팅
+            if (userType1.equals("MEMBER") && userType2.equals("MEMBER")) {
                 roomName = user1nickname + "," + user2nickname;
-            } else if(userType2.equals("BUSINESS")) {
-                roomName = "판매자와의 대화";
-            } else if(userType2.equals("ADMIN")) {
+            }
+            // 관리자와의 채팅
+            else if ((userType1.equals("ADMIN") || userType2.equals("ADMIN"))) {
                 roomName = "관리자와의 대화";
+            }
+            // 회원-판매자 채팅
+            else if ((userType1.equals("MEMBER") && userType2.equals("BUSINESS")) ||
+                    (userType1.equals("BUSINESS") && userType2.equals("MEMBER"))) {
+                roomName = "판매자와의 대화";
             }
 
             chatRoom.setRoom_name(roomName);
             chatRepository.createChatRoom(chatRoom);
 
-            // Add participants
+            // 첫 번째 참여자 추가
             ChatParticipantBean participant1 = new ChatParticipantBean();
             participant1.setRoom_id(chatRoom.getRoom_id());
             participant1.setUser_id(userId1);
             participant1.setUser_type(userType1);
-            participant1.setUserNickname(user1nickname);
-            participant1.setJoinDate(LocalDateTime.now()); // Set join date
+            participant1.setUser_nickname(user1nickname);
+            participant1.setUserProfile(user1profile);
+            participant1.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant1);
 
+            // 두 번째 참여자 추가
             ChatParticipantBean participant2 = new ChatParticipantBean();
             participant2.setRoom_id(chatRoom.getRoom_id());
             participant2.setUser_id(userId2);
             participant2.setUser_type(userType2);
-            participant2.setUserNickname(user2nickname);
-            participant2.setJoinDate(LocalDateTime.now()); // Set join date
+            participant2.setUser_nickname(user2nickname);
+            participant2.setUserProfile(user2profile);
+            participant2.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant2);
         } else {
-            // 기존 룸 이름이 닉네임 형식이 아니면 업데이트
-            if(userType2.equals("MEMBER") && chatRoom.getRoom_name() != null
-                    && !chatRoom.getRoom_name().contains(",")) {
-                // 채팅방 이름을 "닉네임1,닉네임2" 형식으로 업데이트
+            // 기존 룸 이름 업데이트 (멤버 간 채팅일 경우에만)
+            if (userType1.equals("MEMBER") && userType2.equals("MEMBER") &&
+                    chatRoom.getRoom_name() != null && !chatRoom.getRoom_name().contains(",")) {
                 String newRoomName = user1nickname + "," + user2nickname;
                 chatRoom.setRoom_name(newRoomName);
                 chatRepository.updateChatRoomName(Long.valueOf(chatRoom.getRoom_id()), newRoomName);
             }
 
-            // Check if users are already participants, if not add them
-            // This covers the case where a user was removed and is rejoining
+            // 첫 번째 사용자가 참여자가 아니면 추가
             ChatParticipantBean participant1 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId1);
             if (participant1 == null) {
                 participant1 = new ChatParticipantBean();
                 participant1.setRoom_id(chatRoom.getRoom_id());
                 participant1.setUser_id(userId1);
                 participant1.setUser_type(userType1);
-                participant1.setUserNickname(user1nickname);
+                participant1.setUser_nickname(user1nickname);
+                participant1.setUserProfile(user1profile);
                 participant1.setJoinDate(LocalDateTime.now());
                 chatRepository.addParticipant(participant1);
 
-                // Mark all previous messages as read for the new participant
+                // 이전 메시지 읽음 처리
                 markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId1);
-            } else if (participant1.getUserNickname() == null || participant1.getUserNickname().isEmpty()) {
-                // 닉네임이 없는 경우, 업데이트
-                participant1.setUserNickname(user1nickname);
-                chatRepository.updateParticipantNickname(participant1);
+            } else {
+                // 기존 참여자 정보 업데이트
+                boolean needUpdate = false;
+
+                if (participant1.getUser_nickname() == null || participant1.getUser_nickname().isEmpty()) {
+                    participant1.setUser_nickname(user1nickname);
+                    needUpdate = true;
+                }
+
+                if (participant1.getUserProfile() == null && user1profile != null) {
+                    participant1.setUserProfile(user1profile);
+                    needUpdate = true;
+                }
+
+                if (needUpdate) {
+                    chatRepository.updateParticipant(participant1);
+                }
             }
 
+            // 두 번째 사용자가 참여자가 아니면 추가
             ChatParticipantBean participant2 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId2);
             if (participant2 == null) {
                 participant2 = new ChatParticipantBean();
                 participant2.setRoom_id(chatRoom.getRoom_id());
                 participant2.setUser_id(userId2);
                 participant2.setUser_type(userType2);
-                participant2.setUserNickname(user2nickname);
+                participant2.setUser_nickname(user2nickname);
+                participant2.setUserProfile(user2profile);
                 participant2.setJoinDate(LocalDateTime.now());
                 chatRepository.addParticipant(participant2);
 
-                // Mark all previous messages as read for the new participant
+                // 이전 메시지 읽음 처리
                 markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId2);
-            } else if (participant2.getUserNickname() == null || participant2.getUserNickname().isEmpty()) {
-                // 닉네임이 없는 경우, 업데이트
-                participant2.setUserNickname(user2nickname);
-                chatRepository.updateParticipantNickname(participant2);
+            } else {
+                // 기존 참여자 정보 업데이트
+                boolean needUpdate = false;
+
+                if (participant2.getUser_nickname() == null || participant2.getUser_nickname().isEmpty()) {
+                    participant2.setUser_nickname(user2nickname);
+                    needUpdate = true;
+                }
+
+                if (participant2.getUserProfile() == null && user2profile != null) {
+                    participant2.setUserProfile(user2profile);
+                    needUpdate = true;
+                }
+
+                if (needUpdate) {
+                    chatRepository.updateParticipant(participant2);
+                }
             }
         }
 
@@ -202,7 +277,7 @@ public class ChatService {
     public ChatRoomBean getOrCreateClubChatRoom(int clubId, String userId, String userType) {
         // Existing code for checking club membership and getting club info
         boolean isClubMember = false;
-        String usernickname = chatRepository.searchUsers(userId).get(0).getNickname();
+        String User_nickname = chatRepository.searchUsers(userId).get(0).getNickname();
         if (userType.equals("MEMBER")) {
             isClubMember = clubService.isMemberOfClub(clubId, userId);
         } else if (userType.equals("ADMIN")) {
@@ -235,7 +310,7 @@ public class ChatService {
                 participant.setRoom_id(chatRoom.getRoom_id());
                 participant.setUser_id(userId);
                 participant.setUser_type(userType);
-                participant.setUserNickname(usernickname);
+                participant.setUser_nickname(User_nickname);
                 participant.setJoinDate(LocalDateTime.now()); // Set join date to current time
                 chatRepository.addParticipant(participant);
 
@@ -255,7 +330,7 @@ public class ChatService {
             participant.setRoom_id(chatRoom.getRoom_id());
             participant.setUser_id(userId);
             participant.setUser_type(userType);
-            participant.setUserNickname(usernickname);
+            participant.setUser_nickname(User_nickname);
             participant.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant);
 
@@ -268,7 +343,7 @@ public class ChatService {
                     memberParticipant.setRoom_id(chatRoom.getRoom_id());
                     memberParticipant.setUser_id(member.getUser_id());
                     memberParticipant.setUser_type("MEMBER");
-                    memberParticipant.setUserNickname(memberNickname);
+                    memberParticipant.setUser_nickname(memberNickname);
                     memberParticipant.setJoinDate(LocalDateTime.now());
                     chatRepository.addParticipant(memberParticipant);
 
@@ -298,18 +373,24 @@ public class ChatService {
             MemberBean member = memberRepository.getMemberById(message.getSenderId());
             if (member != null) {
                 message.setSenderNickname(member.getMember_nickname());
+                message.setSenderProfile(member.getMember_profile()); // 멤버 프로필 추가
             }
         } else if (message.getSenderType().equals("BUSINESS")) {
             BusinessBean business = businessRepository.getBusinessById(message.getSenderId());
             if (business != null) {
                 message.setSenderNickname(business.getBusiness_name());
+                message.setSenderProfile(business.getBusiness_profile()); // 비즈니스 프로필 추가
             }
         } else if (message.getSenderType().equals("ADMIN")) {
             AdminBean admin = adminRepository.getAdminById(message.getSenderId());
             if (admin != null) {
                 message.setSenderNickname(admin.getAdmin_name());
+                // 관리자는 보통 프로필 없음, 필요하다면 admin.getAdmin_profile() 추가
             }
         }
+
+        chatRepository.sendMessage(message);
+
 
         chatRepository.sendMessage(message);
 
@@ -550,7 +631,7 @@ public class ChatService {
                 if (participant.getUser_type().equals("MEMBER")) {
                     MemberBean member = memberService.getMemberById(participant.getUser_id());
                     if (member != null) {
-                        participant.setUserNickname(member.getMember_nickname());
+                        participant.setUser_nickname(member.getMember_nickname());
                         chatRepository.updateParticipantNickname(participant);
                         System.out.println("참여자 닉네임 업데이트: " + participant.getUser_id() + " -> " + member.getMember_nickname());
                     }

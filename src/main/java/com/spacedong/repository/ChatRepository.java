@@ -197,5 +197,9 @@ public class ChatRepository {
         return chatMapper.getParticipantsWithoutNickname();
     }
 
+    public int updateParticipant(ChatParticipantBean participant) {
+        return chatMapper.updateParticipant(participant);
+    }
+
 
 }

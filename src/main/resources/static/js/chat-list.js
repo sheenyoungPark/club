@@ -102,7 +102,7 @@ function updateRoomUnreadCounts(roomUnreadCounts) {
     Object.keys(roomUnreadCounts).forEach(roomId => {
         const unreadCount = roomUnreadCounts[roomId];
 
-        // 모든 탭에서 해당 roomId를 가진 채팅방 찾기
+        // 채팅방 요소 찾기 (모든 탭에서)
         const roomElements = [
             document.getElementById(`room-${roomId}`),
             document.getElementById(`personal-room-${roomId}`),
@@ -111,27 +111,33 @@ function updateRoomUnreadCounts(roomUnreadCounts) {
 
         roomElements.forEach(roomElement => {
             if (roomElement) {
-                // 안 읽은 메시지 배지 찾기
+                // 기존 안 읽은 메시지 배지 찾기
                 let unreadBadge = roomElement.querySelector('.unread-badge');
 
                 if (unreadCount > 0) {
-                    // 배지가 없으면 생성
                     if (!unreadBadge) {
-                        const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
-                        if (previewContainer) {
-                            unreadBadge = document.createElement('div');
-                            unreadBadge.className = 'unread-badge';
-                            previewContainer.appendChild(unreadBadge);
+                        // 배지가 없으면 새로 생성
+                        unreadBadge = document.createElement('div');
+                        unreadBadge.className = 'unread-badge';
+
+                        // 동호회 채팅방이면 `.chat-type-tag.club-tag` 뒤에 배지 추가
+                        const chatTypeTag = roomElement.querySelector('.chat-type-tag.club-tag');
+                        if (chatTypeTag) {
+                            chatTypeTag.insertAdjacentElement('afterend', unreadBadge);
+                        } else {
+                            // 일반 채팅방이면 기본 미리보기 옆에 배지 추가
+                            const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
+                            if (previewContainer) {
+                                previewContainer.appendChild(unreadBadge);
+                            }
                         }
                     }
 
-                    // 배지가 있으면 업데이트
-                    if (unreadBadge) {
-                        unreadBadge.textContent = unreadCount;
-                        unreadBadge.style.display = 'flex'; // flex로 변경하여 콘텐츠 정렬
-                    }
+                    // 배지 업데이트
+                    unreadBadge.textContent = unreadCount;
+                    unreadBadge.style.display = 'flex';
                 } else if (unreadBadge) {
-                    // 안 읽은 메시지가 없으면 배지 숨기기
+                    // 안 읽은 메시지가 없으면 배지 숨김
                     unreadBadge.style.display = 'none';
                 }
             }
@@ -161,7 +167,6 @@ function updateTabBadge(tabId, unreadCount) {
 function handleNewMessageNotification(message) {
     console.log('새 메시지 처리:', message);
 
-    // 알림이 온 채팅방 찾기
     const roomId = message.roomId;
     const roomElements = [
         document.getElementById(`room-${roomId}`),
@@ -171,13 +176,12 @@ function handleNewMessageNotification(message) {
 
     roomElements.forEach(roomElement => {
         if (roomElement) {
-            // 채팅방이 목록에 있으면 정보 업데이트
+            // 미리보기 & 시간 업데이트
             const previewElement = roomElement.querySelector('.chat-preview');
             if (previewElement) {
                 previewElement.textContent = message.messageContent;
             }
 
-            // 시간 업데이트
             const timeElement = roomElement.querySelector('.chat-time');
             if (timeElement) {
                 const messageDate = new Date();
@@ -185,25 +189,30 @@ function handleNewMessageNotification(message) {
                 timeElement.textContent = formattedTime;
             }
 
-            // 안 읽은 메시지 수 증가 - 여기가 수정되어야 하는 부분
+            // 동호회 채팅방의 경우 `.chat-type-tag.club-tag` 옆에 배지를 추가
             let unreadBadge = roomElement.querySelector('.unread-badge');
             const unreadCount = unreadBadge ? parseInt(unreadBadge.textContent) : 0;
 
-            // 안 읽은 메시지 배지가 없으면 생성
             if (!unreadBadge) {
-                const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
-                if (previewContainer) {
-                    unreadBadge = document.createElement('div');
-                    unreadBadge.className = 'unread-badge';
-                    previewContainer.appendChild(unreadBadge);
+                unreadBadge = document.createElement('div');
+                unreadBadge.className = 'unread-badge';
+
+                //동호회 채팅방인지 확인
+                const chatTypeTag = roomElement.querySelector('.chat-type-tag.club-tag');
+                if (chatTypeTag) {
+                    chatTypeTag.insertAdjacentElement('afterend', unreadBadge);
+                } else {
+                    // 일반 채팅방이면 기본 미리보기 옆에 추가
+                    const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
+                    if (previewContainer) {
+                        previewContainer.appendChild(unreadBadge);
+                    }
                 }
             }
 
             // 배지 업데이트
-            if (unreadBadge) {
-                unreadBadge.textContent = unreadCount + 1;
-                unreadBadge.style.display = 'flex'; // flex로 변경하여 콘텐츠 정렬
-            }
+            unreadBadge.textContent = unreadCount + 1;
+            unreadBadge.style.display = 'flex';
 
             // 채팅방 목록에서 맨 위로 이동
             const parentList = roomElement.parentElement;
@@ -216,6 +225,7 @@ function handleNewMessageNotification(message) {
     // 브라우저 알림 표시
     showBrowserNotification(message);
 }
+
 
 // 브라우저 알림 표시
 function showBrowserNotification(message) {

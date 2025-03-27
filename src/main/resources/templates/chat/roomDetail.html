@@ -114,7 +114,7 @@
                  alt="User" class="avatar me-3">
             <div>
               <!-- 닉네임 표시 로직 개선 - 값이 없으면 ID 표시 -->
-              <h6 class="mb-0" th:text="${participant.userNickname != null && participant.userNickname != ''} ? ${participant.userNickname} : ${participant.user_id}">사용자 이름</h6>
+              <h6 class="mb-0" th:text="${participant.user_nickname != null && participant.user_nickname != ''} ? ${participant.user_nickname} : ${participant.user_id}">사용자 이름</h6>
               <small th:text="${participant.user_type == 'MEMBER' ? '일반 회원' : (participant.user_type == 'BUSINESS' ? '판매자' : '관리자')}">일반 회원</small>
             </div>
           </li>
@@ -201,7 +201,7 @@
     const currentUser = serverParticipants.find(p => p.user_id === userId);
     if (currentUser) {
       userType = currentUser.user_type || 'MEMBER';
-      currentUserNickname = currentUser.userNickname || userId;
+      currentUserNickname = currentUser.user_nickname || userId;
       currentUserProfile = currentUser.userProfile || '/sources/picture/기본이미지.png';
     }
   }
