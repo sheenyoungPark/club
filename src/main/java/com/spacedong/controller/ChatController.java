@@ -775,7 +775,13 @@ public class ChatController {
 
         ClubBean oneclub = clubService.oneClubInfo(club_id);
 
+        String profile = "";
 
+        if(loginMember.getMember_profile().isEmpty()){
+            profile = "";
+        }else{
+            profile = loginMember.getMember_profile();
+        }
         String firstMessage = oneclub.getClub_name() + "에 대해서 문의할게요";
         ChatMessageBean message = new ChatMessageBean();
         message.setRoomId(roomId);
@@ -784,7 +790,7 @@ public class ChatController {
         message.setMessageContent(firstMessage);
         message.setMessageType("TEXT");
         message.setSenderNickname(loginMember.getMember_nickname());
-        message.setSenderProfile(loginMember.getMember_profile());
+        message.setSenderProfile(profile);
 
         // 메시지 저장 및 발송
         chatService.sendMessage(message);

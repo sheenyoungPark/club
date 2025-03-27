@@ -274,20 +274,21 @@
     <div class="action-footer">
         <!-- 비회원용 버튼 -->
         <div th:if="${member_role == null}" class="action-buttons">
+            <a href="javascript:void(0);" class="btn btn-outline club-inquiry-btn"
+               th:data-club-id="${club.club_id}">
+                <i class="fas fa-envelope"></i> 문의하기
+            </a>
             <a th:if="${loginBusiness == null or loginBusiness.login == false}"
                th:href="@{/club/club_join(club_id=${club.club_id})}"
                class="btn btn-primary">
                 <i class="fas fa-user-plus"></i> 가입 신청하기
             </a>
-
-            <a th:href="@{/chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
-                <i class="fas fa-envelope"></i> 문의하기
-            </a>
         </div>
 
         <!-- 일반 회원용 버튼 -->
         <div th:if="${member_role != null && member_role != 'master'}" class="action-buttons">
-            <a th:href="@{/chat/new/ask(club_id=${club.club_id})}" class="btn btn-outline">
+            <a href="javascript:void(0);" class="btn btn-outline club-inquiry-btn"
+               th:data-club-id="${club.club_id}">
                 <i class="fas fa-envelope"></i> 문의하기
             </a>
             <a th:if="${isMember}" th:href="@{/club/leaveClub(club_id=${club.club_id})}"
@@ -568,6 +569,67 @@
             setInterval(updateCompletedReservations, 60000);
         }
     });
+    // 클럽 문의하기 팝업 기능
+    document.addEventListener('DOMContentLoaded', function() {
+        // 문의하기 버튼 찾기
+        const inquiryButtons = document.querySelectorAll('.club-inquiry-btn');
+
+        if (inquiryButtons.length > 0) {
+            inquiryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 데이터 속성에서 값 가져오기
+                    const clubId = this.getAttribute('data-club-id');
+
+                    if (!clubId) {
+                        alert('클럽 정보를 찾을 수 없습니다. 새로고침 후 다시 시도해주세요.');
+                        return;
+                    }
+
+                    // 팝업 창 열기
+                    openClubInquiryWindow(clubId);
+                });
+            });
+        }
+    });
+
+    // 클럽 문의하기 팝업 창 함수
+    function openClubInquiryWindow(clubId) {
+        // 정수로 변환 시도 (URL 파라미터 유효성 검사)
+        try {
+            clubId = parseInt(clubId);
+
+            if (isNaN(clubId)) {
+                throw new Error('유효하지 않은 클럽 ID입니다.');
+            }
+        } catch (e) {
+            alert('오류가 발생했습니다: ' + e.message);
+            return;
+        }
+
+        // 팝업 창의 크기와 위치 설정
+        const width = 700;
+        const height = 600;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+
+        // URL 생성
+        const url = `/chat/club/ask?club_id=${clubId}`;
+
+        // 팝업 창 열기
+        const inquiryWindow = window.open(
+            url,
+            'clubInquiryWindow',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
+        );
+
+        // 팝업 창 포커스
+        if (inquiryWindow) {
+            inquiryWindow.focus();
+        } else {
+            // 팝업이 차단된 경우 알림
+            alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+        }
+    }
 </script>
 <script th:src="@{/js/top.js}"></script>
 </body>
