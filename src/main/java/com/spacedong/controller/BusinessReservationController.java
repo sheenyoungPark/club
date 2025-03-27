@@ -159,11 +159,16 @@ public class BusinessReservationController {
             return "redirect:/business/reservations/waiting?error=unauthorized";
         }
 
+        if (reservation.getClub_id() != null){
+            reservationService.updateReservationStatus("CANCELLED", reservationId);
+            businessService.clubReservationMP(reservation.getTotal_price(), reservation.getClub_id());
+            return "redirect:/business/reservations/waiting?success=declined";
+        }else {
         // 예약 상태 변경 (대기중 -> 취소됨)
         reservationService.updateReservationStatus("CANCELLED", reservationId);
         businessService.cancleReservationMP(reservation.getTotal_price(), reservation.getMember_id());
-
         return "redirect:/business/reservations/waiting?success=declined";
+        }
     }
 
     // 확정된 예약을 취소합니다

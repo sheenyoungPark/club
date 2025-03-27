@@ -158,6 +158,9 @@ public class MemberController {
 		if (!loginMember.isLogin()) {
 			return "redirect:/member/login";
 		}
+		MemberBean member =  memberService.getMemberById(loginMember.getMember_id());
+		loginMember.setMember_point(member.getMember_point());
+
 		model.addAttribute("loginMember", loginMember);
 		model.addAttribute("maskedPhone", memberService.getMaskedPhone());
 		// 내가 가입한 클럽 목록 가져오기

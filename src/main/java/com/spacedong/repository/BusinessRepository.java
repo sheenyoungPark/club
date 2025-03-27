@@ -222,6 +222,10 @@ public class BusinessRepository {
         int count = businessMapper.verifyBusinessIdAndPhone(businessId, phone);
         return count > 0;
     }
+    public void clubReservationMP(@Param("price") int price,@Param("club_id)") int club_id){
+        businessMapper.clubReservationMP(price, club_id);
+    }
+
 
     //===============================================================
 }

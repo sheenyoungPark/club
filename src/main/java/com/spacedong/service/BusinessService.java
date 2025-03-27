@@ -367,6 +367,9 @@ public class BusinessService {
             return phone;
         }
     }
+    public void clubReservationMP(@Param("price") int price,@Param("club_id)") int club_id){
+        businessRepository.clubReservationMP(price, club_id);
+    }
 
     //===============================================================
 }
