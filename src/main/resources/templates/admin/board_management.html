@@ -1,1006 +1,1004 @@
-<!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>관리자 - 게시판 관리</title>
-  <link rel="stylesheet" th:href="@{/css/adminBoard.css}">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    .sidebar {
-      height: 100%;
-      background-color: #343a40;
-      color: white;
-      position: sticky;
-      top: 0;
-      overflow-y: auto;
-    }
-
-    .sidebar a {
-      color: rgba(255, 255, 255, 0.8);
-      text-decoration: none;
-      display: block;
-      padding: 10px 15px;
-    }
-
-    .sidebar a:hover {
-      color: white;
-      background-color: #495057;
-    }
-
-    .sidebar a.active {
-      background-color: #0d6efd;
-      color: white;
-    }
-
-    /* 전체 화면 레이아웃 조정 */
-    body, html {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-    }
-
-    .container-fluid {
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .row {
-      height: 100%;
-    }
-
-    /* 메인 콘텐츠 영역 조정 */
-    .col-md-10 {
-      height: 100%;
-      overflow-y: auto;
-      padding-bottom: 20px;
-    }
-
-    /* 테이블 컨테이너 조정 */
-    .table-responsive {
-      margin-bottom: 20px;
-    }
-
-    /* 페이지네이션 조정 */
-    .pagination {
-      position: static;
-      transform: none;
-      margin-top: 20px;
-      background-color: transparent;
-      box-shadow: none;
-      z-index: auto;
-    }
-
-    .board-item {
-      cursor: pointer;
-    }
-
-    .board-item:hover {
-      background-color: #f8f9fa;
-    }
-    .board-content {
-      min-height: 150px;
-      white-space: pre-line;
-      overflow-wrap: break-word;
-      background-color: #f8f9fa;
-      padding: 15px;
-      border-radius: 4px;
-    }
-
-    /* 첨부파일(이미지) 스타일 */
-    #detail-board-attachments .img-thumbnail {
-      transition: transform 0.2s;
-      cursor: pointer;
-    }
-
-    #detail-board-attachments .img-thumbnail:hover {
-      transform: scale(1.05);
-    }
-
-    /* 댓글 스타일 */
-    #detail-board-comments .list-group-item {
-      border-left: none;
-      border-right: none;
-    }
-
-    #detail-board-comments .border-start {
-      border-left: 3px solid #0d6efd !important;
-      margin-left: 15px;
-    }
-
-    /* 모달 스타일 개선 */
-    #boardDetailModal .modal-body {
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-
-    #boardDetailModal .modal-dialog {
-      max-width: 800px;
-    }
-
-  </style>
-</head>
-<body>
-<div class="container-fluid">
-  <div class="row">
-    <!-- 사이드바 메뉴 -->
-    <div class="col-md-2 sidebar p-0">
-      <div class="d-flex flex-column flex-shrink-0 p-3">
-        <a href="/admin/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
-          <span class="fs-4">관리자 패널</span>
-        </a>
-        <hr>
-        <ul class="nav nav-pills flex-column mb-auto">
-          <li class="nav-item">
-            <a href="/admin/dashboard" class="nav-link">
-              대시보드
-            </a>
-          </li>
-          <li>
-            <a href="/admin/club_management" class="nav-link">
-              동호회 관리
-            </a>
-          </li>
-          <li>
-            <a href="/admin/business_management" class="nav-link">
-              판매자 관리
-            </a>
-          </li>
-          <li>
-            <a href="/admin/member_management" class="nav-link">
-              회원 관리
-            </a>
-          </li>
-          <li>
-            <a href="/admin/board_management" class="nav-link active">
-              게시판 관리
-            </a>
-          </li>
-          <li>
-            <a href="/admin/exchange_management" class="nav-link ">
-              환전 요청 관리
-            </a>
-          </li>
-        </ul>
-        <hr>
-        <div>
-          <a href="/member/logout" class="btn btn-danger w-100">로그아웃</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- 메인 콘텐츠 -->
-    <div class="col-md-10 p-4">
-      <h2>게시판 관리</h2>
-      <p>총 <span id="boardCount">0</span>개의 게시글이 있습니다.</p>
-
-      <!-- 검색 영역 -->
-      <div class="card mb-4">
-        <div class="card-header">
-          게시글 검색
-        </div>
-        <div class="card-body">
-          <div class="row g-3">
-            <div class="col-md-3">
-              <select class="form-select" id="searchType">
-                <option value="title">제목</option>
-                <option value="content">내용</option>
-                <option value="writer">작성자</option>
-                <option value="board_type">게시판 유형</option>
-              </select>
-            </div>
-            <div class="col-md-7">
-              <input type="text" class="form-control" id="keyword" placeholder="검색어 입력">
-            </div>
-            <div class="col-md-2">
-              <button id="searchBtn" class="btn btn-primary w-100">검색</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 게시판 유형 탭 -->
-      <ul class="nav nav-tabs mb-3">
-        <li class="nav-item">
-          <a class="nav-link active" href="#" data-board-type="all">전체</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#" data-board-type="admin">관리자 게시판</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#" data-board-type="member">회원 게시판</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#" data-board-type="business">판매자 게시판</a>
-        </li>
-      </ul>
-
-      <!-- 게시글 목록 -->
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span>게시글 목록</span>
-          <button class="btn btn-sm btn-primary" id="addNoticeBtn">공지사항 작성</button>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-              <tr>
-                <th>번호</th>
-                <th>게시판</th>
-                <th width="40%">제목</th>
-                <th>작성자</th>
-                <th>작성일</th>
-                <th>조회수</th>
-                <th>관리</th>
-              </tr>
-              </thead>
-              <tbody id="boardList">
-              <!-- 게시글 목록이 여기에 동적으로 추가됩니다 -->
-              </tbody>
-            </table>
-
-            <!-- 페이지네이션 -->
-            <nav aria-label="게시글 페이지 내비게이션">
-              <ul class="pagination" id="pagination">
-                <!-- 페이지 번호가 여기에 동적으로 추가됩니다 -->
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- 게시글 상세 정보 모달 -->
-<div class="modal fade" id="boardDetailModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">게시글 상세 정보</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 id="detail-board-title" class="mb-0">게시글 제목</h4>
-            <span class="badge bg-primary" id="detail-board-category">게시판 유형</span>
-          </div>
-          <div class="text-muted small mb-3">
-            <span id="detail-board-writer">작성자</span> |
-            <span id="detail-board-date">작성일</span> |
-            조회수: <span id="detail-board-views">0</span>
-          </div>
-          <hr>
-          <div id="detail-board-content" class="mb-4 board-content">게시글 내용</div>
-
-          <!-- 첨부파일 영역 -->
-          <div id="attachment-area" class="mb-3">
-            <h6 class="border-bottom pb-2">첨부파일</h6>
-            <ul class="list-group" id="detail-board-attachments">
-              <!-- 첨부파일 목록이 여기에 추가됩니다 -->
-            </ul>
-          </div>
-
-          <!-- 댓글 영역 -->
-          <div id="comments-area">
-            <h6 class="border-bottom pb-2">댓글 (<span id="comment-count">0</span>)</h6>
-            <ul class="list-group list-group-flush" id="detail-board-comments">
-              <!-- 댓글 목록이 여기에 추가됩니다 -->
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" id="deleteBtn">게시글 삭제</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 공지사항 작성 모달 -->
-<div class="modal fade" id="addNoticeModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">공지사항 작성</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="noticeForm">
-          <div class="mb-3">
-            <label for="notice-title" class="form-label">제목</label>
-            <input type="text" class="form-control" id="notice-title" required>
-          </div>
-          <div class="mb-3">
-            <label for="notice-content" class="form-label">내용</label>
-            <textarea class="form-control" id="notice-content" rows="10" required></textarea>
-          </div>
-          <div class="mb-3">
-            <label for="notice-file" class="form-label">첨부파일</label>
-            <input type="file" class="form-control" id="notice-file" multiple>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" id="saveNoticeBtn">저장</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script>
-  $(document).ready(function() {
-    // 페이지 관련 변수
-    var currentPage = 1;
-    var itemsPerPage = 10;
-    var totalPages = 1;
-    var allBoards = []; // 모든 게시글 데이터 저장
-    var currentBoardType = 'all'; // 현재 선택된 게시판 유형
-
-    // 모든 게시글 데이터 가져오기
-    function loadAllBoards() {
-      $.ajax({
-        url: '/admin/board_list',  // API 엔드포인트
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-          allBoards = response.boardList || [];
-          totalPages = Math.ceil(allBoards.length / itemsPerPage);
-
-          // 전체 게시글 수 표시
-          $('#boardCount').text(allBoards.length);
-
-          // 첫 페이지 표시
-          displayBoardsPage(1);
-
-          // 페이지네이션 생성
-          createPagination();
-        },
-        error: function(xhr, status, error) {
-          console.error('데이터 로드 실패:', error);
-          alert('게시글 데이터를 불러오는데 실패했습니다.');
-        }
-      });
-    }
-
-    // 게시글 검색
-    $('#searchBtn').click(function() {
-      var searchType = $('#searchType').val();
-      var keyword = $('#keyword').val().toLowerCase();
-
-      if(keyword.trim() === '') {
-        loadAllBoards();
-        return;
+  <!DOCTYPE html>
+  <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 게시판 관리</title>
+    <link rel="stylesheet" th:href="@{/css/adminBoard.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      .sidebar {
+        height: 100%;
+        background-color: #343a40;
+        color: white;
+        position: sticky;
+        top: 0;
+        overflow-y: auto;
       }
 
-      $.ajax({
-        url: '/admin/searchBoard',
-        type: 'GET',
-        data: {
-          searchType: searchType,
-          keyword: keyword
-        },
-        dataType: 'json',
-        success: function(response) {
-          if(response.success) {
-            var filteredBoards = response.boardList;
-            // 검색 결과로 목록 업데이트
-            var tempAllBoards = allBoards.slice(); // 원본 복사
-            allBoards = filteredBoards;
+      .sidebar a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        display: block;
+        padding: 10px 15px;
+      }
+
+      .sidebar a:hover {
+        color: white;
+        background-color: #495057;
+      }
+
+      .sidebar a.active {
+        background-color: #0d6efd;
+        color: white;
+      }
+
+      /* 전체 화면 레이아웃 조정 */
+      body, html {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .container-fluid {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .row {
+        height: 100%;
+      }
+
+      /* 메인 콘텐츠 영역 조정 */
+      .col-md-10 {
+        height: 100%;
+        overflow-y: auto;
+        padding-bottom: 20px;
+      }
+
+      /* 테이블 컨테이너 조정 */
+      .table-responsive {
+        margin-bottom: 20px;
+      }
+
+      /* 페이지네이션 조정 */
+      .pagination {
+        position: static;
+        transform: none;
+        margin-top: 20px;
+        background-color: transparent;
+        box-shadow: none;
+        z-index: auto;
+      }
+
+      .board-item {
+        cursor: pointer;
+      }
+
+      .board-item:hover {
+        background-color: #f8f9fa;
+      }
+      .board-content {
+        min-height: 150px;
+        white-space: pre-line;
+        overflow-wrap: break-word;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+      }
+
+      /* 첨부파일(이미지) 스타일 */
+      #detail-board-attachments .img-thumbnail {
+        transition: transform 0.2s;
+        cursor: pointer;
+      }
+
+      #detail-board-attachments .img-thumbnail:hover {
+        transform: scale(1.05);
+      }
+
+      /* 댓글 스타일 */
+      #detail-board-comments .list-group-item {
+        border-left: none;
+        border-right: none;
+      }
+
+      #detail-board-comments .border-start {
+        border-left: 3px solid #0d6efd !important;
+        margin-left: 15px;
+      }
+
+      /* 모달 스타일 개선 */
+      #boardDetailModal .modal-body {
+        max-height: 70vh;
+        overflow-y: auto;
+      }
+
+      #boardDetailModal .modal-dialog {
+        max-width: 800px;
+      }
+
+    </style>
+  </head>
+  <body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- 사이드바 메뉴 -->
+      <div class="col-md-2 sidebar p-0">
+        <div class="d-flex flex-column flex-shrink-0 p-3">
+          <a href="/admin/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+            <span class="fs-4">관리자 패널</span>
+          </a>
+          <hr>
+          <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+              <a href="/admin/dashboard" class="nav-link">
+                대시보드
+              </a>
+            </li>
+            <li>
+              <a href="/admin/club_management" class="nav-link">
+                동호회 관리
+              </a>
+            </li>
+            <li>
+              <a href="/admin/business_management" class="nav-link">
+                판매자 관리
+              </a>
+            </li>
+            <li>
+              <a href="/admin/member_management" class="nav-link">
+                회원 관리
+              </a>
+            </li>
+            <li>
+              <a href="/admin/board_management" class="nav-link active">
+                게시판 관리
+              </a>
+            </li>
+            <li>
+              <a href="/admin/exchange_management" class="nav-link ">
+                환전 요청 관리
+              </a>
+            </li>
+          </ul>
+          <hr>
+          <div>
+            <a href="/member/logout" class="btn btn-danger w-100">로그아웃</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 메인 콘텐츠 -->
+      <div class="col-md-10 p-4">
+        <h2>게시판 관리</h2>
+        <p>총 <span id="boardCount">0</span>개의 게시글이 있습니다.</p>
+
+        <!-- 검색 영역 -->
+        <div class="card mb-4">
+          <div class="card-header">
+            게시글 검색
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <select class="form-select" id="searchType">
+                  <option value="title">제목</option>
+                  <option value="content">내용</option>
+                  <option value="writer">작성자</option>
+                  <option value="board_type">게시판 유형</option>
+                </select>
+              </div>
+              <div class="col-md-7">
+                <input type="text" class="form-control" id="keyword" placeholder="검색어 입력">
+              </div>
+              <div class="col-md-2">
+                <button id="searchBtn" class="btn btn-primary w-100">검색</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 게시판 유형 탭 -->
+        <ul class="nav nav-tabs mb-3">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" data-board-type="all">전체</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-board-type="admin">관리자 게시판</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-board-type="member">회원 게시판</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-board-type="business">판매자 게시판</a>
+          </li>
+        </ul>
+
+        <!-- 게시글 목록 -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>게시글 목록</span>
+            <button class="btn btn-sm btn-primary" id="addNoticeBtn">공지사항 작성</button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                <tr>
+                  <th>번호</th>
+                  <th>게시판</th>
+                  <th width="40%">제목</th>
+                  <th>작성자</th>
+                  <th>작성일</th>
+                  <th>조회수</th>
+                  <th>관리</th>
+                </tr>
+                </thead>
+                <tbody id="boardList">
+                <!-- 게시글 목록이 여기에 동적으로 추가됩니다 -->
+                </tbody>
+              </table>
+
+              <!-- 페이지네이션 -->
+              <nav aria-label="게시글 페이지 내비게이션">
+                <ul class="pagination" id="pagination">
+                  <!-- 페이지 번호가 여기에 동적으로 추가됩니다 -->
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 게시글 상세 정보 모달 -->
+  <div class="modal fade" id="boardDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">게시글 상세 정보</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4 id="detail-board-title" class="mb-0">게시글 제목</h4>
+              <span class="badge bg-primary" id="detail-board-category">게시판 유형</span>
+            </div>
+            <div class="text-muted small mb-3">
+              <span id="detail-board-writer">작성자</span> |
+              <span id="detail-board-date">작성일</span> |
+              조회수: <span id="detail-board-views">0</span>
+            </div>
+            <hr>
+            <div id="detail-board-content" class="mb-4 board-content">게시글 내용</div>
+
+            <!-- 첨부파일 영역 -->
+            <div id="attachment-area" class="mb-3">
+              <h6 class="border-bottom pb-2">첨부파일</h6>
+              <ul class="list-group" id="detail-board-attachments">
+                <!-- 첨부파일 목록이 여기에 추가됩니다 -->
+              </ul>
+            </div>
+
+            <!-- 댓글 영역 -->
+            <div id="comments-area">
+              <h6 class="border-bottom pb-2">댓글 (<span id="comment-count">0</span>)</h6>
+              <ul class="list-group list-group-flush" id="detail-board-comments">
+                <!-- 댓글 목록이 여기에 추가됩니다 -->
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="deleteBtn">게시글 삭제</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 공지사항 작성 모달 -->
+  <div class="modal fade" id="addNoticeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">공지사항 작성</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="noticeForm">
+            <div class="mb-3">
+              <label for="notice-title" class="form-label">제목</label>
+              <input type="text" class="form-control" id="notice-title" required>
+            </div>
+            <div class="mb-3">
+              <label for="notice-content" class="form-label">내용</label>
+              <textarea class="form-control" id="notice-content" rows="10" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="notice-file" class="form-label">첨부파일</label>
+              <input type="file" class="form-control" id="notice-file" multiple>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="saveNoticeBtn">저장</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // 페이지 관련 변수
+      var currentPage = 1;
+      var itemsPerPage = 10;
+      var totalPages = 1;
+      var allBoards = []; // 모든 게시글 데이터 저장
+      var currentBoardType = 'all'; // 현재 선택된 게시판 유형
+
+      // 모든 게시글 데이터 가져오기
+      function loadAllBoards() {
+        $.ajax({
+          url: '/admin/board_list',  // API 엔드포인트
+          type: 'GET',
+          dataType: 'json',
+          success: function(response) {
+            allBoards = response.boardList || [];
             totalPages = Math.ceil(allBoards.length / itemsPerPage);
 
-            // 검색 결과 수 표시
+            // 전체 게시글 수 표시
             $('#boardCount').text(allBoards.length);
 
             // 첫 페이지 표시
-            currentPage = 1;
-            displayBoardsPage(currentPage);
+            displayBoardsPage(1);
 
-            // 페이지네이션 업데이트
+            // 페이지네이션 생성
             createPagination();
-
-            // 필터링 후 전체 데이터 복원
-            allBoards = tempAllBoards;
-          } else {
-            alert('검색에 실패했습니다: ' + response.message);
+          },
+          error: function(xhr, status, error) {
+            console.error('데이터 로드 실패:', error);
+            alert('게시글 데이터를 불러오는데 실패했습니다.');
           }
-        },
-        error: function(xhr, status, error) {
-          console.error('검색 요청 실패:', error);
-          alert('검색 요청에 실패했습니다.');
+        });
+      }
+
+      // 게시글 검색
+      $('#searchBtn').click(function() {
+        var searchType = $('#searchType').val();
+        var keyword = $('#keyword').val().toLowerCase();
+
+        if(keyword.trim() === '') {
+          loadAllBoards();
+          return;
         }
-      });
-    });
 
-    // 게시판 유형 탭 클릭 이벤트 수정
-    $('.nav-tabs .nav-link').click(function(e) {
-      e.preventDefault();
-
-      // 탭 활성화
-      $('.nav-tabs .nav-link').removeClass('active');
-      $(this).addClass('active');
-
-      // 선택된 게시판 유형 저장
-      var currentBoardType = $(this).data('board-type');
-
-      // 전체 탭 선택 시
-      if(currentBoardType === 'all') {
-        loadAllBoards();
-      } else {
-        // 특정 게시판 유형으로 필터링 - 서버에 요청
         $.ajax({
-          url: '/admin/board_list',
+          url: '/admin/searchBoard',
           type: 'GET',
           data: {
-            boardType: currentBoardType
+            searchType: searchType,
+            keyword: keyword
           },
           dataType: 'json',
           success: function(response) {
             if(response.success) {
-              var filteredBoards = response.boardList || [];
-
-              // 게시판 유형 명시적 설정 (프론트엔드에서 한번 더 확인)
-              for(var i = 0; i < filteredBoards.length; i++) {
-                filteredBoards[i].board_type = currentBoardType;
-              }
-
-              // 필터링 결과 수 표시
-              $('#boardCount').text(filteredBoards.length);
-
-              // 페이지네이션 계산
-              var totalPages = Math.ceil(filteredBoards.length / itemsPerPage);
-
-              // 현재 페이지 초기화 및 목록 표시
-              currentPage = 1;
-
-              // 전역 변수에 필터링된 결과 저장 (페이지네이션용)
+              var filteredBoards = response.boardList;
+              // 검색 결과로 목록 업데이트
+              var tempAllBoards = allBoards.slice(); // 원본 복사
               allBoards = filteredBoards;
+              totalPages = Math.ceil(allBoards.length / itemsPerPage);
+
+              // 검색 결과 수 표시
+              $('#boardCount').text(allBoards.length);
 
               // 첫 페이지 표시
+              currentPage = 1;
               displayBoardsPage(currentPage);
 
               // 페이지네이션 업데이트
               createPagination();
+
+              // 필터링 후 전체 데이터 복원
+              allBoards = tempAllBoards;
             } else {
-              alert('게시글 목록을 불러오는데 실패했습니다: ' + (response.message || '알 수 없는 오류'));
+              alert('검색에 실패했습니다: ' + response.message);
             }
           },
           error: function(xhr, status, error) {
-            console.error('데이터 필터링 실패:', error);
-            console.log('응답 내용:', xhr.responseText);
-            alert('게시판 필터링에 실패했습니다.');
+            console.error('검색 요청 실패:', error);
+            alert('검색 요청에 실패했습니다.');
+          }
+        });
+      });
+
+      // 게시판 유형 탭 클릭 이벤트 수정
+      $('.nav-tabs .nav-link').click(function(e) {
+        e.preventDefault();
+
+        // 탭 활성화
+        $('.nav-tabs .nav-link').removeClass('active');
+        $(this).addClass('active');
+
+        // 선택된 게시판 유형 저장
+        var currentBoardType = $(this).data('board-type');
+
+        // 전체 탭 선택 시
+        if(currentBoardType === 'all') {
+          loadAllBoards();
+        } else {
+          // 특정 게시판 유형으로 필터링 - 서버에 요청
+          $.ajax({
+            url: '/admin/board_list',
+            type: 'GET',
+            data: {
+              boardType: currentBoardType
+            },
+            dataType: 'json',
+            success: function(response) {
+              if(response.success) {
+                var filteredBoards = response.boardList || [];
+
+                // 게시판 유형 명시적 설정 (프론트엔드에서 한번 더 확인)
+                for(var i = 0; i < filteredBoards.length; i++) {
+                  filteredBoards[i].board_type = currentBoardType;
+                }
+
+                // 필터링 결과 수 표시
+                $('#boardCount').text(filteredBoards.length);
+
+                // 페이지네이션 계산
+                var totalPages = Math.ceil(filteredBoards.length / itemsPerPage);
+
+                // 현재 페이지 초기화 및 목록 표시
+                currentPage = 1;
+
+                // 전역 변수에 필터링된 결과 저장 (페이지네이션용)
+                allBoards = filteredBoards;
+
+                // 첫 페이지 표시
+                displayBoardsPage(currentPage);
+
+                // 페이지네이션 업데이트
+                createPagination();
+              } else {
+                alert('게시글 목록을 불러오는데 실패했습니다: ' + (response.message || '알 수 없는 오류'));
+              }
+            },
+            error: function(xhr, status, error) {
+              console.error('데이터 필터링 실패:', error);
+              console.log('응답 내용:', xhr.responseText);
+              alert('게시판 필터링에 실패했습니다.');
+            }
+          });
+        }
+      });
+
+      // 특정 페이지의 게시글 목록 표시
+      function displayBoardsPage(page) {
+        // 현재 페이지 설정
+        currentPage = page;
+
+        // 시작 인덱스와 끝 인덱스 계산
+        var startIndex = (page - 1) * itemsPerPage;
+        var endIndex = startIndex + itemsPerPage;
+
+        // 현재 페이지에 표시할 게시글들
+        var boardsToShow = allBoards.slice(startIndex, endIndex);
+
+        // 게시글 목록 표시
+        displayBoards(boardsToShow);
+      }
+
+      // 페이지네이션 생성
+      function createPagination() {
+        var pagination = $('#pagination');
+        pagination.empty();
+
+        // 이전 페이지 버튼
+        var prevBtn = `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="이전">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      `;
+        pagination.append(prevBtn);
+
+        // 페이지 번호 버튼 (총 5개만 표시)
+        if (totalPages <= 5) {
+          for (var i = 1; i <= totalPages; i++) {
+            var pageBtn = `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+              <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>
+          `;
+            pagination.append(pageBtn);
+          }
+        } else {
+          // 시작 페이지와 끝 페이지 계산
+          var startPage = Math.max(1, currentPage - 2);
+          var endPage = Math.min(totalPages, startPage + 4);
+
+          // 시작 페이지가 1보다 크면 첫 페이지 버튼 추가
+          if (startPage > 1) {
+            pagination.append(`
+            <li class="page-item">
+              <a class="page-link" href="#" data-page="1">1</a>
+            </li>
+            ${startPage > 2 ? '<li class="page-item disabled"><a class="page-link">...</a></li>' : ''}
+          `);
+          }
+
+          // 페이지 번호 버튼
+          for (var i = startPage; i <= endPage; i++) {
+            var pageBtn = `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+              <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>
+          `;
+            pagination.append(pageBtn);
+          }
+
+          // 끝 페이지가 전체 페이지보다 작으면 마지막 페이지 버튼 추가
+          if (endPage < totalPages) {
+            pagination.append(`
+            ${endPage < totalPages - 1 ? '<li class="page-item disabled"><a class="page-link">...</a></li>' : ''}
+            <li class="page-item">
+              <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
+            </li>
+          `);
+          }
+        }
+
+        // 다음 페이지 버튼
+        var nextBtn = `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="다음">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      `;
+        pagination.append(nextBtn);
+
+        // 페이지 클릭 이벤트 처리
+        $('.page-link').click(function(e) {
+          e.preventDefault();
+
+          var page = $(this).data('page');
+          if (page >= 1 && page <= totalPages) {
+            displayBoardsPage(page);
           }
         });
       }
-    });
 
-    // 특정 페이지의 게시글 목록 표시
-    function displayBoardsPage(page) {
-      // 현재 페이지 설정
-      currentPage = page;
-
-      // 시작 인덱스와 끝 인덱스 계산
-      var startIndex = (page - 1) * itemsPerPage;
-      var endIndex = startIndex + itemsPerPage;
-
-      // 현재 페이지에 표시할 게시글들
-      var boardsToShow = allBoards.slice(startIndex, endIndex);
-
-      // 게시글 목록 표시
-      displayBoards(boardsToShow);
-    }
-
-    // 페이지네이션 생성
-    function createPagination() {
-      var pagination = $('#pagination');
-      pagination.empty();
-
-      // 이전 페이지 버튼
-      var prevBtn = `
-      <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-        <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="이전">
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-    `;
-      pagination.append(prevBtn);
-
-      // 페이지 번호 버튼 (총 5개만 표시)
-      if (totalPages <= 5) {
-        for (var i = 1; i <= totalPages; i++) {
-          var pageBtn = `
-          <li class="page-item ${i === currentPage ? 'active' : ''}">
-            <a class="page-link" href="#" data-page="${i}">${i}</a>
-          </li>
-        `;
-          pagination.append(pageBtn);
-        }
-      } else {
-        // 시작 페이지와 끝 페이지 계산
-        var startPage = Math.max(1, currentPage - 2);
-        var endPage = Math.min(totalPages, startPage + 4);
-
-        // 시작 페이지가 1보다 크면 첫 페이지 버튼 추가
-        if (startPage > 1) {
-          pagination.append(`
-          <li class="page-item">
-            <a class="page-link" href="#" data-page="1">1</a>
-          </li>
-          ${startPage > 2 ? '<li class="page-item disabled"><a class="page-link">...</a></li>' : ''}
-        `);
+      // 게시판 유형별 배지 반환 함수 개선
+      function getBoardTypeBadge(board_type) {
+        // board_type이 없거나 비어있는 경우 로그 출력 및 기본값 설정
+        if (!board_type) {
+          console.warn('게시판 유형 없음. 기본값 사용');
+          board_type = 'member';
         }
 
-        // 페이지 번호 버튼
-        for (var i = startPage; i <= endPage; i++) {
-          var pageBtn = `
-          <li class="page-item ${i === currentPage ? 'active' : ''}">
-            <a class="page-link" href="#" data-page="${i}">${i}</a>
-          </li>
-        `;
-          pagination.append(pageBtn);
-        }
+        // 대소문자 구분 없이 비교하기 위해 소문자로 변환
+        let type = board_type.toLowerCase();
 
-        // 끝 페이지가 전체 페이지보다 작으면 마지막 페이지 버튼 추가
-        if (endPage < totalPages) {
-          pagination.append(`
-          ${endPage < totalPages - 1 ? '<li class="page-item disabled"><a class="page-link">...</a></li>' : ''}
-          <li class="page-item">
-            <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
-          </li>
-        `);
+        switch (type) {
+          case 'admin':
+            return '<span class="badge bg-danger">관리자</span>';
+          case 'business':
+            return '<span class="badge bg-success">판매자</span>';
+          case 'member':
+            return '<span class="badge bg-primary">회원</span>';
+          default:
+            console.warn('알 수 없는 게시판 유형:', board_type);
+            return '<span class="badge bg-secondary">기타</span>';
         }
       }
 
-      // 다음 페이지 버튼
-      var nextBtn = `
-      <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-        <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="다음">
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-    `;
-      pagination.append(nextBtn);
+      // 게시판 유형 텍스트 반환 함수 개선
+      function getBoardTypeText(board_type) {
+        // 대소문자 구분 없이 비교하기 위해 소문자로 변환
+        let type = (board_type || '').toLowerCase();
 
-      // 페이지 클릭 이벤트 처리
-      $('.page-link').click(function(e) {
-        e.preventDefault();
-
-        var page = $(this).data('page');
-        if (page >= 1 && page <= totalPages) {
-          displayBoardsPage(page);
+        switch (type) {
+          case 'admin':
+            return '관리자 게시판';
+          case 'business':
+            return '판매자 게시판';
+          case 'member':
+            return '회원 게시판';
+          default:
+            return '기타 게시판';
         }
-      });
-    }
-
-    // 게시판 유형별 배지 반환 함수 개선
-    function getBoardTypeBadge(board_type) {
-      // board_type이 없거나 비어있는 경우 로그 출력 및 기본값 설정
-      if (!board_type) {
-        console.warn('게시판 유형 없음. 기본값 사용');
-        board_type = 'member';
       }
 
-      // 대소문자 구분 없이 비교하기 위해 소문자로 변환
-      let type = board_type.toLowerCase();
+      // 게시판 유형별 배지 클래스 반환 함수 개선
+      function getBoardTypeClass(board_type) {
+        // 대소문자 구분 없이 비교하기 위해 소문자로 변환
+        let type = (board_type || '').toLowerCase();
 
-      switch (type) {
-        case 'admin':
-          return '<span class="badge bg-danger">관리자</span>';
-        case 'business':
-          return '<span class="badge bg-success">판매자</span>';
-        case 'member':
-          return '<span class="badge bg-primary">회원</span>';
-        default:
-          console.warn('알 수 없는 게시판 유형:', board_type);
-          return '<span class="badge bg-secondary">기타</span>';
-      }
-    }
-
-    // 게시판 유형 텍스트 반환 함수 개선
-    function getBoardTypeText(board_type) {
-      // 대소문자 구분 없이 비교하기 위해 소문자로 변환
-      let type = (board_type || '').toLowerCase();
-
-      switch (type) {
-        case 'admin':
-          return '관리자 게시판';
-        case 'business':
-          return '판매자 게시판';
-        case 'member':
-          return '회원 게시판';
-        default:
-          return '기타 게시판';
-      }
-    }
-
-    // 게시판 유형별 배지 클래스 반환 함수 개선
-    function getBoardTypeClass(board_type) {
-      // 대소문자 구분 없이 비교하기 위해 소문자로 변환
-      let type = (board_type || '').toLowerCase();
-
-      switch (type) {
-        case 'admin':
-          return 'bg-danger';
-        case 'business':
-          return 'bg-success';
-        case 'member':
-          return 'bg-primary';
-        default:
-          return 'bg-secondary';
-      }
-    }
-
-    // 게시글 목록 표시 함수
-    function displayBoards(boards) {
-      var boardList = $('#boardList');
-      boardList.empty();
-
-      if(boards.length === 0) {
-        boardList.append('<tr><td colspan="7" class="text-center">게시글이 없습니다.</td></tr>');
-        return;
+        switch (type) {
+          case 'admin':
+            return 'bg-danger';
+          case 'business':
+            return 'bg-success';
+          case 'member':
+            return 'bg-primary';
+          default:
+            return 'bg-secondary';
+        }
       }
 
-      $.each(boards, function(index, board) {
-        // 중요: 서버에서 이미 board_type이 설정되어 있어야 함
-        // 각 게시글은 이미 테이블 구분에 따라 board_type이 member, business, admin으로 설정되어 있음
+      // 게시글 목록 표시 함수
+      function displayBoards(boards) {
+        var boardList = $('#boardList');
+        boardList.empty();
 
-        // board_type이 없는 경우 로그 출력 (디버깅용)
-        if (!board.board_type) {
-          console.warn('게시글 유형이 없습니다:', board);
+        if(boards.length === 0) {
+          boardList.append('<tr><td colspan="7" class="text-center">게시글이 없습니다.</td></tr>');
+          return;
         }
 
-        var typeBadge = getBoardTypeBadge(board.board_type);
+        $.each(boards, function(index, board) {
+          var typeBadge = getBoardTypeBadge(board.board_type);
 
-        var row = `
-  <tr class="board-item" data-board-id="${board.board_id}" data-board-type="${board.board_type}">
-    <td>${board.board_id}</td>
-    <td>${typeBadge}</td>
-    <td>${board.board_title} ${board.comment_count > 0 ? `<span class="badge bg-secondary">${board.comment_count}</span>` : ''}</td>
-    <td>${board.writer_name || board.board_writer_id}</td>
-    <td>${formatDate(board.create_date)}</td>
-    <td>${board.board_view}</td>
-    <td>
-      <button class="btn btn-sm btn-primary view-detail" data-board-id="${board.board_id}" data-board-type="${board.board_type}">
-        상세보기
-      </button>
-    </td>
-  </tr>
+          // 작성자 이름 설정
+          var writerName = board.writer_name;
+          if (!writerName || writerName === '회원' || writerName === '판매자') {
+            writerName = board.board_writer_id;
+          }
+
+          var row = `
+<tr class="board-item" data-board-id="${board.board_id}" data-board-type="${board.board_type}">
+  <td>${board.board_id}</td>
+  <td>${typeBadge}</td>
+  <td>${board.board_title} ${board.comment_count > 0 ? `<span class="badge bg-secondary">${board.comment_count}</span>` : ''}</td>
+  <td>${writerName}</td>
+  <td>${formatDate(board.create_date)}</td>
+  <td>${board.board_view}</td>
+  <td>
+    <button class="btn btn-sm btn-primary view-detail" data-board-id="${board.board_id}" data-board-type="${board.board_type}">
+      상세보기
+    </button>
+  </td>
+</tr>
 `;
+          boardList.append(row);
+        });
 
-        boardList.append(row);
-      });
 
-      // 게시글 상세 버튼 이벤트
-      $('.view-detail').click(function(e) {
-        e.preventDefault(); // 기본 동작 방지
+        // 게시글 상세 버튼 이벤트
+        $('.view-detail').click(function(e) {
+          e.preventDefault(); // 기본 동작 방지
 
-        var boardId = $(this).data('board-id');
-        var boardType = $(this).data('board-type');
+          var boardId = $(this).data('board-id');
+          var boardType = $(this).data('board-type');
 
-        // boardType이 undefined인 경우 확인
-        if (!boardType || boardType === "undefined") {
-          // 부모 행에서 데이터 속성 가져오기
-          boardType = $(this).closest('tr').data('board-type');
+          // boardType이 undefined인 경우 확인
+          if (!boardType || boardType === "undefined") {
+            // 부모 행에서 데이터 속성 가져오기
+            boardType = $(this).closest('tr').data('board-type');
 
-          // 여전히 undefined인 경우 서버에 확인 요청
+            // 여전히 undefined인 경우 서버에 확인 요청
+            if (!boardType || boardType === "undefined") {
+              findBoardType(boardId);
+              return;
+            }
+          }
+
+          console.log("게시글 상세 정보 요청: boardId=" + boardId + ", boardType=" + boardType);
+          showBoardDetail(boardId, boardType);
+        });
+        // 게시글 유형 찾기 함수
+        function findBoardType(boardId) {
+          $.ajax({
+            url: '/admin/find_board_type',
+            type: 'GET',
+            data: {
+              boardId: boardId
+            },
+            dataType: 'json',
+            success: function(response) {
+              if (response.success && response.boardType) {
+                // 게시글 ID와 유형으로 상세 정보 요청
+                showBoardDetail(boardId, response.boardType);
+              } else {
+                alert('게시글 유형을 확인할 수 없습니다.');
+              }
+            },
+            error: function(xhr, status, error) {
+              console.error('게시글 유형 확인 요청 실패:', error);
+              console.log('응답 내용:', xhr.responseText);
+              alert('게시글 유형을 확인하는 중 오류가 발생했습니다.');
+            }
+          });
+        }
+
+        // 게시글 행 클릭 이벤트
+        $('.board-item').click(function(e) {
+          // 이미 버튼 클릭으로 처리되는 경우는 무시
+          if($(e.target).hasClass('btn') || $(e.target).closest('.btn').length) {
+            return;
+          }
+
+          var boardId = $(this).data('board-id');
+          var boardType = $(this).data('board-type');
+
+          // boardType이 undefined인 경우 서버에 확인 요청
           if (!boardType || boardType === "undefined") {
             findBoardType(boardId);
             return;
           }
-        }
 
-        console.log("게시글 상세 정보 요청: boardId=" + boardId + ", boardType=" + boardType);
-        showBoardDetail(boardId, boardType);
-      });
-      // 게시글 유형 찾기 함수
-      function findBoardType(boardId) {
-        $.ajax({
-          url: '/admin/find_board_type',
-          type: 'GET',
-          data: {
-            boardId: boardId
-          },
-          dataType: 'json',
-          success: function(response) {
-            if (response.success && response.boardType) {
-              // 게시글 ID와 유형으로 상세 정보 요청
-              showBoardDetail(boardId, response.boardType);
-            } else {
-              alert('게시글 유형을 확인할 수 없습니다.');
-            }
-          },
-          error: function(xhr, status, error) {
-            console.error('게시글 유형 확인 요청 실패:', error);
-            console.log('응답 내용:', xhr.responseText);
-            alert('게시글 유형을 확인하는 중 오류가 발생했습니다.');
-          }
+          console.log("게시글 상세 정보 요청: boardId=" + boardId + ", boardType=" + boardType);
+          showBoardDetail(boardId, boardType);
         });
       }
 
-      // 게시글 행 클릭 이벤트
-      $('.board-item').click(function(e) {
-        // 이미 버튼 클릭으로 처리되는 경우는 무시
-        if($(e.target).hasClass('btn') || $(e.target).closest('.btn').length) {
-          return;
-        }
 
-        var boardId = $(this).data('board-id');
-        var boardType = $(this).data('board-type');
-
-        // boardType이 undefined인 경우 서버에 확인 요청
+      // 게시글 상세 정보 표시 함수
+      function showBoardDetail(boardId, boardType) {
+        // boardType이 누락된 경우 서버에 유형 확인 요청
         if (!boardType || boardType === "undefined") {
+          console.warn("게시글 유형이 누락되었습니다. 서버에 유형 확인 요청.");
           findBoardType(boardId);
           return;
         }
 
-        console.log("게시글 상세 정보 요청: boardId=" + boardId + ", boardType=" + boardType);
-        showBoardDetail(boardId, boardType);
-      });
-    }
-
-
-    // 게시글 상세 정보 표시 함수
-    function showBoardDetail(boardId, boardType) {
-      // boardType이 누락된 경우 서버에 유형 확인 요청
-      if (!boardType || boardType === "undefined") {
-        console.warn("게시글 유형이 누락되었습니다. 서버에 유형 확인 요청.");
-        findBoardType(boardId);
-        return;
-      }
-
-      $.ajax({
-        url: '/admin/board_detail',
-        type: 'GET',
-        data: {
-          boardId: boardId,
-          boardType: boardType
-        },
-        dataType: 'json',
-        success: function(response) {
-          console.log("게시글 상세 정보 응답:", response);
-
-          if (!response || !response.success) {
-            alert(response.message || '게시글을 찾을 수 없습니다.');
-            return;
-          }
-
-          // 모달에 게시글 정보 채우기
-          $('#detail-board-title').text(response.board_title);
-          $('#detail-board-writer').text(response.writer_name || response.board_writer_id);
-          $('#detail-board-date').text(formatDate(response.create_date));
-          $('#detail-board-views').text(response.board_view);
-
-          // 게시판 유형에 따라 배지 설정
-          const categoryClass = getBoardTypeClass(response.board_type);
-          $('#detail-board-category')
-                  .text(getBoardTypeText(response.board_type))
-                  .attr('class', `badge ${categoryClass}`);
-
-          // 게시글 내용 설정 (HTML 이스케이프 처리)
-          $('#detail-board-content').html(escape(response.board_text).replace(/\n/g, '<br>'));
-
-          // 첨부파일(이미지) 처리
-          const attachmentArea = $('#attachment-area');
-          const attachmentsList = $('#detail-board-attachments');
-          attachmentsList.empty();
-
-          if (response.images && response.images.length > 0) {
-            attachmentArea.show();
-
-            // 이미지 썸네일 추가
-            response.images.forEach(function(image) {
-              const imageUrl = `/image/${boardType}BoardImg/${image}`;
-              const listItem = `
-            <li class="list-group-item d-flex align-items-center">
-              <img src="${imageUrl}" class="img-thumbnail me-2" style="max-width: 100px; max-height: 60px;">
-              <a href="${imageUrl}" target="_blank" class="text-decoration-none">${image}</a>
-            </li>
-          `;
-              attachmentsList.append(listItem);
-            });
-          } else {
-            attachmentArea.hide();
-          }
-
-          // 댓글 처리
-          const commentsArea = $('#comments-area');
-          const commentsList = $('#detail-board-comments');
-          commentsList.empty();
-
-          if (response.comments && response.comments.length > 0) {
-            commentsArea.show();
-            $('#comment-count').text(response.comments.length);
-
-            // 댓글 목록 추가
-            response.comments.forEach(function(comment) {
-              // 들여쓰기 계산 (대댓글인 경우)
-              const indentClass = comment.parent_comment_id ? 'ps-4 border-start' : '';
-
-              const listItem = `
-            <li class="list-group-item ${indentClass}">
-              <div class="d-flex justify-content-between">
-                <strong>${escape(comment.comment_writer_name || comment.comment_writer_id)}</strong>
-                <small class="text-muted">${formatDate(comment.create_date)}</small>
-              </div>
-              <p class="mb-0 mt-1">${escape(comment.comment_text)}</p>
-            </li>
-          `;
-              commentsList.append(listItem);
-            });
-          } else {
-            $('#comment-count').text('0');
-            commentsList.append('<li class="list-group-item text-center text-muted">댓글이 없습니다.</li>');
-          }
-
-          // 삭제 버튼에 boardId, boardType 설정
-          $('#deleteBtn').data('board-id', boardId).data('board-type', boardType);
-
-          // 모달 표시
-          $('#boardDetailModal').modal('show');
-        },
-        error: function(xhr, status, error) {
-          console.error('게시글 상세 정보 로드 실패:', error);
-          console.log('응답 내용:', xhr.responseText);
-          alert('게시글 상세 정보를 불러오는데 실패했습니다.');
-        }
-      });
-    }
-
-// HTML 이스케이프 함수 개선
-    function escape(html) {
-      if (!html) return '';
-      return String(html)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#39;');
-    }
-
-// 날짜 포맷팅 함수 개선
-    function formatDate(dateString) {
-      if (!dateString) return '';
-
-      // ISO 형식의 날짜일 경우 (2023-04-15T12:34:56)
-      if (typeof dateString === 'string' && dateString.includes('T')) {
-        const parts = dateString.split('T');
-        return parts[0] + ' ' + parts[1].substring(0, 5);
-      }
-
-      // 그 외 형식은 그대로 반환
-      return dateString;
-    }
-
-    /*
-// 게시글 숨김/표시 토글
-$('#hideBtn').click(function() {
-  var boardId = $(this).data('board-id');
-  var boardType = $(this).data('board-type');
-  var action = $(this).text() === '게시글 숨김' ? 'hide' : 'show';
-
-  if(confirm(`정말 이 게시글을 ${action === 'hide' ? '숨김' : '표시'}하시겠습니까?`)) {
-    $.ajax({
-      url: '/admin/toggle_board_visibility',
-      type: 'POST',
-      data: {
-        boardId: boardId,
-        boardType: boardType,
-        action: action
-      },
-      dataType: 'json',
-      success: function(response) {
-        if(response.success) {
-          alert(`게시글이 ${action === 'hide' ? '숨김' : '표시'}되었습니다.`);
-          $('#boardDetailModal').modal('hide');
-          loadAllBoards(); // 목록 새로고침
-        } else {
-          alert('작업에 실패했습니다: ' + response.message);
-        }
-      },
-      error: function(xhr, status, error) {
-        console.error('게시글 상태 변경 실패:', error);
-        alert('게시글 상태 변경에 실패했습니다.');
-      }
-    });
-  }
-});
-*/
-
-    // 게시글 삭제
-    $('#deleteBtn').click(function() {
-      var boardId = $(this).data('board-id');
-      var boardType = $(this).data('board-type');
-
-      if(confirm('정말 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
         $.ajax({
-          url: '/admin/delete_board',
-          type: 'POST',
+          url: '/admin/board_detail',
+          type: 'GET',
           data: {
             boardId: boardId,
             boardType: boardType
           },
           dataType: 'json',
           success: function(response) {
-            if(response.success) {
-              alert('게시글이 삭제되었습니다.');
-              $('#boardDetailModal').modal('hide');
-              loadAllBoards(); // 목록 새로고침
-            } else {
-              alert('삭제에 실패했습니다: ' + response.message);
+            console.log("게시글 상세 정보 응답:", response);
+
+            if (!response || !response.success) {
+              alert(response.message || '게시글을 찾을 수 없습니다.');
+              return;
             }
+
+            // 모달에 게시글 정보 채우기
+            $('#detail-board-title').text(response.board_title);
+            $('#detail-board-writer').text(response.writer_name || response.board_writer_id);
+            $('#detail-board-date').text(formatDate(response.create_date));
+            $('#detail-board-views').text(response.board_view);
+
+            // 게시판 유형에 따라 배지 설정
+            const categoryClass = getBoardTypeClass(response.board_type);
+            $('#detail-board-category')
+                    .text(getBoardTypeText(response.board_type))
+                    .attr('class', `badge ${categoryClass}`);
+
+            // 게시글 내용 설정 (HTML 이스케이프 처리)
+            $('#detail-board-content').html(escape(response.board_text).replace(/\n/g, '<br>'));
+
+            // 첨부파일(이미지) 처리
+            const attachmentArea = $('#attachment-area');
+            const attachmentsList = $('#detail-board-attachments');
+            attachmentsList.empty();
+
+            if (response.images && response.images.length > 0) {
+              attachmentArea.show();
+
+              // 이미지 썸네일 추가
+              response.images.forEach(function(image) {
+                const imageUrl = `/image/${boardType}BoardImg/${image}`;
+                const listItem = `
+              <li class="list-group-item d-flex align-items-center">
+                <img src="${imageUrl}" class="img-thumbnail me-2" style="max-width: 100px; max-height: 60px;">
+                <a href="${imageUrl}" target="_blank" class="text-decoration-none">${image}</a>
+              </li>
+            `;
+                attachmentsList.append(listItem);
+              });
+            } else {
+              attachmentArea.hide();
+            }
+
+            // 댓글 처리
+            const commentsArea = $('#comments-area');
+            const commentsList = $('#detail-board-comments');
+            commentsList.empty();
+
+            if (response.comments && response.comments.length > 0) {
+              commentsArea.show();
+              $('#comment-count').text(response.comments.length);
+
+              // 댓글 목록 추가
+              response.comments.forEach(function(comment) {
+                // 들여쓰기 계산 (대댓글인 경우)
+                const indentClass = comment.parent_comment_id ? 'ps-4 border-start' : '';
+
+                const listItem = `
+              <li class="list-group-item ${indentClass}">
+                <div class="d-flex justify-content-between">
+                  <strong>${escape(comment.comment_writer_name || comment.comment_writer_id)}</strong>
+                  <small class="text-muted">${formatDate(comment.create_date)}</small>
+                </div>
+                <p class="mb-0 mt-1">${escape(comment.comment_text)}</p>
+              </li>
+            `;
+                commentsList.append(listItem);
+              });
+            } else {
+              $('#comment-count').text('0');
+              commentsList.append('<li class="list-group-item text-center text-muted">댓글이 없습니다.</li>');
+            }
+
+            // 삭제 버튼에 boardId, boardType 설정
+            $('#deleteBtn').data('board-id', boardId).data('board-type', boardType);
+
+            // 모달 표시
+            $('#boardDetailModal').modal('show');
           },
           error: function(xhr, status, error) {
-            console.error('게시글 삭제 실패:', error);
-            alert('게시글 삭제에 실패했습니다.');
+            console.error('게시글 상세 정보 로드 실패:', error);
+            console.log('응답 내용:', xhr.responseText);
+            alert('게시글 상세 정보를 불러오는데 실패했습니다.');
           }
         });
       }
-    });
 
-    // 공지사항 작성 버튼 클릭
-    $('#addNoticeBtn').click(function() {
-      // 폼 초기화
-      $('#noticeForm')[0].reset();
-
-      // 모달 표시
-      var modal = new bootstrap.Modal(document.getElementById('addNoticeModal'));
-      modal.show();
-    });
-
-    // 공지사항 저장
-    $('#saveNoticeBtn').click(function() {
-      var title = $('#notice-title').val();
-      var content = $('#notice-content').val();
-      var files = $('#notice-file')[0].files;
-
-      if(!title || !content) {
-        alert('제목과 내용을 모두 입력해주세요.');
-        return;
+  // HTML 이스케이프 함수 개선
+      function escape(html) {
+        if (!html) return '';
+        return String(html)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
       }
 
-      // 폼 데이터 생성
-      var formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
+  // 날짜 포맷팅 함수 개선
+      function formatDate(dateString) {
+        if (!dateString) return '';
 
-      // 첨부파일이 있으면 추가
-      if (files.length > 0) {
-        for (var i = 0; i < files.length; i++) {
-          formData.append('files', files[i]);
+        // ISO 형식의 날짜일 경우 (2023-04-15T12:34:56)
+        if (typeof dateString === 'string' && dateString.includes('T')) {
+          const parts = dateString.split('T');
+          return parts[0] + ' ' + parts[1].substring(0, 5);
         }
+
+        // 그 외 형식은 그대로 반환
+        return dateString;
       }
 
+      /*
+  // 게시글 숨김/표시 토글
+  $('#hideBtn').click(function() {
+    var boardId = $(this).data('board-id');
+    var boardType = $(this).data('board-type');
+    var action = $(this).text() === '게시글 숨김' ? 'hide' : 'show';
+
+    if(confirm(`정말 이 게시글을 ${action === 'hide' ? '숨김' : '표시'}하시겠습니까?`)) {
       $.ajax({
-        url: '/admin/write_notice',
+        url: '/admin/toggle_board_visibility',
         type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
+        data: {
+          boardId: boardId,
+          boardType: boardType,
+          action: action
+        },
+        dataType: 'json',
         success: function(response) {
           if(response.success) {
-            alert('공지사항이 등록되었습니다.');
-            $('#addNoticeModal').modal('hide');
+            alert(`게시글이 ${action === 'hide' ? '숨김' : '표시'}되었습니다.`);
+            $('#boardDetailModal').modal('hide');
             loadAllBoards(); // 목록 새로고침
           } else {
-            alert('공지사항 등록에 실패했습니다: ' + response.message);
+            alert('작업에 실패했습니다: ' + response.message);
           }
         },
         error: function(xhr, status, error) {
-          console.error('공지사항 등록 실패:', error);
-          alert('공지사항 등록에 실패했습니다.');
+          console.error('게시글 상태 변경 실패:', error);
+          alert('게시글 상태 변경에 실패했습니다.');
         }
       });
-    });
-
-    // 초기 데이터 로드
-    loadAllBoards();
+    }
   });
-</script>
-</body>
-</html>
+  */
+
+      // 게시글 삭제
+      $('#deleteBtn').click(function() {
+        var boardId = $(this).data('board-id');
+        var boardType = $(this).data('board-type');
+
+        if(confirm('정말 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+          $.ajax({
+            url: '/admin/delete_board',
+            type: 'POST',
+            data: {
+              boardId: boardId,
+              boardType: boardType
+            },
+            dataType: 'json',
+            success: function(response) {
+              if(response.success) {
+                alert('게시글이 삭제되었습니다.');
+                $('#boardDetailModal').modal('hide');
+                loadAllBoards(); // 목록 새로고침
+              } else {
+                alert('삭제에 실패했습니다: ' + response.message);
+              }
+            },
+            error: function(xhr, status, error) {
+              console.error('게시글 삭제 실패:', error);
+              alert('게시글 삭제에 실패했습니다.');
+            }
+          });
+        }
+      });
+
+      // 공지사항 작성 버튼 클릭
+      $('#addNoticeBtn').click(function() {
+        // 폼 초기화
+        $('#noticeForm')[0].reset();
+
+        // 모달 표시
+        var modal = new bootstrap.Modal(document.getElementById('addNoticeModal'));
+        modal.show();
+      });
+
+      // 공지사항 저장
+      $('#saveNoticeBtn').click(function() {
+        var title = $('#notice-title').val();
+        var content = $('#notice-content').val();
+        var files = $('#notice-file')[0].files;
+
+        if(!title || !content) {
+          alert('제목과 내용을 모두 입력해주세요.');
+          return;
+        }
+
+        // 폼 데이터 생성
+        var formData = new FormData();
+        formData.append('title', title);
+        formData.append('content', content);
+
+        // 첨부파일이 있으면 추가
+        if (files.length > 0) {
+          for (var i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+          }
+        }
+
+        $.ajax({
+          url: '/admin/write_notice',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(response) {
+            if(response.success) {
+              alert('공지사항이 등록되었습니다.');
+              $('#addNoticeModal').modal('hide');
+              loadAllBoards(); // 목록 새로고침
+            } else {
+              alert('공지사항 등록에 실패했습니다: ' + response.message);
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('공지사항 등록 실패:', error);
+            alert('공지사항 등록에 실패했습니다.');
+          }
+        });
+      });
+
+      // 초기 데이터 로드
+      loadAllBoards();
+    });
+  </script>
+  </body>
+  </html>

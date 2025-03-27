@@ -63,7 +63,8 @@
           </span>
         </a>
       </td>
-      <td th:text="${post.writer_name}"></td>
+      <td th:text="${(post.writer_name != null and post.writer_name != '회원' and post.writer_name != '판매자')
+                ? post.writer_name : post.board_writer_id}"></td>
       <td th:text="${post.create_date}"></td>
       <td th:text="${post.board_view}"></td>
       <td th:text="${post.board_like}"></td>
