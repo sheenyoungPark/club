@@ -327,6 +327,10 @@ public interface ChatMapper {
             "WHERE room_id = #{room_id} AND user_id = #{user_id}")
     int updateParticipant(ChatParticipantBean participant);
 
+    @Update("UPDATE chat_participant SET userProfile = #{userProfile,jdbcType=VARCHAR} " +
+            "WHERE user_id = #{user_id}")
+    void updateProfile(@Param("user_id") String user_id, @Param("userProfile") String userProfile);
+
 
 
 

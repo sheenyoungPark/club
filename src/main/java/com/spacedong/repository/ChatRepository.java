@@ -201,5 +201,9 @@ public class ChatRepository {
         return chatMapper.updateParticipant(participant);
     }
 
+    public void updateProfile(String user_id, String userProfile){
+        chatMapper.updateProfile(user_id, userProfile);
+    }
+
 
 }

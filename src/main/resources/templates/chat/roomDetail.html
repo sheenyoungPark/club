@@ -112,6 +112,11 @@
       <div class="modal-body">
         <ul class="list-group">
           <li th:each="participant : ${participants}" class="list-group-item d-flex align-items-center">
+
+            <script>
+              console.log("참여자 정보:", [[${participant.userProfile}]]);
+            </script>
+
             <!-- 사용자 프로필 이미지 간소화 -->
             <img th:src="${participant.userProfile != null && !participant.userProfile.isEmpty()} ?
                          @{/profile/{filename}(filename=${participant.userProfile})} :

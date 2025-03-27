@@ -4,6 +4,8 @@ import com.spacedong.beans.BoardBean;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.ClubBean;
 import com.spacedong.beans.MemberBean;
+import com.spacedong.repository.ChatRepository;
+import com.spacedong.service.ChatService;
 import com.spacedong.service.MemberService;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
@@ -28,6 +30,9 @@ public class MemberController {
 
 	@Autowired
 	private MemberService memberService;
+
+	@Autowired
+	private ChatRepository chatRepository;
 
 	// session‑scope 빈으로 정의된 loginMember와 loginBusiness를 주입받음
 	@Resource(name = "loginMember")
@@ -278,6 +283,7 @@ public class MemberController {
 				File destFile = new File(UPLOAD_DIR + fileName);
 				profileImage.transferTo(destFile);
 				memberService.updateMemberProfile(loginMember.getMember_id(), fileName);
+				chatRepository.updateProfile(loginMember.getMember_id(), fileName);
 				loginMember.setMember_profile(fileName);
 			} catch (IOException e) {
 				e.printStackTrace();

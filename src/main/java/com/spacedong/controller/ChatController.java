@@ -1,6 +1,7 @@
 package com.spacedong.controller;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -168,9 +169,25 @@ public class ChatController {
         String userId2 = request.get("targetUserId");
         String userType2 = request.get("targetUserType");
 
-        System.out.println("Creating/finding personal chat between " + userId1 + " and " + userId2);
+        // 채팅방 생성 결과 객체 받기
+        ChatRoomCreationResult result = chatService.getOrCreatePersonalChatRoomWithResult(userId1, userType1, userId2, userType2);
+        ChatRoomBean room = result.getRoom();
 
-        ChatRoomBean room = chatService.getOrCreatePersonalChatRoom(userId1, userType1, userId2, userType2);
+        // 새로운 채팅방이 생성된 경우 또는 새 참가자가 추가된 경우 WebSocket으로 알림 전송
+        if (result.isNewRoom() || result.isNewParticipant()) {
+            // 채팅방 정보에 최근 메시지와 미읽은 메시지 수 정보 추가
+            room.setLastMessage("새로운 대화가 시작되었습니다.");
+            room.setLastMessageTime(LocalDateTime.now());
+            room.setUnreadCount(0);
+
+            // 상대방에게 알림 전송
+            messagingTemplate.convertAndSendToUser(
+                    userId2,
+                    "/queue/new-room",
+                    room
+            );
+        }
+
         return ResponseEntity.ok(room);
     }
 
@@ -196,7 +213,38 @@ public class ChatController {
             userType = "ADMIN";
         }
 
-        ChatRoomBean room = chatService.getOrCreateClubChatRoom(clubId, userId, userType);
+        // 채팅방 생성 결과 객체 받기
+        ChatRoomCreationResult result = chatService.getOrCreateClubChatRoomWithResult(clubId, userId, userType);
+        ChatRoomBean room = result.getRoom();
+
+        // 새로운 채팅방이 생성된 경우 WebSocket으로 알림 전송
+        if (result.isNewRoom()) {
+            // 채팅방 정보에 최근 메시지와 미읽은 메시지 수 정보 추가
+            room.setLastMessage("새로운 동호회 채팅방이 개설되었습니다.");
+            room.setLastMessageTime(LocalDateTime.now());
+            room.setUnreadCount(0);
+
+            // 클럽의 모든 참여자들에게 채팅방 정보 전송
+            List<ChatParticipantBean> participants = chatService.getRoomParticipants((long)room.getRoom_id());
+            for (ChatParticipantBean participant : participants) {
+                if (!participant.getUser_id().equals(userId)) { // 현재 사용자는 제외
+                    messagingTemplate.convertAndSendToUser(
+                            participant.getUser_id(),
+                            "/queue/new-room",
+                            room
+                    );
+                }
+            }
+        }
+        // 새 참가자가 추가된 경우 해당 참가자에게만 알림
+        else if (result.isNewParticipant()) {
+            // 채팅방 정보에 미읽은 메시지 수 추가
+            int unreadCount = chatService.getUnreadMessageCount((long)room.getRoom_id(), userId);
+            room.setUnreadCount(unreadCount);
+
+            // 최근 메시지 정보 추가 (기존에 있는 정보 활용)
+        }
+
         return ResponseEntity.ok(room);
     }
 
@@ -487,8 +535,13 @@ public class ChatController {
                 ChatParticipantBean otherParticipant = chatService.getOtherParticipant(room.getRoom_id(), userId);
                 if (otherParticipant != null) {
                     otherParticipants.put((long) room.getRoom_id(), otherParticipant);
+                    System.out.println("상대방 정보: " + otherParticipant.getUserProfile());
                 }
             }
+        }
+
+        for (Map.Entry<Long, ChatParticipantBean> entry : otherParticipants.entrySet()) {
+            System.out.println("roomId: " + entry.getKey() + ", userProfile: " + entry.getValue().getUserProfile());
         }
 
         if (!clubRooms.isEmpty()) {
@@ -509,8 +562,13 @@ public class ChatController {
 
         int totalUnread = personalUnread + clubUnread;
 
+        Map<Integer, ChatParticipantBean> convertedMap = new HashMap<>();
+        for (Map.Entry<Long, ChatParticipantBean> entry : otherParticipants.entrySet()) {
+            convertedMap.put(entry.getKey().intValue(), entry.getValue());
+        }
+
         // 상대방 정보 모델에 추가
-        model.addAttribute("otherParticipants", otherParticipants);
+        model.addAttribute("otherParticipants", convertedMap);
 
         // 모델에 모든 정보 추가
         model.addAttribute("rooms", allRooms);

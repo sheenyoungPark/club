@@ -104,8 +104,11 @@ public class ChatService {
         return new ArrayList<>();
     }
 
+    /**
+     * 1:1 채팅방 생성 또는 조회 (확장된 결과 반환 버전)
+     */
     @Transactional
-    public ChatRoomBean getOrCreatePersonalChatRoom(String userId1, String userType1, String userId2, String userType2) {
+    public ChatRoomCreationResult getOrCreatePersonalChatRoomWithResult(String userId1, String userType1, String userId2, String userType2) {
         // 비즈니스-비즈니스 채팅 방지
         if (userType1.equals("BUSINESS") && userType2.equals("BUSINESS")) {
             throw new RuntimeException("비즈니스 계정 간 채팅은 지원되지 않습니다.");
@@ -119,6 +122,7 @@ public class ChatService {
         String user2profile = null;  // null 대신 빈 문자열 사용
 
         boolean isNewRoom = false;
+        boolean isNewParticipant = false;
 
         // 사용자 정보 초기화 (유형별로 다르게 처리)
         if (userType1.equals("MEMBER")) {
@@ -210,6 +214,7 @@ public class ChatService {
             // 첫 번째 사용자가 참여자가 아니면 추가
             ChatParticipantBean participant1 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId1);
             if (participant1 == null) {
+                isNewParticipant = true;
                 participant1 = new ChatParticipantBean();
                 participant1.setRoom_id(chatRoom.getRoom_id());
                 participant1.setUser_id(userId1);
@@ -248,6 +253,7 @@ public class ChatService {
             // 두 번째 사용자가 참여자가 아니면 추가
             ChatParticipantBean participant2 = chatRepository.getParticipant(chatRoom.getRoom_id(), userId2);
             if (participant2 == null) {
+                isNewParticipant = true;
                 participant2 = new ChatParticipantBean();
                 participant2.setRoom_id(chatRoom.getRoom_id());
                 participant2.setUser_id(userId2);
@@ -284,11 +290,22 @@ public class ChatService {
             }
         }
 
-        return chatRoom;
+        return new ChatRoomCreationResult(chatRoom, isNewRoom, isNewParticipant);
     }
 
+    /**
+     * 기존 메서드를 새 메서드에 위임 (호환성 유지)
+     */
     @Transactional
-    public ChatRoomBean getOrCreateClubChatRoom(int clubId, String userId, String userType) {
+    public ChatRoomBean getOrCreatePersonalChatRoom(String userId1, String userType1, String userId2, String userType2) {
+        return getOrCreatePersonalChatRoomWithResult(userId1, userType1, userId2, userType2).getRoom();
+    }
+
+    /**
+     * 클럽 채팅방 생성 또는 조회 (확장된 결과 반환 버전)
+     */
+    @Transactional
+    public ChatRoomCreationResult getOrCreateClubChatRoomWithResult(int clubId, String userId, String userType) {
         // Existing code for checking club membership and getting club info
         boolean isClubMember = false;
         String User_nickname = chatRepository.searchUsers(userId).get(0).getNickname();
@@ -309,6 +326,7 @@ public class ChatService {
 
         List<ChatRoomBean> clubRooms = chatRepository.getChatRoomsByClubId((long)clubId);
         ChatRoomBean chatRoom = null;
+        boolean isNewRoom = false;
         boolean isNewParticipant = false;
 
         // Existing code for finding or creating a room
@@ -333,6 +351,7 @@ public class ChatService {
             }
         } else {
             // Create new room if none exists
+            isNewRoom = true;
             chatRoom = new ChatRoomBean();
             chatRoom.setRoom_type("CLUB");
             chatRoom.setClub_id(clubId);
@@ -366,7 +385,15 @@ public class ChatService {
             }
         }
 
-        return chatRoom;
+        return new ChatRoomCreationResult(chatRoom, isNewRoom, isNewParticipant);
+    }
+
+    /**
+     * 기존 메서드를 새 메서드에 위임 (호환성 유지)
+     */
+    @Transactional
+    public ChatRoomBean getOrCreateClubChatRoom(int clubId, String userId, String userType) {
+        return getOrCreateClubChatRoomWithResult(clubId, userId, userType).getRoom();
     }
 
     // 채팅 참여자 관련 메서드
