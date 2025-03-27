@@ -28,6 +28,7 @@ body {
     min-height: 100vh; /* Full viewport height */
     margin: 0;
     padding-bottom: 0; /* Remove bottom padding */
+
 }
 
 /* For smaller screens */
@@ -72,4 +73,12 @@ body {
     .bottom-info {
         padding: 20px 15px;
     }
+}
+.result-container {
+    background-color: rgba(255, 255, 255, 0.95); /* 흰 배경 + 약간의 투명도 */
+    border-radius: 16px;                         /* 모서리 둥글게 */
+    padding: 40px;
+    max-width: 900px;
+    margin: 50px auto;                           /* 중앙 정렬 */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);    /* 살짝 그림자 */
 }

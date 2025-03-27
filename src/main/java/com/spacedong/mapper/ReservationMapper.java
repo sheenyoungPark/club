@@ -96,8 +96,9 @@ public interface ReservationMapper {
             "#{id}" +
             "</foreach>" +
             " AND status = #{status}" +
+            " ORDER BY reservation_date DESC" +
             "</script>")
-    List<ReservationBean> getReservationsByItemIdsAndStatus(@Param("item_id") List<Integer> item_id,@Param("status") String status);
+    List<ReservationBean> getReservationsByItemIdsAndStatus(@Param("item_id") List<Integer> item_id,@Param("status") String status );
 
     //예약 상태 변경
     @Update("update reservation set status = #{status} where reservation_id = #{reservation_id}")
