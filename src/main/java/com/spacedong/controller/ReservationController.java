@@ -331,6 +331,7 @@ public class ReservationController {
 
         return "reservation/club_reservations";
     }
+
     // 예약 취소
     @PostMapping("/cancel")
     public String cancelReservation(

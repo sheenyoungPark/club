@@ -204,25 +204,25 @@ body {
 .signup-button {
     width: 100%;
     padding: 15px;
-    background-color: rgba(255, 255, 255, 0.92);
+    background-color: transparent;
     color: #4a00e0;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
     margin: 15px 0;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
     font-family: 'NanumSquare', 'Nanum Square', '나눔스퀘어', sans-serif;
     font-weight: 700;
 }
 
 .signup-button:hover {
-    background-color: rgba(245, 245, 245, 0.92);
+    background-color: rgba(74, 0, 224, 0.1);
 }
 
 .social-login {
     margin-top: 15px;
-    margin-bottom: 0;
+    margin-bottom: 15px;
     text-align: center;
 }
 
@@ -250,19 +250,32 @@ body {
     font-size: 14px;
 }
 
+/* 네이버 로그인 버튼 스타일 수정 */
 .naver-login {
-    display: block;
-    width: 200px;
-    height: 45px;
+    display: flex;
+    width: 100%;
+    height: 50px;
     border-radius: 5px;
     margin: 0 auto;
-    text-align: center;
-    overflow: hidden;
-    background-color: rgba(255, 255, 255, 0.92);
+    background-color: #03C75A;
+    color: white;
+    text-decoration: none;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: 'NanumSquare', 'Nanum Square', '나눔스퀘어', sans-serif;
+    transition: background-color 0.3s ease;
+    border: none;
+    box-sizing: border-box;
+}
+
+.naver-login:hover {
+    background-color: #00a050;
 }
 
 .naver-login img {
-    height: 24px;
-    object-fit: contain;
-    background-color: transparent;
+    height: 20px;
+    margin-right: 10px;
+    vertical-align: middle;
 }

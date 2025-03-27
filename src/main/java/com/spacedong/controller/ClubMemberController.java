@@ -53,7 +53,7 @@ public class ClubMemberController {
         model.addAttribute("pendingMembers", pendingMembers);
         model.addAttribute("club_id", clubId);
         for(ClubMemberBean s : pendingMembers){
-            System.out.println("!" +  s);
+            System.out.println("!  : " +  s.getMember_nickname());
         }
 
         return "club/club_member_pending";
