@@ -20,8 +20,9 @@
         <h3>로그인 실패</h3>
         <p th:text="${loginError}">로그인 실패 메시지</p>
     </div>
-
-
+    <div th:if="${successMessage}" class="alert alert-success">
+        <p th:text="${successMessage}">성공 메시지</p>
+    </div>
 
     <form id="personal-form" th:action="@{/member/login_pro}" method="post" th:object="${tempLoginMember}">
         <input type="text" th:field="*{member_id}" class="input-field" placeholder="아이디" />
@@ -40,10 +41,12 @@
             <a th:href="@{/member/signup}" class="signup-button">회원가입</a>
         </div>
 
+        <div class="login-options" id="personal-options">
+            <a class="login-option" th:href="@{/member/find_id}">아이디 찾기</a>
+            <span class="separator">|</span>
+            <a class="login-option" th:href="@{/member/find_password}">비밀번호 찾기</a>
+        </div>
     </form>
-
-
-    <!-- 회원가입 버튼을 네이버 로그인 아래로 이동 -->
 
     <form id="business-form" th:action="@{/business/login_pro}" method="post" style="display: none;">
         <input type="text" name="business_id" class="input-field" placeholder="기업 아이디" />
@@ -52,18 +55,26 @@
         <div class="signup-section">
             <a th:href="@{/business/signup}" class="signup-button">회원가입</a>
         </div>
+
+        <div class="login-options" id="business-options">
+            <a class="login-option" th:href="@{/business/find_id}">아이디 찾기</a>
+            <span class="separator">|</span>
+            <a class="login-option" th:href="@{/business/find_password}">비밀번호 찾기</a>
+        </div>
     </form>
-
-
-    <div class="login-options">
-        <span class="login-option">아이디 찾기</span>
-        <span class="separator">|</span>
-        <span class="login-option">비밀번호 찾기</span>
-    </div>
-
-
-
 </div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 성공 메시지가 있는 경우 알림창 표시
+    document.addEventListener('DOMContentLoaded', function() {
+        const successMessage = /*[[${successMessage}]]*/ null;
+        if (successMessage) {
+            alert(successMessage);
+        }
+    });
+    /*]]>*/
+</script>
 
 <script th:src="@{/js/login.js}"></script>
 </body>

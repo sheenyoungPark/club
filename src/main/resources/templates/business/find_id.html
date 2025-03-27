@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>기업회원 아이디 찾기</title>
+    <link rel="stylesheet" th:href="@{/css/find.css}">
+</head>
+<body>
+<div class="find-container">
+    <h2>기업회원 아이디 찾기</h2>
+
+    <div th:if="${message}" class="alert" th:classappend="${success} ? 'alert-success' : 'alert-danger'">
+        <p th:text="${message}">메시지</p>
+    </div>
+
+    <form id="find-id-form" th:action="@{/business/find_id_pro}" method="post">
+        <div class="input-group">
+            <label for="business_phone">휴대폰 번호</label>
+            <input type="text" id="business_phone" name="business_phone" class="input-field" placeholder="휴대폰 번호 (- 없이 입력)" required />
+        </div>
+
+        <button type="submit" class="submit-button">아이디 찾기</button>
+    </form>
+
+    <!-- 아이디 찾기 결과 표시 영역 -->
+    <div th:if="${foundId}" class="result-container">
+        <h3>아이디 찾기 결과</h3>
+        <p>회원님의 아이디는 <strong th:text="${foundId}">아이디</strong> 입니다.</p>
+    </div>
+
+    <div class="action-links">
+        <a th:href="@{/business/find_password}" class="link">비밀번호 찾기</a>
+        <span class="separator">|</span>
+        <a th:href="@{/member/login}" class="link">로그인</a>
+    </div>
+</div>
+
+<script th:src="@{/js/find.js}"></script>
+</body>
+</html>

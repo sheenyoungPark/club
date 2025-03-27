@@ -15,8 +15,6 @@ public class NaverLoginController {
     @Value("${naver.client.id}")
     private String clientId;
 
-
-
     @Value("${naver.redirect.uri}")
     private String redirectUri;
 

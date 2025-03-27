@@ -183,5 +183,45 @@ public class BusinessRepository {
     public void updateBusinessStatus(String businessId, String status) {
         businessMapper.updateBusinessStatus(businessId, status);
     }
+
+    /**
+     * 이메일과 사업자 번호로 기업회원 아이디 찾기
+     *
+     * @param email 기업 이메일
+     * @param businessNumber 사업자 등록번호
+     * @return 찾은 아이디 또는 null
+     */
+    public String findBusinessIdByEmailAndNumber(String email, String businessNumber) {
+        return businessMapper.findBusinessIdByEmailAndNumber(email, businessNumber);
+    }
+
+    /**
+     * 기업회원 정보 확인 (비밀번호 찾기용)
+     *
+     * @param businessId 기업 아이디
+     * @param email 기업 이메일
+     * @param businessNumber 사업자 등록번호
+     * @return 정보 일치 여부
+     */
+    public boolean verifyBusinessInfo(String businessId, String email, String businessNumber) {
+        int count = businessMapper.verifyBusinessInfo(businessId, email, businessNumber);
+        return count > 0;
+    }
+
+    /**
+     * 휴대폰 번호로 기업회원 아이디 찾기
+     */
+    public String findBusinessIdByPhone(String phone) {
+        return businessMapper.findBusinessIdByPhone(phone);
+    }
+
+    /**
+     * 아이디와 휴대폰 번호로 기업회원 정보 확인
+     */
+    public boolean verifyBusinessIdAndPhone(String businessId, String phone) {
+        int count = businessMapper.verifyBusinessIdAndPhone(businessId, phone);
+        return count > 0;
+    }
+
     //===============================================================
 }

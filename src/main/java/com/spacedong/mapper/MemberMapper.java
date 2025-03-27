@@ -140,4 +140,15 @@ public interface MemberMapper {
     int getPreviousMonthMemberCount();
     @Select("SELECT COUNT(*) FROM member WHERE EXTRACT(MONTH FROM member_joindate) = #{month} AND EXTRACT(YEAR FROM member_joindate) = EXTRACT(YEAR FROM SYSDATE)")
     int getMemberCountByMonth(int month);
+
+    @Select("select member_id from member where member_phone = #{member_phone}")
+    String findByPhone(String member_phone);
+
+    @Select("Select * from member where member_id = #{member_id} and member_phone = #{member_phone}")
+    MemberBean findMemberByIdAndPhone(@Param("member_id") String member_id,@Param("member_phone") String member_phone);
+
+    @Update("UPDATE member SET member_pw = #{newPassword} WHERE member_id = #{member_id}")
+    void resetPw(@Param("member_id") String member_id,@Param("newPassword") String newPassword);
+
+
 }

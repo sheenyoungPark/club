@@ -293,5 +293,80 @@ public class BusinessService {
                 .filter(business -> "WAIT".equals(business.getBusiness_public()))
                 .collect(Collectors.toList());
     }
+
+    /**
+     * 이메일과 사업자 번호로 기업회원 아이디 찾기
+     *
+     * @param email 기업 이메일
+     * @param businessNumber 사업자 등록번호
+     * @return 찾은 아이디 또는 null
+     */
+    public String findBusinessIdByEmailAndNumber(String email, String businessNumber) {
+        return businessRepository.findBusinessIdByEmailAndNumber(email, businessNumber);
+    }
+
+    /**
+     * 기업회원 정보 확인 (비밀번호 찾기용)
+     *
+     * @param businessId 기업 아이디
+     * @param email 기업 이메일
+     * @param businessNumber 사업자 등록번호
+     * @return 정보 일치 여부
+     */
+    public boolean verifyBusinessInfo(String businessId, String email, String businessNumber) {
+        return businessRepository.verifyBusinessInfo(businessId, email, businessNumber);
+    }
+
+    /**
+     * 휴대폰 번호로 기업회원 아이디 찾기
+     *
+     * @param phone 휴대폰 번호
+     * @return 찾은 아이디 또는 null
+     */
+    public String findBusinessIdByPhone(String phone) {
+        String formattedPhone = formatPhoneNumber(phone);
+        System.out.println("bService formattedPhone: " + formattedPhone);
+        return businessRepository.findBusinessIdByPhone(formattedPhone);
+    }
+    /**
+     * 아이디와 휴대폰 번호로 기업회원 정보 확인 (비밀번호 찾기용)
+     *
+     * @param businessId 기업 아이디
+     * @param phone 휴대폰 번호
+     * @return 정보 일치 여부
+     */
+    public boolean verifyBusinessIdAndPhone(String businessId, String phone) {
+        String formattedPhone = formatPhoneNumber(phone);
+        System.out.println("bService formattedPhone: " + formattedPhone);
+        return businessRepository.verifyBusinessIdAndPhone(businessId, formattedPhone);
+    }
+
+
+    /**
+     * 전화번호 형식 변환 (하이픈 추가)
+     * 예: 01012345678 -> 010-1234-5678
+     */
+    private String formatPhoneNumber(String phone) {
+        System.out.println("bService 원본 phone: " + phone);
+
+        // 이미 하이픈이 있는 경우 그대로 반환
+        if (phone.contains("-")) {
+            return phone;
+        }
+        // 길이에 따라 적절한 형식으로 변환
+        if (phone.length() == 10) { // 10자리 (예: 0101231234)
+            return phone.substring(0, 3) + "-" +
+                    phone.substring(3, 6) + "-" +
+                    phone.substring(6);
+        } else if (phone.length() == 11) { // 11자리 (예: 01012345678)
+            return phone.substring(0, 3) + "-" +
+                    phone.substring(3, 7) + "-" +
+                    phone.substring(7);
+        } else {
+            // 기타 형식은 그대로 반환
+            return phone;
+        }
+    }
+
     //===============================================================
 }

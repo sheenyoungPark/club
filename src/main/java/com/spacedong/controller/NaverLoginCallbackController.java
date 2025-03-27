@@ -32,7 +32,6 @@ public class NaverLoginCallbackController {
     @Autowired
     private MemberService memberService;
 
-
     @Value("${naver.client.secret}")
     private String clientSecret;
 
@@ -91,9 +90,7 @@ public class NaverLoginCallbackController {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate localDate = LocalDate.parse(dateStr, formatter);
 
-
                 Date date = java.sql.Date.valueOf(localDate);
-
 
                 System.out.println(gender);
                 System.out.println(birthyear);
@@ -110,9 +107,6 @@ public class NaverLoginCallbackController {
                 memberBean.setMember_phone(modile);
                 memberBean.setMember_birthdate(date);
                 memberBean.setMember_gender(gender);
-
-
-
 
                 loginMember.setLogin(true);
 

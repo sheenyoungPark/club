@@ -2,6 +2,7 @@ package com.spacedong.repository;
 
 import com.spacedong.beans.BoardBean;
 import com.spacedong.beans.ClubBean;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -117,6 +118,21 @@ public class MemberRepository {
 	public List<MemberBean> searchMembersByAllFields(String keyword) {
 		return memberMapper.searchMembersByAllFields(keyword);
 	}
+
+	//핸드폰으로 멤버찾기
+	public String findByPhone(String member_phone){
+		return memberMapper.findByPhone(member_phone);
+	}
+
+	public MemberBean findMemberByIdAndPhone(String member_id,String member_phone){
+		return memberMapper.findMemberByIdAndPhone(member_id, member_phone);
+	}
+
+	public void resetPw(String member_id,String newPassword){
+		memberMapper.resetPw(member_id, newPassword);
+	}
+
+
 
 
 
