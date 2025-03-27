@@ -133,10 +133,14 @@ import java.util.Map;
         void updateBoardImage(@Param("board_id") int board_id, @Param("board_img") String board_img);
 
         /**
-         * ✅ 사용자가 특정 동호회의 회원인지 확인
+         * ✅ 사용자가 특정 동호회의 정식 회원(normal/master)인지 확인
          */
-        @Select("SELECT COUNT(*) FROM club_member WHERE club_id = #{club_id} AND member_id = #{member_id}")
+        @Select("SELECT COUNT(*) FROM club_member " +
+                "WHERE club_id = #{club_id} " +
+                "AND member_id = #{member_id} " +
+                "AND member_role IN ('normal', 'master')")
         int checkMemberInClub(@Param("club_id") int club_id, @Param("member_id") String member_id);
+
         /**
          * ✅ 특정 게시글 조회 (삭제 시 사용)
          */

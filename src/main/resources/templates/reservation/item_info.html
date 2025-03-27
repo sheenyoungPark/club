@@ -233,9 +233,10 @@
           </div>
         </div>
 
-        <div class="form-actions">
+        <div class="form-actions" th:if="${loginBusiness == null or loginBusiness.login == false}">
           <button type="submit" class="btn btn-primary" id="reserveButton" disabled>예약하기</button>
         </div>
+
       </form>
     </div>
   </div>

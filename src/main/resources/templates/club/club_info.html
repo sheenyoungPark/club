@@ -552,13 +552,17 @@
 
             <!-- 하단에 버튼 배치 -->
             <div class="button-footer" th:if="${member_role == null}">
-                <a th:href="@{/club/club_join(club_id=${club.club_id})}" class="btn btn-sm btn-primary">가입 신청하기</a>
+                <a th:if="${loginBusiness == null or loginBusiness.login == false}"
+                   th:href="@{/club/club_join(club_id=${club.club_id})}"
+                   class="btn btn-sm btn-primary">
+                    가입 신청하기
+                </a>
+
                 <a th:href="@{/club_contact(club_id=${club.club_id})}" class="btn btn-sm btn-outline">문의하기</a>
             </div>
 
             <!-- 회원 전용 버튼 위치 조정 -->
             <div class="button-footer" th:if="${member_role != null && member_role != 'master'}">
-                <a th:href="@{/club/myinfo(club_id=${club.club_id})}" class="btn btn-sm btn-primary">내 정보 보기</a>
                 <a th:href="@{/club/contact(club_id=${club.club_id})}" class="btn btn-sm btn-outline">문의하기</a>
                 <a th:if="${isMember}" th:href="@{/club/leaveClub(club_id=${club.club_id})}"
                    onclick="return confirm('정말로 탈퇴하시겠습니까?');"

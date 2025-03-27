@@ -72,12 +72,14 @@ public interface MemberMapper {
 
     /** ✅ 가입한 클럽 목록 조회 (회장 여부 포함) */
     @Select("SELECT c.club_id, c.club_name, " +
-            "       NVL(cm.member_role, 'normal') AS member_role " +
+            "       cm.member_role " +
             "FROM club c " +
-            "LEFT JOIN club_member cm ON c.club_id = cm.club_id " +
+            "JOIN club_member cm ON c.club_id = cm.club_id " +
             "WHERE cm.member_id = #{memberId} " +
+            "AND cm.member_role IN ('normal', 'master') " +
             "AND c.club_public = 'PASS'")
     List<ClubBean> getJoinedClubsWithRole(String memberId);
+
 
 
     // 사용자가 작성한 게시글 조회

@@ -75,6 +75,13 @@
     });
     /*]]>*/
 </script>
+<!-- ✅ 추가된 로그인 필요 알림 -->
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("error") === "login_required") {
+        alert("로그인이 필요합니다. 로그인 후 예약을 진행해주세요.");
+    }
+</script>
 
 <script th:src="@{/js/login.js}"></script>
 </body>

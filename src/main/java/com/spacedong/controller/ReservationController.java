@@ -126,7 +126,7 @@ public class ReservationController {
 
         // 로그인 확인
         if (loginMember.getMember_id() == null) {
-            return "redirect:/member/login";
+            return "redirect:/member/login?error=login_required";
         }
 
         // 아이템 정보 가져오기
