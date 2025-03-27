@@ -477,6 +477,57 @@ function handleNewMessageNotification(message) {
     showBrowserNotification(message);
 }
 
+// 채팅방 목록 업데이트 (안 읽은 메시지 수 반영)
+function updateRoomUnreadCounts(roomUnreadCounts) {
+    console.log('채팅방 별 안 읽은 메시지 수 업데이트:', roomUnreadCounts);
+
+    Object.keys(roomUnreadCounts).forEach(roomId => {
+        const unreadCount = roomUnreadCounts[roomId];
+        console.log(`Room ${roomId} unread: ${unreadCount}`);
+
+        // 채팅방 요소 찾기 (모든 탭에서)
+        const roomElements = [
+            document.getElementById(`room-${roomId}`),
+            document.getElementById(`personal-room-${roomId}`),
+            document.getElementById(`club-room-${roomId}`)
+        ];
+
+        roomElements.forEach(roomElement => {
+            if (roomElement) {
+                // 기존 안 읽은 메시지 배지 찾기
+                let unreadBadge = roomElement.querySelector('.unread-badge');
+
+                if (unreadCount > 0) {
+                    if (!unreadBadge) {
+                        // 배지가 없으면 새로 생성
+                        unreadBadge = document.createElement('div');
+                        unreadBadge.className = 'unread-badge';
+
+                        // 채팅방 정보 컨테이너 찾기
+                        const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
+                        if (previewContainer) {
+                            previewContainer.appendChild(unreadBadge);
+                        } else {
+                            // 컨테이너를 찾을 수 없는 경우 우측 상단에 배치
+                            const chatTitle = roomElement.querySelector('.chat-title');
+                            if (chatTitle && chatTitle.parentElement) {
+                                chatTitle.parentElement.appendChild(unreadBadge);
+                            }
+                        }
+                    }
+
+                    // 배지 업데이트
+                    unreadBadge.textContent = unreadCount;
+                    unreadBadge.style.display = 'flex';
+                } else if (unreadBadge) {
+                    // 안 읽은 메시지가 없으면 배지 숨김
+                    unreadBadge.style.display = 'none';
+                }
+            }
+        });
+    });
+}
+
 
 // 브라우저 알림 표시
 function showBrowserNotification(message) {

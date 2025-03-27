@@ -118,8 +118,8 @@ public class ChatService {
 
         String user1nickname = "";
         String user2nickname = "";
-        String user1profile = null;  // null 대신 빈 문자열 사용
-        String user2profile = null;  // null 대신 빈 문자열 사용
+        String user1profile = null;
+        String user2profile = null;
 
         boolean isNewRoom = false;
         boolean isNewParticipant = false;
@@ -159,21 +159,33 @@ public class ChatService {
             chatRoom = new ChatRoomBean();
             chatRoom.setRoom_type("PERSONAL");
 
-            // 채팅방 이름 설정
+            // 채팅방 이름 설정 - 항상 "nickname1,nickname2" 형식으로 설정
+            // 멤버와 비즈니스가 대화할 경우 "멤버닉네임,판매자명"으로 저장
+            
             String roomName = "";
-
-            // 일반 회원 간의 채팅
-            if (userType1.equals("MEMBER") && userType2.equals("MEMBER")) {
-                roomName = user1nickname + "," + user2nickname;
+            if ((userType1.equals("BUSINESS") && userType2.equals("MEMBER"))) {
+                roomName = "판매자 " + user1nickname + ",일반회원 " + user2nickname;
             }
-            // 관리자와의 채팅
-            else if ((userType1.equals("ADMIN") || userType2.equals("ADMIN"))) {
-                roomName = "관리자와의 대화";
+            else if ((userType2.equals("BUSINESS") && userType1.equals("MEMBER"))) {
+                roomName = "판매자 " + user2nickname + ",일반회원 " + user1nickname;
             }
-            // 회원-판매자 채팅
-            else if ((userType1.equals("MEMBER") && userType2.equals("BUSINESS")) ||
-                    (userType1.equals("BUSINESS") && userType2.equals("MEMBER"))) {
-                roomName = "판매자와의 대화";
+            // 관리자-일반회원 대화인 경우
+            else if ((userType1.equals("ADMIN") && userType2.equals("MEMBER"))) {
+                roomName = "관리자,일반회원 " + user2nickname;
+            }
+            else if ((userType2.equals("ADMIN") && userType1.equals("MEMBER"))) {
+                roomName = "관리자,일반회원 " + user1nickname;
+            }
+            // 관리자-판매자 대화인 경우
+            else if ((userType1.equals("ADMIN") && userType2.equals("BUSINESS"))) {
+                roomName = "관리자,판매자 " + user2nickname;
+            }
+            else if ((userType2.equals("ADMIN") && userType1.equals("BUSINESS"))) {
+                roomName = "관리자,판매자 " + user1nickname;
+            }
+            // 일반회원-일반회원 대화인 경우
+            else {
+                roomName = "일반회원 " + user1nickname + "," + "일반회원 " + user2nickname;
             }
 
             chatRoom.setRoom_name(roomName);
@@ -203,10 +215,10 @@ public class ChatService {
             participant2.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant2);
         } else {
-            // 기존 룸 이름 업데이트 (멤버 간 채팅일 경우에만)
-            if (userType1.equals("MEMBER") && userType2.equals("MEMBER") &&
-                    chatRoom.getRoom_name() != null && !chatRoom.getRoom_name().contains(",")) {
-                String newRoomName = user1nickname + "," + user2nickname;
+            // 기존 룸 이름 업데이트 - 항상 최신 닉네임으로 유지
+            String newRoomName = user1nickname + "," + user2nickname;
+
+            if (!newRoomName.equals(chatRoom.getRoom_name())) {
                 chatRoom.setRoom_name(newRoomName);
                 chatRepository.updateChatRoomName(Long.valueOf(chatRoom.getRoom_id()), newRoomName);
             }
@@ -232,7 +244,8 @@ public class ChatService {
                 // 기존 참여자 정보 업데이트
                 boolean needUpdate = false;
 
-                if (participant1.getUser_nickname() == null || participant1.getUser_nickname().isEmpty()) {
+                // 닉네임 업데이트 필요시
+                if (!user1nickname.equals(participant1.getUser_nickname())) {
                     participant1.setUser_nickname(user1nickname);
                     needUpdate = true;
                 }
@@ -271,7 +284,8 @@ public class ChatService {
                 // 기존 참여자 정보 업데이트
                 boolean needUpdate = false;
 
-                if (participant2.getUser_nickname() == null || participant2.getUser_nickname().isEmpty()) {
+                // 닉네임 업데이트 필요시
+                if (!user2nickname.equals(participant2.getUser_nickname())) {
                     participant2.setUser_nickname(user2nickname);
                     needUpdate = true;
                 }

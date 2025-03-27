@@ -570,6 +570,15 @@ public class ChatController {
         // 상대방 정보 모델에 추가
         model.addAttribute("otherParticipants", convertedMap);
 
+        // 모든 방에 unreadCount가 제대로 설정되어 있는지 확인
+        for (ChatRoomBean room : allRooms) {
+            if (room.getUnreadCount() <= 0) {
+                int unreadCount = chatService.getUnreadMessageCount((long) room.getRoom_id(), userId);
+                room.setUnreadCount(unreadCount);
+                System.out.println("Room " + room.getRoom_id() + " unread: " + unreadCount);
+            }
+        }
+
         // 모델에 모든 정보 추가
         model.addAttribute("rooms", allRooms);
         model.addAttribute("personalRooms", personalRooms);
@@ -603,13 +612,27 @@ public class ChatController {
         // 해당 채팅방의 모든 메시지를 읽음 처리
         chatService.markAllMessagesAsRead(roomId, userId);
 
+        // 현재 로그인한 사용자 정보를 모델에 추가
+        model.addAttribute("currentUserId", userId);
+        model.addAttribute("currentUserType", userType);
+
         // 모델에 정보 추가
         model.addAttribute("room", room);
         model.addAttribute("participants", chatService.getRoomParticipants(roomId));
 
-        // 현재 로그인한 사용자 정보 추가 (Thymeleaf에서 참조할 수 있도록)
-        model.addAttribute("currentUserId", userId);
-        model.addAttribute("currentUserType", userType);
+        // 각 사용자 유형에 따라 로그인 정보 전달
+        // 반드시 null 체크 후 모델에 추가
+        if (loginMember != null) {
+            model.addAttribute("loginMember", loginMember);
+        }
+
+        if (loginBusiness != null) {
+            model.addAttribute("loginBusiness", loginBusiness);
+        }
+
+        if (loginAdmin != null) {
+            model.addAttribute("loginAdmin", loginAdmin);
+        }
 
         return "chat/roomDetail";
     }

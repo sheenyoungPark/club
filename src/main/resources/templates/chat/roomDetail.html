@@ -185,33 +185,67 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Thymeleaf를 통해 JavaScript 변수 설정 -->
+<!-- Thymeleaf를 통해 JavaScript 변수 설정 - 수정된 부분 -->
 <script th:inline="javascript">
-  // 채팅방 정보 및 사용자 정보
+  // 채팅방 정보
   const roomId = [[${room.room_id}]];
-  const userId = [[${loginMember.member_id}]]; // loginMember에서 직접 가져옴
-  const userType = "MEMBER"; // 기본값 설정
 
-  // 참여자 목록 초기화 - 빈 배열로 시작하고 나중에 업데이트
+  // 사용자 ID와 타입을 로그인 유형에 따라 가져오기
+  let userId, userType, currentUserNickname, currentUserProfile;
+
+  // 로그인 Member 정보 확인
+  if ([[${loginMember != null && loginMember.isLogin()}]]) {
+    userId = [[${loginMember.member_id}]];
+    userType = "MEMBER";
+    currentUserNickname = [[${loginMember.member_nickname}]] || userId;
+    currentUserProfile = [[${loginMember.member_profile}]] || '/sources/picture/기본이미지.png';
+  }
+  // 로그인 Business 정보 확인
+  else if ([[${loginBusiness != null && loginBusiness.isLogin()}]]) {
+    userId = [[${loginBusiness.business_id}]];
+    userType = "BUSINESS";
+    currentUserNickname = [[${loginBusiness.business_name}]] || userId;
+    currentUserProfile = [[${loginBusiness.business_profile}]] || '/sources/picture/기본이미지.png';
+  }
+  // 로그인 Admin 정보 확인
+  else if ([[${loginAdmin != null && loginAdmin.isAdmin_login()}]]) {
+    userId = [[${loginAdmin.admin_id}]];
+    userType = "ADMIN";
+    currentUserNickname = [[${loginAdmin.admin_name}]] || userId;
+    currentUserProfile = '/sources/picture/기본이미지.png'; // 관리자는 기본 프로필 이미지 사용
+  } else {
+    // 로그인 정보가 없는 경우 (이 경우는 발생하지 않아야 함)
+    userId = "";
+    userType = "";
+    currentUserNickname = "";
+    currentUserProfile = '/sources/picture/기본이미지.png';
+    console.error("로그인 정보가 없습니다. 채팅 기능을 사용할 수 없습니다.");
+  }
+
+  console.log("현재 로그인 사용자:", userId, userType, currentUserNickname);
+
+  // 참여자 목록 초기화
   var participants = [];
 
   // 서버에서 전달받은 참가자 정보를 저장
   const serverParticipants = [[${participants}]];
   console.log("서버에서 받은 참가자 목록:", serverParticipants);
 
-  // 현재 사용자 정보 설정
-  let currentUserNickname = userId; // 기본값은 ID
-  let currentUserProfile = '/sources/picture/기본이미지.png'; // 기본 프로필 이미지
-
   // 참여자 목록에서 현재 사용자 정보 찾기
   if (serverParticipants && Array.isArray(serverParticipants) && serverParticipants.length > 0) {
     // 참가자 목록 복사
     participants = [...serverParticipants];
 
+    // 현재 로그인한 사용자를 참가자 목록에서 찾기
     const currentUser = serverParticipants.find(p => p.user_id === userId);
     if (currentUser) {
-      currentUserNickname = currentUser.user_nickname || userId;
-      currentUserProfile = currentUser.userProfile || '/sources/picture/기본이미지.png';
+      // 참가자 정보가 있으면 해당 정보로 업데이트
+      if (currentUser.user_nickname) {
+        currentUserNickname = currentUser.user_nickname;
+      }
+      if (currentUser.userProfile) {
+        currentUserProfile = currentUser.userProfile;
+      }
     }
   }
 

@@ -733,13 +733,22 @@ function sendMessage() {
         // 입력 필드 초기화 (먼저 초기화하여 중복 전송 방지)
         messageInput.value = '';
 
-        // WebSocket으로 메시지 전송 (UI에는 표시하지 않음)
-        stompClient.send('/app/chat.sendMessage', {}, JSON.stringify({
+        console.log("메시지 전송 시도:", {
             roomId: roomId,
             senderId: userId,
             senderType: userType,
+            messageContent: messageContent
+        });
+
+        // WebSocket으로 메시지 전송
+        stompClient.send('/app/chat.sendMessage', {}, JSON.stringify({
+            roomId: roomId,
+            senderId: userId,
+            senderType: userType, // 현재 로그인한 사용자 타입 사용
             messageContent: messageContent,
-            messageType: 'TEXT'
+            messageType: 'TEXT',
+            senderNickname: currentUserNickname, // 닉네임 추가
+            senderProfile: currentUserProfile // 프로필 이미지 추가
         }));
 
         // 입력 중 상태 해제
