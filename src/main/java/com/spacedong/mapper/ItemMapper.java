@@ -45,6 +45,8 @@ public interface ItemMapper {
 	@Select("select * from business_item where item_id = #{item_id}")
 	BusinessItemBean getItemById(String item_id);
 
+	//상품번호, 사업자 ID 로 조
+
 
 
 }

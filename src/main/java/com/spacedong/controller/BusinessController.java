@@ -197,8 +197,12 @@ public class BusinessController {
         BusinessBean business = businessService.getBusinessInfoById(loginBusiness.getBusiness_id());
         loginBusiness.setBusiness_point(business.getBusiness_point());
 
+
+
         String businessId = loginBusiness.getBusiness_id();
         logger.info("businessInfo 메소드 호출 - 사업자 ID: {}", businessId);
+
+        BusinessBean bs = businessService.getBusinessInfoById(businessId);
 
         try {
             // 아이템 목록 조회
@@ -533,24 +537,20 @@ public class BusinessController {
         return "reservation/item_info";
     }
 
-
-
     // 아이템 수정 페이지
     @GetMapping("/edit_item")
     public String editItem(
             @RequestParam("item_id") String itemId,
             Model model) {
-
-        BusinessItemBean item = businessService.getItemById(loginBusiness.getBusiness_id());
-
+        BusinessItemBean businessItemBean = itemService.getItemById(itemId);
         // 자신이 등록한 아이템인지 확인
-        if (!item.getBusiness_id().equals(loginBusiness.getBusiness_id())) {
+        if (!businessItemBean.getBusiness_id().equals(loginBusiness.getBusiness_id())) {
             return "redirect:/business/category";
         }
-
         List<String> categoryTypes = categoryService.getAllCategoryType();
+
         model.addAttribute("categoryType", categoryTypes);
-        model.addAttribute("businessItemBean", item);
+        model.addAttribute("businessItemBean", businessItemBean);
 
         return "business/edit_item";
     }
@@ -562,13 +562,15 @@ public class BusinessController {
             @RequestParam(value = "itemImage", required = false) MultipartFile itemImage) {
 
         // 기존 아이템 정보 가져오기
-        BusinessItemBean existingItem = businessService.getItemById(businessItemBean.getItem_id());
-
+        BusinessItemBean existingItem = itemService.getItemById(businessItemBean.getItem_id());
+        // 아이템이 존재하는지 확인
+        if (existingItem == null) {
+            return "redirect:/business/category?error=item_not_found";
+        }
         // 자신이 등록한 아이템인지 확인
         if (!existingItem.getBusiness_id().equals(loginBusiness.getBusiness_id())) {
             return "redirect:/business/category";
         }
-
         // 이미지 처리
         if (itemImage != null && !itemImage.isEmpty()) {
             try {

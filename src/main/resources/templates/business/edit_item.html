@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>아이템 수정</title>
+    <link rel="stylesheet" th:href="@{/css/bottom.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+    <link rel="stylesheet" th:href="@{/css/item_info.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .edit-form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .time-range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .time-select {
+            flex: 1;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+<!-- 상단 메뉴 include -->
+<div th:replace="~{include/top_search :: top_search}"></div>
+
+<div class="edit-form-container">
+    <h1>아이템 수정</h1>
+
+    <form th:action="@{/business/edit_item_pro}" method="post" enctype="multipart/form-data" id="editItemForm">
+        <!-- 아이템 ID 히든 필드 -->
+        <input type="hidden" name="item_id" th:value="${businessItemBean.item_id}">
+
+        <div class="form-group">
+            <label for="item_title">아이템 제목</label>
+            <input type="text" id="item_title" name="item_title" class="form-control"
+                   th:value="${businessItemBean.item_title}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="item_category" class="form-label">카테고리</label>
+            <input type="text" class="form-control" id="item_category_display" readonly
+                   th:value="${businessItemBean.item_category}"
+                   style="background-color: #f8f9fa; cursor: not-allowed;">
+            <input type="hidden" id="item_category" name="item_category" th:value="${businessItemBean.item_category}">
+            <small class="text-muted">카테고리는 수정할 수 없습니다.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="item_price">시간당 가격 (원)</label>
+            <input type="number" id="item_price" name="item_price" class="form-control"
+                   th:value="${businessItemBean.item_price}" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label>운영 시간</label>
+            <div class="time-range-container">
+                <div class="time-select">
+                    <label for="item_starttime">시작 시간</label>
+                    <select id="item_starttime" name="item_starttime" class="form-control" required>
+                        <option th:each="hour : ${#numbers.sequence(0, 23)}"
+                                th:value="${hour}"
+                                th:text="${hour} + ':00'"
+                                th:selected="${hour == businessItemBean.item_starttime}">
+                        </option>
+                    </select>
+                </div>
+                <div class="time-separator">~</div>
+                <div class="time-select">
+                    <label for="item_endtime">종료 시간</label>
+                    <select id="item_endtime" name="item_endtime" class="form-control" required>
+                        <option th:each="hour : ${#numbers.sequence(1, 24)}"
+                                th:value="${hour}"
+                                th:text="${hour} + ':00'"
+                                th:selected="${hour == businessItemBean.item_endtime}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="item_text">아이템 설명</label>
+            <textarea id="item_text" name="item_text" class="form-control"
+                      th:text="${businessItemBean.item_text}" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="itemImage">아이템 이미지</label>
+            <input type="file" id="itemImage" name="itemImage" class="form-control" accept="image/*">
+
+            <div class="image-preview">
+                <p>현재 이미지:</p>
+                <img th:if="${businessItemBean.item_img != null}"
+                     th:src="@{/image/businessitem/{img}(img=${businessItemBean.item_img})}"
+                     alt="현재 아이템 이미지">
+                <img th:unless="${businessItemBean.item_img != null}"
+                     th:src="@{/sources/picture/기본이미지.png}"
+                     alt="기본 이미지">
+                <p class="small text-muted">새 이미지를 선택하지 않으면 현재 이미지가 유지됩니다.</p>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/business/item_info(item_id=${businessItemBean.item_id})}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 취소
+            </a>
+            <button type="submit" class="btn btn-primary" id="saveButton">
+                <i class="fas fa-save"></i> 저장하기
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- 하단 정보바 -->
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<script th:src="@{/js/top.js}"></script>
+<script th:src="@{/js/edit_item.js}"></script>
+</body>
+</html>

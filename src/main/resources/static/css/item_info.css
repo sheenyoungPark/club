@@ -261,3 +261,44 @@ select option:disabled {
     padding: 4px 8px;
     border-radius: 12px;
 }
+.item-management {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 3px solid #0066cc;
+}
+
+.management-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}

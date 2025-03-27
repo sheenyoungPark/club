@@ -240,6 +240,19 @@
       </form>
     </div>
   </div>
+  <div class="item-management" th:if="${loginBusiness != null and loginBusiness.login == true and loginBusiness.business_id == item.business_id}">
+    <h3>아이템 관리</h3>
+    <div class="management-buttons">
+      <a th:href="@{/business/edit_item(item_id=${item.item_id})}" class="btn btn-warning">
+        <i class="fas fa-edit"></i> 아이템 수정하기
+      </a>
+      <a th:href="@{/business/delete_item(item_id=${item.item_id})}" class="btn btn-danger"
+         onclick="return confirm('정말 이 아이템을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.');">
+        <i class="fas fa-trash-alt"></i> 아이템 삭제하기
+      </a>
+    </div>
+  </div>
+
 
   <!-- ✅ 리뷰 리스트 출력 -->
   <div style="margin-top: 30px;">
