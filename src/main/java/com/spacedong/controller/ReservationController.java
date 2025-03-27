@@ -413,6 +413,9 @@ public class ReservationController {
         reservation.setStatus("CANCELLED");
         reservationService.cancelReservation(reservationId);
 
+        adminNotificationService.sendApprovalNotification(businessItemBean.getBusiness_id(), "BUSINESS",
+                "CANCEL", businessItemBean.getItem_title(), "구매자 취소");
+
         return "redirect:/club/club_info?club_id=" + reservation.getClub_id();
     }
 
