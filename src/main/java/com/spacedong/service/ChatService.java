@@ -115,8 +115,8 @@ public class ChatService {
 
         String user1nickname = "";
         String user2nickname = "";
-        String user1profile = "";
-        String user2profile = "";
+        String user1profile = null;  // null 대신 빈 문자열 사용
+        String user2profile = null;  // null 대신 빈 문자열 사용
 
         boolean isNewRoom = false;
 
@@ -124,30 +124,30 @@ public class ChatService {
         if (userType1.equals("MEMBER")) {
             MemberBean user1 = memberService.getMemberById(userId1);
             user1nickname = user1 != null ? user1.getMember_nickname() : userId1;
-            user1profile = user1 != null ? user1.getMember_profile() : null;
-            System.out.println("user1의 프로필 : "+user1profile);
+            user1profile = user1 != null ? user1.getMember_profile() : "";
+            System.out.println("user1의 프로필 : " + user1profile);
         } else if (userType1.equals("BUSINESS")) {
             BusinessBean user1 = businessService.getBusinessById(userId1);
             user1nickname = user1 != null ? user1.getBusiness_name() : userId1;
-            user1profile = user1 != null ? user1.getBusiness_profile() : null;
+            user1profile = user1 != null ? user1.getBusiness_profile() : "";
         } else if (userType1.equals("ADMIN")) {
             AdminBean user1 = adminRepository.getAdminById(userId1);
             user1nickname = user1 != null ? user1.getAdmin_name() : userId1;
-            user1profile = null; // 관리자는 프로필 없음
+            user1profile = ""; // 관리자는 프로필 없음
         }
 
         if (userType2.equals("MEMBER")) {
             MemberBean user2 = memberService.getMemberById(userId2);
             user2nickname = user2 != null ? user2.getMember_nickname() : userId2;
-            user2profile = user2 != null ? user2.getMember_profile() : null;
+            user2profile = user2 != null ? user2.getMember_profile() : "";
         } else if (userType2.equals("BUSINESS")) {
             BusinessBean user2 = businessService.getBusinessById(userId2);
             user2nickname = user2 != null ? user2.getBusiness_name() : userId2;
-            user2profile = user2 != null ? user2.getBusiness_profile() : null;
+            user2profile = user2 != null ? user2.getBusiness_profile() : "";
         } else if (userType2.equals("ADMIN")) {
             AdminBean user2 = adminRepository.getAdminById(userId2);
             user2nickname = user2 != null ? user2.getAdmin_name() : userId2;
-            user2profile = null; // 관리자는 프로필 없음
+            user2profile = ""; // 관리자는 프로필 없음
         }
 
         if (chatRoom == null) {
@@ -181,7 +181,9 @@ public class ChatService {
             participant1.setUser_id(userId1);
             participant1.setUser_type(userType1);
             participant1.setUser_nickname(user1nickname);
-            participant1.setUserProfile(user1profile);
+            if (user1profile != null && !user1profile.isEmpty()) {
+                participant1.setUserProfile(user1profile);
+            }
             participant1.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant1);
 
@@ -191,7 +193,9 @@ public class ChatService {
             participant2.setUser_id(userId2);
             participant2.setUser_type(userType2);
             participant2.setUser_nickname(user2nickname);
-            participant2.setUserProfile(user2profile);
+            if (user2profile != null && !user2profile.isEmpty()) {
+                participant2.setUserProfile(user2profile);
+            }
             participant2.setJoinDate(LocalDateTime.now());
             chatRepository.addParticipant(participant2);
         } else {
@@ -211,7 +215,9 @@ public class ChatService {
                 participant1.setUser_id(userId1);
                 participant1.setUser_type(userType1);
                 participant1.setUser_nickname(user1nickname);
-                participant1.setUserProfile(user1profile);
+                if (user1profile != null && !user1profile.isEmpty()) {
+                    participant1.setUserProfile(user1profile);
+                }
                 participant1.setJoinDate(LocalDateTime.now());
                 chatRepository.addParticipant(participant1);
 
@@ -226,13 +232,16 @@ public class ChatService {
                     needUpdate = true;
                 }
 
-                if (participant1.getUserProfile() == null && user1profile != null) {
+                // 프로필 정보가 없거나 비어있는 경우에만 업데이트
+                if ((participant1.getUserProfile() == null || participant1.getUserProfile().isEmpty())
+                        && user1profile != null && !user1profile.isEmpty()) {
                     participant1.setUserProfile(user1profile);
                     needUpdate = true;
                 }
 
                 if (needUpdate) {
                     chatRepository.updateParticipant(participant1);
+                    System.out.println("참가자1 프로필 업데이트: " + user1profile);
                 }
             }
 
@@ -244,7 +253,9 @@ public class ChatService {
                 participant2.setUser_id(userId2);
                 participant2.setUser_type(userType2);
                 participant2.setUser_nickname(user2nickname);
-                participant2.setUserProfile(user2profile);
+                if (user2profile != null && !user2profile.isEmpty()) {
+                    participant2.setUserProfile(user2profile);
+                }
                 participant2.setJoinDate(LocalDateTime.now());
                 chatRepository.addParticipant(participant2);
 
@@ -259,13 +270,16 @@ public class ChatService {
                     needUpdate = true;
                 }
 
-                if (participant2.getUserProfile() == null && user2profile != null) {
+                // 프로필 정보가 없거나 비어있는 경우에만 업데이트
+                if ((participant2.getUserProfile() == null || participant2.getUserProfile().isEmpty())
+                        && user2profile != null && !user2profile.isEmpty()) {
                     participant2.setUserProfile(user2profile);
                     needUpdate = true;
                 }
 
                 if (needUpdate) {
                     chatRepository.updateParticipant(participant2);
+                    System.out.println("참가자2 프로필 업데이트: " + user2profile);
                 }
             }
         }
@@ -388,9 +402,6 @@ public class ChatService {
                 // 관리자는 보통 프로필 없음, 필요하다면 admin.getAdmin_profile() 추가
             }
         }
-
-        chatRepository.sendMessage(message);
-
 
         chatRepository.sendMessage(message);
 

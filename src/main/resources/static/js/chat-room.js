@@ -398,6 +398,7 @@ function setupEventListeners() {
         }
     });
 }
+
 // 메시지 로드
 function loadMessages() {
     fetch(`/chat/room/${roomId}`)
@@ -547,7 +548,7 @@ function shouldShowTime(message, lastMessageTime) {
         currentMessageTime.getFullYear() !== lastMessageTime.getFullYear();
 }
 
-// 메시지 표시 함수 수정 - appendMessage 함수 일부
+// 메시지 표시 함수
 function appendMessage(message, animate = true, isFirstInGroup = true, isLastInGroup = true, showTime = true) {
     const chatMessages = document.getElementById('chatMessages');
     const isCurrentUser = message.senderId === userId;
@@ -575,7 +576,7 @@ function appendMessage(message, animate = true, isFirstInGroup = true, isLastInG
     // 프로필 이미지 설정 (기본 이미지 경로 포함)
     const defaultProfile = '/sources/picture/기본이미지.png';
 
-    // 전체 경로에서 파일명만 추출
+    // 프로필 이미지 URL 가져오기
     const senderProfile = getProfileImageUrl(message.senderProfile);
 
     // 메시지 HTML 구성
@@ -717,6 +718,12 @@ function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// 스크롤을 가장 아래로
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 // 메시지 전송
 function sendMessage() {
     const messageInput = document.getElementById('messageInput');
@@ -745,7 +752,7 @@ function sendMessage() {
     }
 }
 
-// Fixed uploadFile function to prevent duplicate messages
+// 파일 업로드 함수
 function uploadFile() {
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
@@ -794,6 +801,7 @@ function sendTypingStatus(isTyping) {
         }));
     }
 }
+
 // 입력 중 상태 업데이트
 function updateTypingStatus(status) {
     const userTyping = document.getElementById('userTyping');
@@ -806,7 +814,7 @@ function updateTypingStatus(status) {
     }
 }
 
-// 읽음 표시 처리 개선 (성능 최적화)
+// 읽음 표시 처리 (성능 최적화)
 function markAsRead(messageId) {
     if (!isConnected || !messageId) return;
 
@@ -831,15 +839,7 @@ function markAsRead(messageId) {
     sessionStorage.setItem('readMessageIds', JSON.stringify(readMessageIds));
 }
 
-// 페이지 가시성 변경 감지 (브라우저 탭 전환 등)
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') {
-        // 페이지가 다시 보이면 현재 화면에 표시된 메시지 읽음 처리
-        setTimeout(checkVisibleMessages, 1000);
-    }
-});
-
-// updateReadReceipt 함수 수정
+// 메시지 읽음 상태 업데이트
 function updateReadReceipt(message) {
     console.log('읽음 상태 업데이트:', message);
 
@@ -849,7 +849,7 @@ function updateReadReceipt(message) {
     }
 
     // 클럽 채팅인지 확인
-    const isClubChat = room.room_type === 'CLUB';
+    const isClubChat = room && room.room_type === 'CLUB';
 
     // 클럽 채팅일 경우 읽음 표시를 업데이트하지 않음
     if (isClubChat) {
@@ -938,10 +938,10 @@ function updateMessageTimeDisplay(messageElement, unreadCount) {
     }
 }
 
-// showNotification 함수 수정
+// 브라우저 알림 표시
 function showNotification(message) {
     if (Notification.permission === 'granted') {
-        // 프로필 이미지 URL 설정 - 수정된 방식
+        // 프로필 이미지 URL 설정
         const profileImage = getProfileImageUrl(message.senderProfile);
 
         const notification = new Notification(message.senderNickname || message.senderId, {
@@ -1120,6 +1120,7 @@ function updateAllPreviousMessages(messageId, unreadCount) {
     }
 }
 
+// 프로필 이미지 URL 가져오기
 function getProfileImageUrl(profilePath) {
     // 기본 이미지 경로
     const defaultImage = '/sources/picture/기본이미지.png';
@@ -1134,4 +1135,14 @@ function getProfileImageUrl(profilePath) {
         return `/profile/${profilePath}`;
     }
 
+    // 이미 전체 경로인 경우 그대로 사용
+    return profilePath;
 }
+
+// 페이지 가시성 변경 감지 (브라우저 탭 전환 등)
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        // 페이지가 다시 보이면 현재 화면에 표시된 메시지 읽음 처리
+        setTimeout(checkVisibleMessages, 1000);
+    }
+});

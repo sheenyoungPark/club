@@ -55,17 +55,27 @@ public class ChatController {
             userInfo.put("userId", loginMember.getMember_id());
             userInfo.put("userType", "MEMBER");
             userInfo.put("userNickname", loginMember.getMember_nickname());
-            userInfo.put("userProfile", loginMember.getMember_profile());
+
+            // 프로필 정보가 null이 아닌지 확인하고 설정
+            String profilePath = loginMember.getMember_profile();
+            userInfo.put("userProfile", profilePath != null ? profilePath : "");
+
+            System.out.println("로그인 회원 프로필: " + profilePath);
         } else if (loginBusiness != null && loginBusiness.isLogin()) {
             userInfo.put("userId", loginBusiness.getBusiness_id());
             userInfo.put("userType", "BUSINESS");
             userInfo.put("userNickname", loginBusiness.getBusiness_name());
-            userInfo.put("userProfile", loginBusiness.getBusiness_profile());
+
+            // 프로필 정보가 null이 아닌지 확인하고 설정
+            String profilePath = loginBusiness.getBusiness_profile();
+            userInfo.put("userProfile", profilePath != null ? profilePath : "");
+
+            System.out.println("로그인 비즈니스 프로필: " + profilePath);
         } else if (loginAdmin != null && loginAdmin.isAdmin_login()) {
             userInfo.put("userId", loginAdmin.getAdmin_id());
             userInfo.put("userType", "ADMIN");
             userInfo.put("userNickname", loginAdmin.getAdmin_name());
-            userInfo.put("userProfile", null); // Admin에게는 일반적으로 프로필 이미지가 없음
+            userInfo.put("userProfile", ""); // 관리자는 일반적으로 프로필 이미지가 없음
         }
 
         return userInfo;
@@ -517,7 +527,6 @@ public class ChatController {
         return "chat/roomList";
     }
 
-    // 채팅방 상세 페이지
     @GetMapping("/view/room/{roomId}")
     public String chatRoomDetail(@PathVariable Long roomId, Model model) {
         if (!isUserLoggedIn()) {
@@ -540,7 +549,7 @@ public class ChatController {
         model.addAttribute("room", room);
         model.addAttribute("participants", chatService.getRoomParticipants(roomId));
 
-        // 현재 로그인한 사용자 정보 추가
+        // 현재 로그인한 사용자 정보 추가 (Thymeleaf에서 참조할 수 있도록)
         model.addAttribute("currentUserId", userId);
         model.addAttribute("currentUserType", userType);
 

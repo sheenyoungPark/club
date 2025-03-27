@@ -102,7 +102,7 @@ public interface ChatMapper {
     // === 채팅 참여자 관련 쿼리 ===
 
     @Insert("INSERT INTO chat_participant (room_id, user_id, user_type, user_nickname, userProfile) " +
-            "VALUES (#{room_id}, #{user_id}, #{user_type}, #{user_nickname}, #{userProfile})")
+            "VALUES (#{room_id}, #{user_id}, #{user_type}, #{user_nickname}, #{userProfile,jdbcType=VARCHAR})")
     int addParticipant(ChatParticipantBean participant);
 
     @Select("SELECT cp.*, " +
@@ -323,7 +323,7 @@ public interface ChatMapper {
             "WHERE user_nickname IS NULL OR user_nickname = ''</script>")
     int updateAllParticipantsNickname();
 
-    @Update("UPDATE chat_participant SET user_nickname = #{user_nickname}, userProfile = #{userProfile} " +
+    @Update("UPDATE chat_participant SET user_nickname = #{user_nickname}, userProfile = #{userProfile,jdbcType=VARCHAR} " +
             "WHERE room_id = #{room_id} AND user_id = #{user_id}")
     int updateParticipant(ChatParticipantBean participant);
 
