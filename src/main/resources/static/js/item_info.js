@@ -487,3 +487,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // 초기화 함수 호출
     setInitialDate();
 });
+// 문의하기 팝업 함수 및 이벤트 리스너
+document.addEventListener('DOMContentLoaded', function() {
+    // 문의하기 버튼 이벤트 리스너 추가
+    const inquiryButtons = document.querySelectorAll('.inquiry-btn');
+
+    if (inquiryButtons.length > 0) {
+        inquiryButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // 데이터 속성에서 ID 값 가져오기
+                const itemId = this.getAttribute('data-item-id');
+                const businessId = this.getAttribute('data-business-id');
+
+                // 팝업 창 열기
+                openInquiryWindow(itemId, businessId);
+            });
+        });
+    }
+});
+
+// 문의하기 팝업 창 함수
+function openInquiryWindow(itemId, businessId) {
+    // 팝업 창의 크기와 위치 설정
+    const width = 700;
+    const height = 600;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+
+    // URL 생성
+    const url = `/chat/new/ask?item_id=${itemId}&business_id=${businessId}`;
+
+    // 팝업 창 열기
+    const inquiryWindow = window.open(
+        url,
+        'inquiryWindow',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
+    );
+
+    // 팝업 창 포커스
+    if (inquiryWindow) {
+        inquiryWindow.focus();
+    } else {
+        // 팝업이 차단된 경우 알림
+        alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+    }
+}
