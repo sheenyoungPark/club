@@ -1,0 +1,43 @@
+.sidebar {
+    height: 100vh;
+    background-color: #343a40;
+    color: white;
+}
+.sidebar a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    display: block;
+    padding: 10px 15px;
+}
+.sidebar a:hover {
+    color: white;
+    background-color: #495057;
+}
+.sidebar a.active {
+    background-color: #0d6efd;
+    color: white;
+}
+.stat-card {
+    transition: transform 0.3s;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+.dashboard-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+.chart-container {
+    height: 250px; /* 차트 높이 줄임 */
+}
+.main-content {
+    height: 100vh;
+    overflow-y: auto;
+}
+/* 카드 크기와 패딩 조정 */
+.card-body {
+    padding: 0.75rem;
+}
+.mb-4 {
+    margin-bottom: 1rem !important;
+}

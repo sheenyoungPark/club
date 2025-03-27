@@ -1,9 +1,10 @@
 package com.spacedong.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
 
+import com.spacedong.beans.*;
+import com.spacedong.service.*;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,40 +13,49 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.spacedong.beans.AdminBean;
-import com.spacedong.beans.ClubBean;
-import com.spacedong.service.AdminService;
-import com.spacedong.service.ClubService;
+import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
     @Autowired
     private AdminService adminService;
-    
+
     @Autowired
     private ClubService clubService;
-    
+
     @Resource(name = "loginAdmin")
     private AdminBean loginAdmin;
-    
+
+    @Autowired
+    private BusinessService businessService;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private BoardService boardService;
+
+    @Autowired
+    private BankService bankService;
+
     @GetMapping("/init")
     public String admininit() {
         return "admin/init";
     }
-    
+
     @GetMapping("/login")
     public String login(@ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin) {
         return "admin/login";
     }
-    
+
     @PostMapping("/loginproc")
     public String loginPro(@Valid @ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin, Model model,
                            BindingResult result) {
@@ -60,29 +70,29 @@ public class AdminController {
             return "admin/login";
         }
     }
-    
+
     @GetMapping("/dashboard")
     public String dashboard() {
         return "admin/dashboard";
     }
-    
+
     // 동호회 관리 페이지
     @GetMapping("/club_management")
     public String clubManagement(Model model) {
-        // 모든 동호회 정보 가져오기
-        List<ClubBean> clubList = clubService.getAllClub();
+        // 모든 동호회 정보 가져오기 (관리자용 메소드 사용)
+        List<ClubBean> clubList = clubService.getAllClubForAdmin();
         model.addAttribute("clubList", clubList);
-        
+
         return "admin/club_management";
     }
-    
+
     // 동호회 검색 (AJAX) - GET과 POST 모두 지원
     @RequestMapping(value = "/searchClub", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public Map<String, Object> searchClub(@RequestParam("searchType") String searchType, 
-                                        @RequestParam("keyword") String keyword) {
+    public Map<String, Object> searchClub(@RequestParam("searchType") String searchType,
+                                          @RequestParam("keyword") String keyword) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             List<ClubBean> searchResults = clubService.searchClubs(searchType, keyword);
             response.put("success", true);
@@ -91,24 +101,24 @@ public class AdminController {
             response.put("success", false);
             response.put("message", e.getMessage());
         }
-        
+
         return response;
     }
-    
+
     // 동호회 상세 정보
     @GetMapping("/club_detail")
     @ResponseBody
     public ClubBean getClubDetail(@RequestParam("club_id") int club_id, Model model) {
-    	System.out.println(club_id);
+        System.out.println(club_id);
         return clubService.oneClubInfo(club_id);
     }
-    
+
     // 동호회 승인
     @PostMapping("/approve_club")
     @ResponseBody
     public Map<String, Object> approveClub(@RequestParam("clubId") int club_id) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             clubService.updateClubStatus(club_id, "PASS");
             response.put("success", true);
@@ -116,53 +126,527 @@ public class AdminController {
             response.put("success", false);
             response.put("message", e.getMessage());
         }
-        
+
         return response;
     }
-    
+
     // 동호회 상태 변경
     @PostMapping("/update_club_status")
     @ResponseBody
     public Map<String, Object> updateClubStatus(@RequestParam("clubId") int club_id,
-                                              @RequestParam("status") String status) {
+                                                @RequestParam("status") String status) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             // 상태가 public이면 PASS로, private이면 WAIT로 변환
             String dbStatus = "PASS";
             if (status.equals("private")) {
                 dbStatus = "WAIT";
             }
-            
+
             clubService.updateClubStatus(club_id, dbStatus);
             response.put("success", true);
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", e.getMessage());
         }
-        
+
         return response;
     }
-    
-    // 판매자 관리 페이지
-    @GetMapping("/seller_management")
-    public String sellerManagement() {
-        return "admin/seller_management";
+
+    // 판매자 목록 조회 메서드 (기존 메서드를 보완)
+    @GetMapping("/business_management")
+    public String businessManagement(Model model) {
+        // 모든 판매자 정보 가져오기 (WAIT와 PASS 모두 포함)
+        List<BusinessBean> businessList = businessService.getAllBusiness();
+        model.addAttribute("businessList", businessList);
+
+        return "admin/business_management";
     }
-    
+
+    @GetMapping("/board_management")
+    public String boardManagement() {
+        return "admin/board_management";
+    }
+
+    // 게시판 특정 유형 목록 조회 함수에 board_type 명시적 설정 추가
+    @GetMapping("/board_list")
+    @ResponseBody
+    public Map<String, Object> getBoardList(@RequestParam(value = "boardType", required = false) String boardType) {
+        Map<String, Object> response = new HashMap<>();
+        List<BoardBean> boardList;
+
+        try {
+            // 특정 게시판 유형을 요청한 경우
+            if (boardType != null && !boardType.equals("all")) {
+                int page = 1; // 페이지 기본값
+                int pageSize = 1000; // 충분히 큰 값으로 설정
+
+                if (boardType.equals("admin")) {
+                    boardList = boardService.getAdminBoardList(page, pageSize);
+
+                    // 게시글 유형 명시적 설정
+                    for (BoardBean board : boardList) {
+                        board.setBoard_type("admin");
+                    }
+                } else if (boardType.equals("member")) {
+                    boardList = boardService.getMemberBoardList(page, pageSize);
+
+                    // 게시글 유형 명시적 설정
+                    for (BoardBean board : boardList) {
+                        board.setBoard_type("member");
+                    }
+                } else if (boardType.equals("business")) {
+                    boardList = boardService.getBusinessBoardList(page, pageSize);
+
+                    // 게시글 유형 명시적 설정
+                    for (BoardBean board : boardList) {
+                        board.setBoard_type("business");
+                    }
+                } else {
+                    boardList = new ArrayList<>();
+                }
+            } else {
+                // 모든 게시판의 게시글을 가져옴 (이미 board_type 필드가 설정되어 있음)
+                boardList = boardService.getAllBoardList(1, 1000);
+            }
+
+            response.put("success", true);
+            response.put("boardList", boardList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "게시글 목록을 불러오는데 실패했습니다: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 게시글 검색 메서드
+    @GetMapping("/searchBoard")
+    @ResponseBody
+    public Map<String, Object> searchBoard(@RequestParam("searchType") String searchType,
+                                           @RequestParam("keyword") String keyword) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 검색 로직 (BoardService의 검색 메서드 호출)
+            List<BoardBean> searchResults = boardService.searchBoards(searchType, keyword);
+
+            // 검색 결과에 board_type이 없을 경우 설정
+            for (BoardBean board : searchResults) {
+                if (board.getBoard_type() == null || board.getBoard_type().isEmpty()) {
+                    // 게시글 ID로 타입 확인
+                    String detectedType = boardService.findBoardType(board.getBoard_id());
+                    if (detectedType != null && !detectedType.isEmpty()) {
+                        board.setBoard_type(detectedType);
+                    }
+                }
+            }
+
+            response.put("success", true);
+            response.put("boardList", searchResults);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 게시글 상세 정보
+    @GetMapping("/board_detail")
+    @ResponseBody
+    public Map<String, Object> getBoardDetail(@RequestParam("boardId") int boardId,
+                                              @RequestParam("boardType") String boardType) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // boardType이 null이거나 유효하지 않은 경우 처리
+            if (boardType == null || boardType.isEmpty() ||
+                    !(boardType.equals("member") || boardType.equals("business") || boardType.equals("admin"))) {
+                // 게시글 ID로 올바른 게시판 유형 찾기
+                boardType = boardService.findBoardType(boardId);
+
+                if (boardType == null) {
+                    response.put("success", false);
+                    response.put("message", "유효한 게시판 유형을 찾을 수 없습니다.");
+                    return response;
+                }
+            }
+
+            // 게시글 정보 가져오기
+            BoardBean board = boardService.getBoardDetail(boardType, boardId);
+
+            if (board == null) {
+                response.put("success", false);
+                response.put("message", "게시글을 찾을 수 없습니다.");
+                return response;
+            }
+
+            // board_type이 없으면 설정
+            if (board.getBoard_type() == null || board.getBoard_type().isEmpty()) {
+                board.setBoard_type(boardType);
+            }
+
+            // 기본 게시글 정보 저장
+            response.put("success", true);
+            response.put("board_id", board.getBoard_id());
+            response.put("board_title", board.getBoard_title());
+            response.put("board_text", board.getBoard_text());
+            response.put("board_writer_id", board.getBoard_writer_id());
+            response.put("board_view", board.getBoard_view());
+            response.put("board_like", board.getBoard_like());
+            response.put("create_date", board.getCreate_date());
+            response.put("update_date", board.getUpdate_date());
+            response.put("writer_name", board.getWriter_name());
+            response.put("board_type", boardType);
+
+            // 이미지 가져오기
+            List<String> images = boardService.getBoardImages(boardType, boardId);
+            response.put("images", images);
+
+            // 댓글 가져오기
+            try {
+                List<BoardCommentBean> commentList = boardService.getCommentHierarchy(boardType, boardId);
+                // BoardCommentBean 객체를 Map으로 변환 (JSON 직렬화를 돕기 위함)
+                List<Map<String, Object>> commentsForJson = new ArrayList<>();
+
+                if (commentList != null) {
+                    for (BoardCommentBean comment : commentList) {
+                        Map<String, Object> commentMap = new HashMap<>();
+                        commentMap.put("comment_id", comment.getComment_id());
+                        commentMap.put("board_id", comment.getBoard_id());
+                        commentMap.put("comment_writer_id", comment.getComment_writer_id());
+                        commentMap.put("comment_writer_name", comment.getComment_writer_name());
+                        commentMap.put("comment_text", comment.getComment_text());
+                        commentMap.put("parent_comment_id", comment.getParent_comment_id());
+                        commentMap.put("create_date", comment.getCreate_date());
+
+                        commentsForJson.add(commentMap);
+                    }
+                }
+
+                response.put("comments", commentsForJson);
+                System.out.println("댓글 수: " + (commentList != null ? commentList.size() : 0));
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("댓글 불러오기 실패: " + e.getMessage());
+                response.put("comments", new ArrayList<>());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "게시글 상세 정보를 불러오는데 실패했습니다: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 게시글 표시/숨김 토글
+    @PostMapping("/toggle_board_visibility")
+    @ResponseBody
+    public Map<String, Object> toggleBoardVisibility(@RequestParam("boardId") int boardId,
+                                                     @RequestParam("boardType") String boardType,
+                                                     @RequestParam("action") String action) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // TODO: 게시글 표시/숨김 상태 변경 로직 구현 필요
+            // 현재는 데이터베이스에 status 컬럼이 없으므로 추가 작업 필요
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 게시글 삭제
+    @PostMapping("/delete_board")
+    @ResponseBody
+    public Map<String, Object> deleteBoard(@RequestParam("boardId") int boardId,
+                                           @RequestParam("boardType") String boardType) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 게시글 삭제 (BoardService의 삭제 메소드는 이미 이미지 파일까지 처리함)
+            boardService.deleteBoard(boardType, boardId);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 공지사항 작성
+    @PostMapping("/write_notice")
+    @ResponseBody
+    public Map<String, Object> writeNotice(@RequestParam("title") String title,
+                                           @RequestParam("content") String content,
+                                           @RequestParam(value = "files", required = false) List<MultipartFile> files) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 게시글 데이터 생성
+            BoardBean notice = new BoardBean();
+            notice.setBoard_title(title);
+            notice.setBoard_text(content);
+            notice.setBoard_writer_id(loginAdmin.getAdmin_id()); // 관리자 ID로 설정
+
+            // 게시글 저장
+            int boardId = boardService.writeBoard("admin", notice);
+
+            // 파일이 있으면 저장
+            if (files != null && !files.isEmpty()) {
+                String uploadDir = "C:/upload/image/adminBoardImg/";
+                File uploadDirFile = new File(uploadDir);
+                if (!uploadDirFile.exists()) {
+                    uploadDirFile.mkdirs();
+                }
+
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        // 파일명 생성 (중복 방지)
+                        String originalFilename = file.getOriginalFilename();
+                        String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
+
+                        // 파일 저장
+                        File destFile = new File(uploadDir + fileName);
+                        file.transferTo(destFile);
+
+                        // DB에 이미지 정보 저장
+                        boardService.saveBoardImage("admin", boardId, fileName);
+                    }
+                }
+            }
+
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 판매자 승인 메서드
+    @PostMapping("/approve_business")
+    @ResponseBody
+    public Map<String, Object> approveBusiness(@RequestParam("businessId") String businessId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 판매자 상태를 'PASS'로 변경
+            businessService.updateBusinessStatus(businessId, "PASS");
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 판매자 상태 업데이트 메서드
+    @PostMapping("/update_business_status")
+    @ResponseBody
+    public Map<String, Object> updateBusinessStatus(@RequestParam("businessId") String businessId,
+                                                    @RequestParam("status") String status) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            businessService.updateBusinessStatus(businessId, status);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 판매자 삭제 메서드
+    @PostMapping("/delete_business")
+    @ResponseBody
+    public Map<String, Object> deleteBusiness(@RequestParam("businessId") String businessId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            businessService.deleteBusiness(businessId);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
     // 회원 관리 페이지
     @GetMapping("/member_management")
     public String memberManagement() {
         return "admin/member_management";
     }
-    
+
+    // 회원 목록 데이터 (JSON 형식으로 반환)
+    @GetMapping("/member_list")
+    @ResponseBody
+    public Map<String, Object> getMemberList() {
+        Map<String, Object> response = new HashMap<>();
+        List<MemberBean> memberList = memberService.getAllMembers();
+        response.put("success", true);
+        response.put("memberList", memberList);
+        return response;
+    }
+
+    // 회원 검색 (AJAX) - GET과 POST 모두 지원
+    @RequestMapping(value = "/searchMember", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseBody
+    public Map<String, Object> searchMember(@RequestParam("searchType") String searchType,
+                                            @RequestParam("keyword") String keyword) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            List<MemberBean> searchResults = memberService.searchMembers(searchType, keyword);
+            response.put("success", true);
+            response.put("memberList", searchResults);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 회원 상세 정보
+    @GetMapping("/member_detail")
+    @ResponseBody
+    public MemberBean getMemberDetail(@RequestParam("member_id") String member_id) {
+        return memberService.getMemberById(member_id);
+    }
+
+    // 회원 삭제
+    @PostMapping("/delete_member")
+    @ResponseBody
+    public Map<String, Object> deleteMember(@RequestParam("memberId") String member_id) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            memberService.deleteMember(member_id);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
     @GetMapping("/logout")
     public String adminlogout() {
-        
         loginAdmin.setAdmin_login(false);
         loginAdmin.setAdmin_id(null);
         loginAdmin.setAdmin_name(null);
-        
+
         return "admin/logout";
+    }
+
+    // 판매자(비즈니스) 검색 (AJAX) - GET과 POST 모두 지원
+    @RequestMapping(value = "/searchBusiness", method = {RequestMethod.GET, RequestMethod.POST})
+    @ResponseBody
+    public Map<String, Object> searchBusiness(@RequestParam("searchType") String searchType,
+                                              @RequestParam("keyword") String keyword) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            List<BusinessBean> searchResults = businessService.searchBusiness(searchType, keyword);
+            response.put("success", true);
+            response.put("businessList", searchResults);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 판매자(비즈니스) 상세 정보
+    @GetMapping("/business_detail")
+    @ResponseBody
+    public BusinessBean getBusinessDetail(@RequestParam("business_id") String business_id) {
+        return businessService.getBusinessDetailInfo(business_id);
+    }
+
+    // 동호회 목록 데이터 (JSON 형식으로 반환)
+    @GetMapping("/club_list")
+    @ResponseBody
+    public Map<String, Object> getClubList() {
+        Map<String, Object> response = new HashMap<>();
+        // getAllClubForAdmin() 메소드를 사용하도록 수정
+        List<ClubBean> clubList = clubService.getAllClubForAdmin();
+        response.put("clubList", clubList);
+        return response;
+    }
+
+    // 환전 관리 페이지
+    @GetMapping("/exchange_management")
+    public String exchangeManagement(Model model) {
+        try {
+            // 모든 환전 요청 목록 가져오기
+            List<BankBean> exchangeRequests = bankService.getAllExchangeRequests();
+            model.addAttribute("exchangeRequests", exchangeRequests);
+        } catch (Exception e) {
+            model.addAttribute("error", "환전 요청 목록을 불러오는데 실패했습니다: " + e.getMessage());
+        }
+
+        return "admin/exchange_management";
+    }
+
+    // 환전 요청 상세 정보
+    @GetMapping("/exchange_detail")
+    @ResponseBody
+    public BankBean getExchangeDetail(@RequestParam("bank_id") int bankId) {
+        return bankService.getExchangeRequestById(bankId);
+    }
+
+    // 환전 요청 승인
+    @PostMapping("/approve_exchange")
+    @ResponseBody
+    public Map<String, Object> approveExchange(@RequestParam("bankId") int bankId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 환전 요청 승인 처리
+            bankService.approveExchangeRequest(bankId, loginAdmin.getAdmin_id());
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // 환전 요청 거부
+    @PostMapping("/reject_exchange")
+    @ResponseBody
+    public Map<String, Object> rejectExchange(@RequestParam("bankId") int bankId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 환전 요청 거부 처리
+            bankService.deleteExchangeRequest(bankId);
+            response.put("success", true);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
     }
 }

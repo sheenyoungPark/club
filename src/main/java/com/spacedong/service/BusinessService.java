@@ -44,8 +44,13 @@ public class BusinessService {
 
     public boolean getLoginBusiness(BusinessBean businessBean) {
         BusinessBean temp = businessRepository.getLoginBusiness(businessBean);
-
-        if(temp != null) {
+        if (temp != null) {
+            // 먼저 승인 상태를 체크합니다.
+            if ("WAIT".equalsIgnoreCase(temp.getBusiness_public())) {
+                logger.info("사업자 승인 대기중: {}", temp.getBusiness_id());
+                return false;  // 승인 대기중이면 false를 반환
+            }
+            // 승인 상태(PASS)인 경우에만 세션 업데이트
             loginBusiness.setBusiness_id(temp.getBusiness_id());
             loginBusiness.setBusiness_name(temp.getBusiness_name());
             loginBusiness.setBusiness_email(temp.getBusiness_email());
@@ -54,28 +59,12 @@ public class BusinessService {
             loginBusiness.setBusiness_number(temp.getBusiness_number());
             loginBusiness.setBusiness_profile(temp.getBusiness_profile());
             loginBusiness.setBusiness_public(temp.getBusiness_public());
-
-            // 추가 필드도 세션에 설정
-            if (temp.getBusiness_info() != null) {
-                loginBusiness.setBusiness_info(temp.getBusiness_info());
-            } else {
-                loginBusiness.setBusiness_info("");
-            }
-
+            loginBusiness.setBusiness_info(temp.getBusiness_info() != null ? temp.getBusiness_info() : "");
             loginBusiness.setBusiness_point(temp.getBusiness_point());
-
             loginBusiness.setBusiness_pw(temp.getBusiness_pw());
-            logger.info("비지니스 서비스 로그인: {}", loginBusiness.getBusiness_name());
-            loginBusiness.setBusiness_address(temp.getBusiness_address());
-            loginBusiness.setBusiness_email(temp.getBusiness_email());
-            loginBusiness.setBusiness_info(temp.getBusiness_info());
-            loginBusiness.setBusiness_phone(temp.getBusiness_phone());
-            loginBusiness.setBusiness_point(temp.getBusiness_point());
             loginBusiness.setBusiness_joindate(temp.getBusiness_joindate());
-            loginBusiness.setBusiness_profile(temp.getBusiness_profile());
-            loginBusiness.setBusiness_public(temp.getBusiness_public());
-            loginBusiness.setBusiness_number(temp.getBusiness_number());
             loginBusiness.setLogin(true);
+            logger.info("비즈니스 로그인 성공: {}", loginBusiness.getBusiness_name());
             return true;
         }
         return false;
@@ -266,6 +255,36 @@ public class BusinessService {
     }
     public void cancleReservationMP(int price, String member_id){
         businessRepository.cancleReservationMP(price, member_id);
+    }
+
+    // 모든 판매자 목록 조회
+    public List<BusinessBean> getAllBusiness() {
+        return businessRepository.getAllBusiness();
+    }
+
+    // 판매자 검색
+    public List<BusinessBean> searchBusiness(String searchType, String keyword) {
+        return businessRepository.searchBusiness(searchType, keyword);
+    }
+
+    // 판매자 상세 정보 조회
+    public BusinessBean getBusinessDetailInfo(String businessId) {
+        BusinessBean business = businessRepository.getLoginBusinessById(businessId);
+
+        // 추가 정보 설정 (예: 판매 상품 수, 총 판매액 등)
+        // business.setProductCount(businessRepository.getProductCount(businessId));
+        // business.setTotalSales(businessRepository.getTotalSales(businessId));
+
+        return business;
+    }
+    // 판매자 상태 업데이트 메서드
+    public void updateBusinessStatus(String businessId, String status) {
+        // 유효한 상태 값인지 검증
+        if (!status.equals("WAIT") && !status.equals("PASS")) {
+            throw new IllegalArgumentException("유효하지 않은 상태 값입니다: " + status);
+        }
+
+        businessRepository.updateBusinessStatus(businessId, status);
     }
     //===============================================================
 }

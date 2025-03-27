@@ -75,7 +75,8 @@ public interface MemberMapper {
             "       NVL(cm.member_role, 'normal') AS member_role " +
             "FROM club c " +
             "LEFT JOIN club_member cm ON c.club_id = cm.club_id " +
-            "WHERE cm.member_id = #{memberId}")
+            "WHERE cm.member_id = #{memberId} " +
+            "AND c.club_public = 'PASS'")
     List<ClubBean> getJoinedClubsWithRole(String memberId);
 
 
@@ -103,4 +104,34 @@ public interface MemberMapper {
 
 
 
+
+    // 전체 회원 목록 조회
+    @Select("SELECT * FROM member ORDER BY member_joindate DESC")
+    List<MemberBean> getAllMembers();
+
+    // ID로 회원 검색
+    @Select("SELECT * FROM member WHERE member_id LIKE '%' || #{keyword} || '%' ORDER BY member_joindate DESC")
+    List<MemberBean> searchMembersById(@Param("keyword") String keyword);
+
+    // 이름으로 회원 검색
+    @Select("SELECT * FROM member WHERE member_name LIKE '%' || #{keyword} || '%' ORDER BY member_joindate DESC")
+    List<MemberBean> searchMembersByName(@Param("keyword") String keyword);
+
+    // 이메일로 회원 검색
+    @Select("SELECT * FROM member WHERE member_email LIKE '%' || #{keyword} || '%' ORDER BY member_joindate DESC")
+    List<MemberBean> searchMembersByEmail(@Param("keyword") String keyword);
+
+    // 전화번호로 회원 검색
+    @Select("SELECT * FROM member WHERE member_phone LIKE '%' || #{keyword} || '%' ORDER BY member_joindate DESC")
+    List<MemberBean> searchMembersByPhone(@Param("keyword") String keyword);
+
+    // 모든 필드로 회원 검색
+    @Select("SELECT * FROM member WHERE " +
+            "member_id LIKE '%' || #{keyword} || '%' OR " +
+            "member_name LIKE '%' || #{keyword} || '%' OR " +
+            "member_email LIKE '%' || #{keyword} || '%' OR " +
+            "member_phone LIKE '%' || #{keyword} || '%' OR " +
+            "member_nickname LIKE '%' || #{keyword} || '%' " +
+            "ORDER BY member_joindate DESC")
+    List<MemberBean> searchMembersByAllFields(@Param("keyword") String keyword);
 }

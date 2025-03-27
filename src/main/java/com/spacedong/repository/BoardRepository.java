@@ -151,4 +151,9 @@ public class BoardRepository {
         boardMapper.deleteBoardImage(boardType, boardId, fileName);
     }
 
+    /** 게시판 검색 기능 */
+    public List<BoardBean> searchBoards(String searchType, String keyword) {
+        return boardMapper.searchBoards(searchType, keyword);
+    }
+
 }

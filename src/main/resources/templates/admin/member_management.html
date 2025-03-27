@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 회원 관리</title>
+    <link rel="stylesheet" th:href="@{/css/adminMember.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            height: 100%;
+            background-color: #343a40;
+            color: white;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+        }
+
+        .sidebar a:hover {
+            color: white;
+            background-color: #495057;
+        }
+
+        .sidebar a.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        /* 전체 화면 레이아웃 조정 */
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container-fluid {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .row {
+            height: 100%;
+        }
+
+        /* 메인 콘텐츠 영역 조정 */
+        .col-md-10 {
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        /* 테이블 컨테이너 조정 */
+        .table-responsive {
+            margin-bottom: 20px;
+        }
+
+        /* 페이지네이션 조정 */
+        .pagination {
+            position: static;
+            transform: none;
+            margin-top: 20px;
+            background-color: transparent;
+            box-shadow: none;
+            z-index: auto;
+        }
+
+        .member-item {
+            cursor: pointer;
+        }
+
+        .member-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* 회원 상태별 배지 색상 */
+        .badge-active {
+            background-color: #28a745;
+        }
+
+        .badge-inactive {
+            background-color: #dc3545;
+        }
+
+        .badge-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- 사이드바 메뉴 -->
+        <div class="col-md-2 sidebar p-0">
+            <div class="d-flex flex-column flex-shrink-0 p-3">
+                <a href="/admin/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+                    <span class="fs-4">관리자 패널</span>
+                </a>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link">
+                            대시보드
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/club_management" class="nav-link">
+                            동호회 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/business_management" class="nav-link">
+                            판매자 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/member_management" class="nav-link active">
+                            회원 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/board_management" class="nav-link">
+                            게시판 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/exchange_management" class="nav-link">
+                            포인트 관리
+                        </a>
+                    </li>
+                </ul>
+                <hr>
+                <div>
+                    <a href="/member/logout" class="btn btn-danger w-100">로그아웃</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="col-md-10 p-4">
+            <h2>회원 관리</h2>
+            <p>총 <span id="memberCount">0</span>명의 회원이 있습니다.</p>
+
+            <!-- 검색 영역 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    회원 검색
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="searchType">
+                                <option value="id">아이디</option>
+                                <option value="name">이름</option>
+                                <option value="email">이메일</option>
+                                <option value="phone">전화번호</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <input type="text" class="form-control" id="keyword" placeholder="검색어 입력">
+                        </div>
+                        <div class="col-md-2">
+                            <button id="searchBtn" class="btn btn-primary w-100">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 회원 목록 -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>회원 목록</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <!-- 여기에 회원 테이블이 들어갑니다 -->
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAllMembers">
+                                    </div>
+                                </th>
+                                <th>아이디</th>
+                                <th>이름</th>
+                                <th>이메일</th>
+                                <th>전화번호</th>
+                                <th>가입일</th>
+                                <th>관리</th>
+                            </tr>
+                            </thead>
+                            <tbody id="memberList">
+                            <!-- 회원 목록이 여기에 동적으로 추가됩니다 -->
+                            </tbody>
+                        </table>
+
+                        <!-- 페이지네이션 -->
+                        <nav aria-label="회원 페이지 내비게이션">
+                            <ul class="pagination" id="pagination">
+                                <!-- 페이지 번호가 여기에 동적으로 추가됩니다 -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 회원 상세 정보 모달 -->
+<div class="modal fade" id="memberDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">회원 상세 정보</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <!-- 회원 기본 정보 -->
+                    <div class="col-md-6">
+                        <h6>기본 정보</h6>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th width="40%">아이디</th>
+                                <td id="detail-member-id"></td>
+                            </tr>
+                            <tr>
+                                <th>이름</th>
+                                <td id="detail-member-name"></td>
+                            </tr>
+                            <tr>
+                                <th>이메일</th>
+                                <td id="detail-member-email"></td>
+                            </tr>
+                            <tr>
+                                <th>전화번호</th>
+                                <td id="detail-member-phone"></td>
+                            </tr>
+                            <tr>
+                                <th>닉네임</th>
+                                <td id="detail-member-nickname"></td>
+                            </tr>
+                            <tr>
+                                <th>성별</th>
+                                <td id="detail-member-gender"></td>
+                            </tr>
+                            <tr>
+                                <th>생년월일</th>
+                                <td id="detail-member-birthdate"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- 회원 추가 정보 -->
+                    <div class="col-md-6">
+                        <h6>추가 정보</h6>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th width="40%">주소</th>
+                                <td id="detail-member-address"></td>
+                            </tr>
+                            <tr>
+                                <th>가입일</th>
+                                <td id="detail-member-join-date"></td>
+                            </tr>
+                            <tr>
+                                <th>포인트</th>
+                                <td id="detail-member-point"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteBtn">회원 삭제</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // 페이지 관련 변수
+        var currentPage = 1;
+        var itemsPerPage = 10;
+        var totalPages = 1;
+        var allMembers = []; // 모든 회원 데이터 저장
+
+        // 초기화: 회원 데이터 로드 및 표시
+        loadAllMembers();
+
+        // 모든 회원 데이터 가져오기
+        function loadAllMembers() {
+            $.ajax({
+                url: '/admin/member_list',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        allMembers = response.memberList || [];
+                        totalPages = Math.ceil(allMembers.length / itemsPerPage);
+
+                        // 전체 회원 수 표시
+                        $('#memberCount').text(allMembers.length);
+
+                        // 첫 페이지 표시
+                        displayMembersPage(1);
+
+                        // 페이지네이션 생성
+                        createPagination();
+                    } else {
+                        console.error('데이터 로드 실패:', response.message);
+                        alert('회원 목록을 불러오는데 실패했습니다.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('데이터 로드 실패:', error);
+                    alert('서버 연결에 실패했습니다.');
+                }
+            });
+        }
+
+        // 회원 검색
+        $('#searchBtn').click(function() {
+            var searchType = $('#searchType').val();
+            var keyword = $('#keyword').val().trim();
+
+            if(keyword === '') {
+                loadAllMembers();
+                return;
+            }
+
+            $.ajax({
+                url: '/admin/searchMember',
+                type: 'POST',
+                data: {
+                    searchType: searchType,
+                    keyword: keyword
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        var filteredMembers = response.memberList || [];
+
+                        // 검색 결과로 목록 업데이트
+                        allMembers = filteredMembers;
+                        totalPages = Math.ceil(allMembers.length / itemsPerPage);
+
+                        // 검색 결과 수 표시
+                        $('#memberCount').text(allMembers.length);
+
+                        // 첫 페이지 표시
+                        currentPage = 1;
+                        displayMembersPage(currentPage);
+
+                        // 페이지네이션 업데이트
+                        createPagination();
+                    } else {
+                        console.error('검색 실패:', response.message);
+                        alert('검색 중 오류가 발생했습니다.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('검색 실패:', error);
+                    alert('서버 연결에 실패했습니다.');
+                }
+            });
+        });
+
+        // 특정 페이지의 회원 목록 표시
+        function displayMembersPage(page) {
+            // 현재 페이지 설정
+            currentPage = page;
+
+            // 시작 인덱스와 끝 인덱스 계산
+            var startIndex = (page - 1) * itemsPerPage;
+            var endIndex = startIndex + itemsPerPage;
+
+            // 현재 페이지에 표시할 회원들
+            var membersToShow = allMembers.slice(startIndex, endIndex);
+
+            // 회원 목록 표시
+            displayMembers(membersToShow);
+        }
+
+        // 페이지네이션 생성
+        function createPagination() {
+            var pagination = $('#pagination');
+            pagination.empty();
+
+            // 페이지 수가 0이면 페이지네이션 생성 안함
+            if (totalPages === 0) {
+                return;
+            }
+
+            // 이전 페이지 버튼
+            var prevBtn = `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="이전">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        `;
+            pagination.append(prevBtn);
+
+            // 페이지 번호 버튼
+            if (totalPages <= 5) {
+                // 5페이지 이하면 모든 페이지 표시
+                for (var i = 1; i <= totalPages; i++) {
+                    var pageBtn = `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `;
+                    pagination.append(pageBtn);
+                }
+            } else {
+                // 첫 페이지 표시
+                pagination.append(`
+                <li class="page-item ${currentPage === 1 ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="1">1</a>
+                </li>
+            `);
+
+                // 중간 페이지 계산
+                var startPage = Math.max(2, currentPage - 1);
+                var endPage = Math.min(totalPages - 1, currentPage + 1);
+
+                // 시작 페이지가 2보다 크면 ... 표시
+                if (startPage > 2) {
+                    pagination.append(`
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">&hellip;</a>
+                    </li>
+                `);
+                }
+
+                // 중간 페이지 표시
+                for (var i = startPage; i <= endPage; i++) {
+                    var pageBtn = `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    </li>
+                `;
+                    pagination.append(pageBtn);
+                }
+
+                // 끝 페이지가 totalPages-1보다 작으면 ... 표시
+                if (endPage < totalPages - 1) {
+                    pagination.append(`
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">&hellip;</a>
+                    </li>
+                `);
+                }
+
+                // 마지막 페이지 표시
+                pagination.append(`
+                <li class="page-item ${currentPage === totalPages ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
+                </li>
+            `);
+            }
+
+            // 다음 페이지 버튼
+            var nextBtn = `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="다음">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        `;
+            pagination.append(nextBtn);
+
+            // 페이지 클릭 이벤트 처리
+            $('.page-link').click(function(e) {
+                e.preventDefault();
+
+                var page = $(this).data('page');
+                if (page >= 1 && page <= totalPages) {
+                    displayMembersPage(page);
+                }
+            });
+        }
+
+        // 회원 목록 표시
+        function displayMembers(members) {
+            var memberList = $('#memberList');
+            memberList.empty();
+
+            if(members.length === 0) {
+                memberList.append('<tr><td colspan="8" class="text-center">회원이 없습니다.</td></tr>');
+                return;
+            }
+
+            members.forEach(function(member) {
+                var row = `
+                <tr class="member-item" data-member-id="${member.member_id}">
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input member-checkbox" type="checkbox" value="${member.member_id}">
+                        </div>
+                    </td>
+                    <td>${member.member_id}</td>
+                    <td>${member.member_name}</td>
+                    <td>${member.member_email}</td>
+                    <td>${member.member_phone || '-'}</td>
+                    <td>${formatDate(member.member_joindate)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-member-btn" data-member-id="${member.member_id}">보기</button>
+                    </td>
+                </tr>
+            `;
+                memberList.append(row);
+            });
+
+            // 회원 행 클릭 이벤트 처리
+            $('.member-item').click(function(e) {
+                // 체크박스나 버튼을 클릭한 경우는 처리하지 않음
+                if($(e.target).hasClass('member-checkbox') || $(e.target).hasClass('view-member-btn') || $(e.target).hasClass('btn-close')) {
+                    return;
+                }
+
+                var memberId = $(this).data('member-id');
+                showMemberDetail(memberId);
+            });
+
+            // 회원 보기 버튼 클릭 이벤트 처리
+            $('.view-member-btn').click(function() {
+                var memberId = $(this).data('member-id');
+                showMemberDetail(memberId);
+            });
+        }
+
+        // 날짜 포맷 함수
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+
+            // DB에서 오는 날짜 형식에 따라 처리
+            var date;
+            if (typeof dateStr === 'string') {
+                // YYYY-MM-DD 또는 YYYY/MM/DD 형식 처리
+                if (dateStr.includes('-') || dateStr.includes('/')) {
+                    date = new Date(dateStr);
+                }
+                // Oracle의 timestamp 문자열 처리
+                else if (dateStr.includes('T')) {
+                    date = new Date(dateStr);
+                }
+                else {
+                    // 기타 형식은 그대로 반환
+                    return dateStr;
+                }
+            } else {
+                return '-';
+            }
+
+            if (isNaN(date.getTime())) return dateStr;
+
+            return date.getFullYear() + '-' +
+                String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                String(date.getDate()).padStart(2, '0');
+        }
+
+        // 회원 상세 정보 표시
+        function showMemberDetail(memberId) {
+            $.ajax({
+                url: '/admin/member_detail',
+                type: 'GET',
+                data: {
+                    member_id: memberId
+                },
+                dataType: 'json',
+                success: function(member) {
+                    if (!member) {
+                        alert('회원 정보를 찾을 수 없습니다.');
+                        return;
+                    }
+
+                    // 회원 기본 정보 표시
+                    $('#detail-member-id').text(member.member_id);
+                    $('#detail-member-name').text(member.member_name);
+                    $('#detail-member-email').text(member.member_email);
+                    $('#detail-member-phone').text(member.member_phone || '-');
+                    $('#detail-member-join-date').text(formatDate(member.member_joindate));
+                    $('#detail-member-nickname').text(member.member_nickname || '-');
+
+                    // 주소 정보
+                    $('#detail-member-address').text(member.member_address || '-');
+
+                    // 성별, 생년월일 정보
+                    $('#detail-member-gender').text(member.member_gender || '-');
+                    $('#detail-member-birthdate').text(formatDate(member.member_birthdate) || '-');
+
+                    // 포인트 정보
+                    $('#detail-member-point').text(member.member_point || '0');
+
+                    // 삭제 버튼에 회원 ID 저장
+                    $('#deleteBtn').data('member-id', member.member_id);
+
+                    // 모달 표시
+                    var memberDetailModal = new bootstrap.Modal(document.getElementById('memberDetailModal'));
+                    memberDetailModal.show();
+                },
+                error: function(xhr, status, error) {
+                    console.error('회원 정보 로드 실패:', error);
+                    alert('회원 정보를 불러오는데 실패했습니다.');
+                }
+            });
+        }
+
+        // 회원 삭제 이벤트
+        $('#deleteBtn').click(function() {
+            if(!confirm('정말로 이 회원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                return;
+            }
+
+            var memberId = $(this).data('member-id');
+
+            $.ajax({
+                url: '/admin/delete_member',
+                type: 'POST',
+                data: {
+                    memberId: memberId
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if(response.success) {
+                        alert('회원이 삭제되었습니다.');
+
+                        // 목록에서 회원 제거
+                        allMembers = allMembers.filter(m => m.member_id !== memberId);
+                        totalPages = Math.ceil(allMembers.length / itemsPerPage);
+
+                        // 전체 회원 수 업데이트
+                        $('#memberCount').text(allMembers.length);
+
+                        // 현재 페이지가 유효하도록 조정
+                        if(currentPage > totalPages) {
+                            currentPage = totalPages || 1;
+                        }
+
+                        // 회원 목록 새로고침
+                        displayMembersPage(currentPage);
+                        createPagination();
+
+                        // 모달 닫기
+                        bootstrap.Modal.getInstance(document.getElementById('memberDetailModal')).hide();
+                    } else {
+                        alert('회원 삭제에 실패했습니다: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('회원 삭제 실패:', error);
+                    alert('서버 연결에 실패했습니다.');
+                }
+            });
+        });
+
+        // 전체 선택 체크박스
+        $('#selectAllMembers').change(function() {
+            var isChecked = $(this).prop('checked');
+            $('.member-checkbox').prop('checked', isChecked);
+        });
+    });
+</script>
+</body>
+</html>

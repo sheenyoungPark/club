@@ -90,8 +90,13 @@ public class BusinessController {
     }
 
     @GetMapping("/login")
-    public String login(@ModelAttribute("temploginBusiness") BusinessBean temploginBusiness, Model model) {
+    public String login(
+            @RequestParam(value = "fail", defaultValue = "false") boolean fail,
+            @ModelAttribute("temploginBusiness") BusinessBean temploginBusiness,
+            Model model
+    ) {
         model.addAttribute("businessBean", new BusinessBean());
+        model.addAttribute("fail", fail);
         return "member/login";
     }
 
@@ -102,9 +107,8 @@ public class BusinessController {
             return "/member/login_fail";
         }
 
-        // 개인회원 로그인 상태 확인 및 초기화
+        // 개인회원 로그인 상태 초기화 (필요 시)
         if (loginMember != null && loginMember.isLogin()) {
-            // 개인회원 로그인 상태 초기화
             loginMember.setLogin(false);
             loginMember.setMember_id(null);
             loginMember.setMember_nickname(null);
@@ -115,7 +119,14 @@ public class BusinessController {
         if (businessService.getLoginBusiness(businessBean)) {
             // DB에서 전체 사업자 정보를 조회
             BusinessBean fullBusiness = businessService.selectBusinessById(businessBean.getBusiness_id());
-            if(fullBusiness != null && fullBusiness.getBusiness_pw().equals(businessBean.getBusiness_pw())){
+            if (fullBusiness != null && fullBusiness.getBusiness_pw().equals(businessBean.getBusiness_pw())) {
+                // business_public이 WAIT이면 로그인 실패 처리
+                if ("WAIT".equalsIgnoreCase(fullBusiness.getBusiness_public())) {
+                    // 승인 대기중인 경우 로그인 거부
+                    System.out.println("로그인 거부: 사업자 승인 대기중입니다.");
+                    return "business/login_wait"; // 또는 별도의 승인 대기 안내 페이지로 리다이렉트
+                }
+                // 승인 상태(PASS)인 경우에만 로그인 성공 처리
                 loginBusiness.setBusiness_id(fullBusiness.getBusiness_id());
                 loginBusiness.setBusiness_pw(fullBusiness.getBusiness_pw());
                 loginBusiness.setBusiness_profile(fullBusiness.getBusiness_profile());
@@ -123,7 +134,6 @@ public class BusinessController {
                 // 필요한 다른 필드들도 업데이트
                 loginBusiness.setLogin(true);
 
-                // 디버깅 로그
                 System.out.println("기업회원 로그인 성공: " + fullBusiness.getBusiness_id());
                 System.out.println("개인회원 로그인 상태: " + loginMember.isLogin());
 
@@ -151,6 +161,16 @@ public class BusinessController {
             session.removeAttribute("loginBusiness");
         }
         return "redirect:/";
+    }
+
+    @GetMapping("/login_fail")
+    public String loginFail() {
+        return "business/login_fail";
+    }
+
+    @GetMapping("/login_wait")
+    public String loginWait() {
+        return "business/login_wait";
     }
 
     @GetMapping("/checkId")

@@ -34,8 +34,10 @@ public interface BusinessMapper {
             "values( #{business_id}, item_id_seq.nextval, #{item_title}, #{item_text}, #{item_price}, #{item_category}, #{item_img}, #{item_starttime},#{item_endtime})")
     void create_item(BusinessItemBean businessItemBean);
 
-    //클럽 아이템 리스트
-    @Select("select * from business_item")
+    // 수정 후:
+    @Select("SELECT bi.* FROM business_item bi " +
+            "JOIN business b ON bi.business_id = b.business_id " +
+            "WHERE b.business_public = 'PASS'")
     List<BusinessItemBean> allItem();
 
     // 아이템 ID로 아이템 정보 가져오기
@@ -89,7 +91,8 @@ public interface BusinessMapper {
             "WHERE i.item_id = #{itemId}")
     Map<String, String> getItemInfo(@Param("itemId") String itemId);
 
-    @Select("SELECT * FROM business WHERE business_id LIKE '%'||#{keyword}||'%' OR business_name LIKE '%'||#{keyword}||'%'")
+    @Select("SELECT * FROM business WHERE (business_id LIKE '%'||#{keyword}||'%' OR business_name LIKE '%'||#{keyword}||'%') " +
+            "AND business_public = 'PASS'")
     List<BusinessBean> searchBusinessByKeyword(String keyword);
 
 
@@ -197,5 +200,31 @@ public interface BusinessMapper {
 
     @Update("update Member set Member_point = Member_point + #{price} where member_id = #{member_id}")
     void cancleReservationMP(int price, String member_id);
+
+    // 모든 판매자 목록 조회
+    @Select("SELECT * FROM business ORDER BY business_joindate DESC")
+    List<BusinessBean> getAllBusiness();
+
+    // 판매자 검색
+    @Select({"<script>",
+            "SELECT * FROM business",
+            "<where>",
+            "  <if test='searchType == \"name\"'>",
+            "    business_name LIKE '%'||#{keyword}||'%'",
+            "  </if>",
+            "  <if test='searchType == \"business\"'>",
+            "    business_id LIKE '%'||#{keyword}||'%'",
+            "  </if>",
+            "  <if test='searchType == \"category\"'>",
+            "    EXISTS (SELECT 1 FROM business_item WHERE business_id = business.business_id AND item_category LIKE '%'||#{keyword}||'%')",
+            "  </if>",
+            "</where>",
+            "ORDER BY business_joindate DESC",
+            "</script>"})
+    List<BusinessBean> searchBusiness(@Param("searchType") String searchType, @Param("keyword") String keyword);
+
+    // 판매자 상태 업데이트
+    @Update("UPDATE business SET business_public = #{param2} WHERE business_id = #{param1}")
+    void updateBusinessStatus(String businessId, String status);
     //===============================================================
 }

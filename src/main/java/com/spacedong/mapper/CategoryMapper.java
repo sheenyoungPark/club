@@ -30,6 +30,7 @@ public interface CategoryMapper {
    @Select("SELECT c.category_type, COUNT(cl.club_id) AS club_count " +
            "FROM category c " +
            "JOIN club cl ON c.category_name = cl.club_category " +
+           "WHERE cl.club_public = 'PASS' " +  // 승인된 동호회만 카운트
            "GROUP BY c.category_type " +
            "ORDER BY club_count DESC")
    public List<CategoryBean> categoryTypeCount();

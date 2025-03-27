@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 환전 관리</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+        }
+        .sidebar a:hover {
+            color: white;
+            background-color: #495057;
+        }
+        .sidebar a.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .exchange-item:hover {
+            background-color: #f8f9fa;
+        }
+        .badge-wait {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .badge-pass {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- 사이드바 메뉴 -->
+        <div class="col-md-2 sidebar p-0">
+            <div class="d-flex flex-column flex-shrink-0 p-3">
+                <a href="/admin/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+                    <span class="fs-4">관리자 패널</span>
+                </a>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="/admin/dashboard" class="nav-link">
+                            대시보드
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/club_management" class="nav-link">
+                            동호회 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/business_management" class="nav-link">
+                            판매자 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/member_management" class="nav-link">
+                            회원 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/board_management" class="nav-link">
+                            게시판 관리
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/exchange_management" class="nav-link active">
+                            포인트 관리
+                        </a>
+                    </li>
+                </ul>
+                <hr>
+                <div>
+                    <a href="/member/logout" class="btn btn-danger w-100">로그아웃</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="col-md-10 p-4">
+            <h2>환전 요청 관리</h2>
+            <p>총 <span id="exchangeCount" th:text="${#lists.size(exchangeRequests)}">0</span>건의 환전 요청이 있습니다.</p>
+
+            <!-- 필터링 옵션 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    상태별 필터링
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" id="filter-all">전체</button>
+                        <button type="button" class="btn btn-outline-warning" id="filter-pending">대기 중</button>
+                        <button type="button" class="btn btn-outline-success" id="filter-approved">승인 완료</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 환전 요청 목록 -->
+            <div class="card">
+                <div class="card-header">
+                    환전 요청 목록
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>요청 번호</th>
+                                <th>판매자 ID</th>
+                                <th>판매자명</th>
+                                <th>요청 금액</th>
+                                <th>신청일</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                            </thead>
+                            <tbody id="exchangeList">
+                            <!-- 환전 요청 목록이 동적으로 추가됩니다 -->
+                            <tr th:each="exchange : ${exchangeRequests}" class="exchange-item"
+                                th:data-status="${exchange.status}">
+                                <td th:text="${exchange.bank_id}">1</td>
+                                <td th:text="${exchange.business_id}">business_id</td>
+                                <td th:text="${exchange.business_name}">판매자명</td>
+                                <td th:text="${#numbers.formatInteger(exchange.exchange_point, 3, 'COMMA') + 'P'}">10,000P</td>
+                                <td th:text="${#dates.format(exchange.bank_date, 'yyyy-MM-dd HH:mm')}">2023-01-01</td>
+                                <td>
+                                    <span th:if="${exchange.status == 'PASS'}" class="badge badge-pass">승인완료</span>
+                                    <span th:if="${exchange.status == 'WAIT'}" class="badge badge-wait">대기중</span>
+                                </td>
+                                <td>
+                                    <button th:if="${exchange.status == 'WAIT'}"
+                                            class="btn btn-sm btn-success approve-exchange"
+                                            th:data-bank-id="${exchange.bank_id}">승인</button>
+                                    <button th:if="${exchange.status == 'WAIT'}"
+                                            class="btn btn-sm btn-danger reject-exchange"
+                                            th:data-bank-id="${exchange.bank_id}">거부</button>
+                                    <button class="btn btn-sm btn-primary view-detail"
+                                            th:data-bank-id="${exchange.bank_id}">상세보기</button>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(exchangeRequests)}">
+                                <td colspan="7" class="text-center">환전 요청 내역이 없습니다.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 환전 요청 상세 정보 모달 -->
+<div class="modal fade" id="exchangeDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">환전 요청 상세 정보</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">요청 정보</div>
+                            <div class="card-body">
+                                <p><strong>요청 번호:</strong> <span id="detail-bank-id"></span></p>
+                                <p><strong>판매자 ID:</strong> <span id="detail-business-id"></span></p>
+                                <p><strong>판매자명:</strong> <span id="detail-business-name"></span></p>
+                                <p><strong>요청 금액:</strong> <span id="detail-exchange-point"></span>P</p>
+                                <p><strong>신청 시 보유 포인트:</strong> <span id="detail-total-point"></span>P</p>
+                                <p><strong>신청일:</strong> <span id="detail-bank-date"></span></p>
+                                <p><strong>상태:</strong> <span id="detail-status" class="badge"></span></p>
+                                <p id="admin-info-section" style="display: none;"><strong>승인 관리자:</strong> <span id="detail-admin-id"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="approveBtn">승인하기</button>
+                <button type="button" class="btn btn-danger" id="rejectBtn">거부하기</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // 필터링 기능
+        $('#filter-all').click(function() {
+            $(this).addClass('active').siblings().removeClass('active');
+            $('.exchange-item').show();
+            updateExchangeCount();
+        });
+
+        $('#filter-pending').click(function() {
+            $(this).addClass('active').siblings().removeClass('active');
+            $('.exchange-item').hide();
+            $('.exchange-item[data-status="WAIT"]').show();
+            updateExchangeCount();
+        });
+
+        $('#filter-approved').click(function() {
+            $(this).addClass('active').siblings().removeClass('active');
+            $('.exchange-item').hide();
+            $('.exchange-item[data-status="PASS"]').show();
+            updateExchangeCount();
+        });
+
+        function updateExchangeCount() {
+            $('#exchangeCount').text($('.exchange-item:visible').length);
+        }
+
+        // 환전 요청 상세보기
+        $('.view-detail').click(function() {
+            var bankId = $(this).data('bank-id');
+            showExchangeDetail(bankId);
+        });
+
+        // 환전 요청 승인
+        $('.approve-exchange').click(function() {
+            var bankId = $(this).data('bank-id');
+            if (confirm('이 환전 요청을 승인하시겠습니까? 승인 시 판매자의 포인트는 0으로 초기화됩니다.')) {
+                approveExchange(bankId);
+            }
+        });
+
+        // 환전 요청 거부
+        $('.reject-exchange').click(function() {
+            var bankId = $(this).data('bank-id');
+            if (confirm('이 환전 요청을 거부하시겠습니까?')) {
+                rejectExchange(bankId);
+            }
+        });
+
+        // 환전 요청 상세 정보 표시
+        function showExchangeDetail(bankId) {
+            $.ajax({
+                url: '/admin/exchange_detail',
+                type: 'GET',
+                data: { bank_id: bankId },
+                dataType: 'json',
+                success: function(exchange) {
+                    $('#detail-bank-id').text(exchange.bank_id);
+                    $('#detail-business-id').text(exchange.business_id);
+                    $('#detail-business-name').text(exchange.business_name);
+                    $('#detail-exchange-point').text(new Intl.NumberFormat('ko-KR').format(exchange.exchange_point));
+                    $('#detail-total-point').text(new Intl.NumberFormat('ko-KR').format(exchange.totalpoint));
+                    $('#detail-bank-date').text(formatDateTime(exchange.bank_date));
+
+                    // 상태에 따른 버튼 표시 설정
+                    var statusClass = exchange.status === 'PASS' ? 'badge-pass' : 'badge-wait';
+                    var statusText = exchange.status === 'PASS' ? '승인완료' : '대기중';
+                    $('#detail-status').removeClass().addClass('badge ' + statusClass).text(statusText);
+
+                    if (exchange.status === 'PASS') {
+                        $('#approveBtn').hide();
+                        $('#rejectBtn').hide();
+                        $('#admin-info-section').show();
+                        $('#detail-admin-id').text(exchange.admin_id || '정보 없음');
+                    } else {
+                        $('#approveBtn').show();
+                        $('#rejectBtn').show();
+                        $('#admin-info-section').hide();
+                    }
+
+                    // 버튼에 환전 요청 ID 데이터 설정
+                    $('#approveBtn').data('bank-id', bankId);
+                    $('#rejectBtn').data('bank-id', bankId);
+
+                    // 모달 표시
+                    var modal = new bootstrap.Modal(document.getElementById('exchangeDetailModal'));
+                    modal.show();
+                },
+                error: function(xhr, status, error) {
+                    console.error('환전 요청 상세 정보 로드 실패:', error);
+                    alert('환전 요청 상세 정보를 가져오는데 실패했습니다.');
+                }
+            });
+        }
+
+        // 모달 내 승인 버튼 클릭
+        $('#approveBtn').click(function() {
+            var bankId = $(this).data('bank-id');
+            if (confirm('이 환전 요청을 승인하시겠습니까? 승인 시 판매자의 포인트는 0으로 초기화됩니다.')) {
+                approveExchange(bankId);
+            }
+        });
+
+        // 모달 내 거부 버튼 클릭
+        $('#rejectBtn').click(function() {
+            var bankId = $(this).data('bank-id');
+            if (confirm('이 환전 요청을 거부하시겠습니까?')) {
+                rejectExchange(bankId);
+            }
+        });
+
+        // 환전 요청 승인 처리
+        function approveExchange(bankId) {
+            $.ajax({
+                url: '/admin/approve_exchange',
+                type: 'POST',
+                data: { bankId: bankId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        alert('환전 요청이 승인되었습니다.');
+                        $('#exchangeDetailModal').modal('hide');
+                        window.location.reload(); // 페이지 새로고침
+                    } else {
+                        alert('승인 실패: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('승인 요청 실패:', error);
+                    alert('승인 처리 중 오류가 발생했습니다.');
+                }
+            });
+        }
+
+        // 환전 요청 거부 처리
+        function rejectExchange(bankId) {
+            $.ajax({
+                url: '/admin/reject_exchange',
+                type: 'POST',
+                data: { bankId: bankId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        alert('환전 요청이 거부되었습니다.');
+                        $('#exchangeDetailModal').modal('hide');
+                        window.location.reload(); // 페이지 새로고침
+                    } else {
+                        alert('거부 실패: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('거부 요청 실패:', error);
+                    alert('거부 처리 중 오류가 발생했습니다.');
+                }
+            });
+        }
+
+        // 날짜 포맷팅
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '-';
+            var date = new Date(dateStr);
+            return date.getFullYear() + '-' +
+                padZero(date.getMonth() + 1) + '-' +
+                padZero(date.getDate()) + ' ' +
+                padZero(date.getHours()) + ':' +
+                padZero(date.getMinutes());
+        }
+
+        function padZero(num) {
+            return (num < 10 ? '0' : '') + num;
+        }
+    });
+</script>
+</body>
+</html>

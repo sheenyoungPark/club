@@ -208,6 +208,31 @@ public class MemberService {
 		memberRepository.updateMemberProfile(memberId, fileName);
 	}
 
+	// 모든 회원 목록 조회
+	public List<MemberBean> getAllMembers() {
+		return memberRepository.getAllMembers();
+	}
+
+	// 회원 검색
+	public List<MemberBean> searchMembers(String searchType, String keyword) {
+		if (keyword == null || keyword.trim().isEmpty()) {
+			return getAllMembers();
+		}
+
+		switch (searchType) {
+			case "id":
+				return memberRepository.searchMembersById(keyword);
+			case "name":
+				return memberRepository.searchMembersByName(keyword);
+			case "email":
+				return memberRepository.searchMembersByEmail(keyword);
+			case "phone":
+				return memberRepository.searchMembersByPhone(keyword);
+			default:
+				return memberRepository.searchMembersByAllFields(keyword);
+		}
+	}
+
 	public List<ClubBean> getJoinedClubs(String memberId) {
 		return memberRepository.getJoinedClubsWithRole(memberId);
 	}
