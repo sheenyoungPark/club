@@ -158,7 +158,6 @@ public class BusinessReservationController {
         if (!item.getBusiness_id().equals(loginBusiness.getBusiness_id())) {
             return "redirect:/business/reservations/waiting?error=unauthorized";
         }
-
         if (reservation.getClub_id() != null){
             reservationService.updateReservationStatus("CANCELLED", reservationId);
             businessService.clubReservationMP(reservation.getTotal_price(), reservation.getClub_id());
@@ -203,14 +202,17 @@ public class BusinessReservationController {
         // 사업자 포인트 차감
         businessService.cancleReservation(reservation.getTotal_price(), loginBusiness.getBusiness_id());
 
-        // 회원에게 포인트 환불
-        businessService.cancleReservationMP(reservation.getTotal_price(), reservation.getMember_id());
+        if (reservation.getClub_id() != null){
+            reservationService.updateReservationStatus("CANCELLED", reservationId);
+            businessService.clubReservationMP(reservation.getTotal_price(), reservation.getClub_id());
+            return "redirect:/business/reservations/waiting?success=declined";
+        }else {
+            // 예약 상태 변경 (대기중 -> 취소됨)
+            reservationService.updateReservationStatus("CANCELLED", reservationId);
+            businessService.cancleReservationMP(reservation.getTotal_price(), reservation.getMember_id());
+            return "redirect:/business/reservations/waiting?success=declined";
+        }
 
-        // 세션 업데이트
-        BusinessBean bs = businessService.getBusinessById(loginBusiness.getBusiness_id());
-        loginBusiness.setBusiness_point(bs.getBusiness_point());
-
-        return "redirect:/business/reservations/" + returnUrl + "?success=cancelled";
     }
 
     // 대기 중인 예약 수를 조회하는 메서드
