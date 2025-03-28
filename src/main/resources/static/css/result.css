@@ -20,7 +20,7 @@
     font-size: 28px;
     font-weight: bold;
     margin: 20px 0;
-    color: #2a4b00;
+    color: #27374c;
 }
 
 .result-planet {
@@ -53,7 +53,7 @@
 .activities-category {
     font-weight: bold;
     margin-top: 15px;
-    color: #2a4b00;
+    color: #27374c;
 }
 
 .activities-list {
@@ -95,7 +95,7 @@
 }
 
 .btn-restart:hover {
-    background-color: #2a4b00;
+    background-color: #27374c;
 }
 
 /* 로고 컨테이너 스타일 */

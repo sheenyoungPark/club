@@ -565,6 +565,13 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     min-height: 400px;
 }
+.board-list-section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    padding-bottom: 10px;
+}
 
 .community-image {
     width: 55%;

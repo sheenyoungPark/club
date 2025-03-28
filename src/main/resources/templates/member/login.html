@@ -6,7 +6,7 @@
     <link rel="stylesheet" th:href="@{/css/login.css}">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/moonspam/NanumSquareRound@1.0/nanumsquareround.css">
 </head>
-<body th:style="|background-image: url('@{/sources/picture/우주배경.png}');
+<body id="login-body" th:style="|background-image: url('@{/sources/picture/우주배경.png}');
                  background-size: cover;
                  background-repeat: no-repeat;
                  background-position: center;
@@ -81,9 +81,31 @@
     // 성공 메시지가 있는 경우 알림창 표시
     document.addEventListener('DOMContentLoaded', function() {
         const successMessage = /*[[${successMessage}]]*/ null;
+        const personalTab = document.querySelector('.tab[data-tab="personal"]');
+        const businessTab = document.querySelector('.tab[data-tab="business"]');
+        const personalForm = document.getElementById('personal-form');
+        const businessForm = document.getElementById('business-form');
+        const body = document.getElementById('login-body');
         if (successMessage) {
             alert(successMessage);
         }
+        function setActiveTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+
+            if (tabName === 'personal') {
+                personalForm.style.display = 'block';
+                businessForm.style.display = 'none';
+                body.style.backgroundImage = "url('/sources/picture/우주배경.png')";
+            } else if (tabName === 'business') {
+                personalForm.style.display = 'none';
+                businessForm.style.display = 'block';
+                body.style.backgroundImage = "url('/sources/picture/우주배경2.png')";
+            }
+        }
+
+        personalTab.addEventListener('click', () => setActiveTab('personal'));
+        businessTab.addEventListener('click', () => setActiveTab('business'));
     });
     /*]]>*/
 </script>
