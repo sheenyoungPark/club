@@ -182,6 +182,8 @@ public class ChatService {
             }
             else if ((userType2.equals("ADMIN") && userType1.equals("BUSINESS"))) {
                 roomName = "관리자 " + user2nickname + ",판매자 " + user1nickname;
+            }else if((userType1.equals("ADMIN") && userType2.equals("ADMIN"))) {
+                roomName = "관리자 " + user1nickname + ",관리자 " + user2nickname;
             }
             // 일반회원-일반회원 대화인 경우
             else {
