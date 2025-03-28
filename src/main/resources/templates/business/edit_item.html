@@ -9,9 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .edit-form-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.92);
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
         }
 
         .form-group {
@@ -30,6 +33,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.92);
         }
 
         textarea.form-control {
@@ -63,7 +67,7 @@
         }
 
         .btn-primary {
-            background-color: #007bff;
+            background-color: #9cee69;
             color: white;
         }
 
@@ -78,6 +82,7 @@
             padding: 10px;
             border-radius: 4px;
             text-align: center;
+            background-color: rgba(255, 255, 255, 0.92);
         }
 
         .image-preview img {
@@ -91,9 +96,14 @@
             margin-top: 5px;
         }
     </style>
+
 </head>
 
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+                 background-size: cover;
+                 background-repeat: no-repeat;
+                 background-position: center;
+                 background-attachment: fixed;|">
 <!-- 상단 메뉴 include -->
 <div th:replace="~{include/top_search :: top_search}"></div>
 

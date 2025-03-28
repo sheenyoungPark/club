@@ -8,7 +8,7 @@
 
 body {
     font-family: 'Noto Sans KR', sans-serif;
-    background-color: #f5f7fa;
+    background-color: rgba(255, 255, 255, 0.92);
     color: #333;
     line-height: 1.6;
     display: flex;
@@ -20,7 +20,7 @@ body {
 .container {
     width: 100%;
     max-width: 550px;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.92);
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     padding: 40px;
@@ -53,7 +53,7 @@ h3 {
     color: #444;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.92);
 }
 
 .section {
@@ -62,10 +62,10 @@ h3 {
 }
 
 .password-section {
-    background-color: #f8f9fb;
+    background-color: rgba(255, 255, 255, 0.92);
     padding: 20px;
     border-radius: 8px;
-    border: 1px solid #eee;
+    border: 1px solid rgba(255, 255, 255, 0.92);
 }
 
 .optional {
@@ -88,11 +88,12 @@ label {
 .input-field {
     width: 100%;
     padding: 14px;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(255, 255, 255, 0.92);
     border-radius: 8px;
     font-size: 16px;
     transition: all 0.3s;
     outline: none;
+    background-color: rgba(255, 255, 255, 0.92);
 }
 
 .input-field:focus {
@@ -197,13 +198,13 @@ label {
 }
 
 .button.cancel {
-    background-color: #f5f5f5;
+    background-color: rgba(255, 255, 255, 0.92);
     color: #555;
-    border: 1px solid #ccc;
+    border: 1px solid rgba(255, 255, 255, 0.92);
 }
 
 .button.cancel:hover {
-    background-color: #eee;
+    background-color: rgba(255, 255, 255, 0.92);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -243,7 +244,6 @@ label {
     height: 60px;
 }
 
-/* 로고 이미지 스타일 */
 .logo-img {
     height: 60px;
     width: auto;
@@ -255,7 +255,6 @@ label {
     transform: scale(1.05);
 }
 
-/* 로고 호버 텍스트 스타일 */
 .logo-hover-text {
     position: absolute;
     left: calc(60px + 10px);
@@ -303,7 +302,6 @@ label {
     transition-delay: 0.25s;
 }
 
-/* 첫 글자 형광 강조 */
 .first-letter {
     color: #9cee69;
 }

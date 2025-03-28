@@ -19,7 +19,7 @@
 .reservation-summary {
     margin: 1.5rem 0;
     padding: 1rem;
-    background-color: #f0f0f0;
+    background-color: #f0ffdd;
     border-radius: 4px;
 }
 
@@ -39,7 +39,7 @@
 
 .summary-item .value {
     font-weight: bold;
-    color: #9cee69;
+    color: #27374c;
 }
 
 /* 비활성화된 옵션 스타일 */
@@ -159,12 +159,12 @@ select option:disabled {
 }
 
 .btn-primary {
-    background-color: #007bff;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
 }
 
 .btn-primary:hover {
-    background-color: #0069d9;
+    background-color: #2a4b00;
 }
 
 .btn-secondary {
@@ -190,15 +190,15 @@ select option:disabled {
 .reserved-times-container {
     margin-bottom: 2rem;
     padding: 1rem;
-    background-color: #f0f8ff;
+    background-color: #f0ffdd;
     border-radius: 6px;
-    border-left: 4px solid #007bff;
+    border-left: 4px solid #9cee69;
 }
 
 .reserved-times-container h4 {
     margin-top: 0;
     margin-bottom: 1rem;
-    color: #0056b3;
+    color: #27374c;
     font-size: 1.1rem;
 }
 
@@ -236,13 +236,13 @@ select option:disabled {
     align-items: center;
     padding: 8px 12px;
     margin-bottom: 6px;
-    background-color: #e6f2ff;
+    background-color: #9cee69;
     border-radius: 4px;
     transition: background-color 0.2s;
 }
 
 .reserved-time-item:hover {
-    background-color: #d1e7ff;
+    background-color: #2a4b00;
 }
 
 .reserved-time-item:last-child {
@@ -264,9 +264,9 @@ select option:disabled {
 .item-management {
     margin-top: 20px;
     padding: 15px;
-    background-color: #f8f9fa;
+    background-color: #f0ffdd;
     border-radius: 5px;
-    border-left: 3px solid #0066cc;
+    border-left: 3px solid #9cee69;
 }
 
 .management-buttons {

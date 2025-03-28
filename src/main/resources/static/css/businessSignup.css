@@ -3,7 +3,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Malgun Gothic', sans-serif;
-    background-color: #1a0067;
+    background-color: #9cee69;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -11,17 +11,18 @@ body {
 }
 
 .container {
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.92);
     border-radius: 10px;
     padding: 40px;
     width: 450px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.5s ease-out;
 }
 
 h1 {
     text-align: center;
     font-size: 24px;
-    color: #1a0067;
+    color: #14191f;
     margin-bottom: 30px;
     font-weight: 600;
 }
@@ -56,11 +57,12 @@ textarea {
     box-sizing: border-box;
     font-size: 14px;
     transition: all 0.3s;
+    background-color: rgba(255, 255, 255, 0.92);
 }
 
 input:focus,
 textarea:focus {
-    border-color: #5d4b8c;
+    border-color: #9cee69;
     outline: none;
     box-shadow: 0 0 0 2px rgba(93, 75, 140, 0.2);
 }
@@ -80,7 +82,7 @@ textarea {
     width: 18px;
     height: 18px;
     margin-right: 10px;
-    accent-color: #5d4b8c;
+    accent-color: #9cee69;
 }
 
 .checkbox-group label {
@@ -95,7 +97,7 @@ textarea {
 .btn-submit {
     width: 100%;
     padding: 15px;
-    background-color: #1a0067;
+    background-color: #9cee69;
     color: white;
     border: none;
     border-radius: 5px;
@@ -106,11 +108,23 @@ textarea {
 }
 
 .btn-submit:hover {
-    background-color: #2c0087;
+    background-color: #2a4b00;
+}
+
+.btn-submit.loading {
+    background-color: #9cee69;
+    cursor: wait;
 }
 
 .error {
     color: red;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+.success {
+    color: green;
     font-size: 12px;
     margin-top: 5px;
     display: block;
@@ -130,14 +144,10 @@ textarea {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.container {
-    animation: fadeIn 0.5s ease-out;
-}
-
 /* 포커스 시 라벨 효과 */
 input:focus + label,
 textarea:focus + label {
-    color: #5d4b8c;
+    color: #9cee69;
 }
 
 /* 필수 항목 안내 */
@@ -150,13 +160,6 @@ textarea:focus + label {
     text-align: right;
 }
 
-/* 버튼 로딩 상태 */
-.btn-submit.loading {
-    background-color: #7965b3;
-    cursor: wait;
-}
-
-/* 이용약관 스타일 (추가할 경우) */
 .terms-section {
     margin-top: 20px;
     font-size: 12px;
@@ -165,13 +168,14 @@ textarea:focus + label {
 }
 
 .terms-section a {
-    color: #5d4b8c;
+    color: #9cee69;
     text-decoration: none;
 }
 
 .terms-section a:hover {
     text-decoration: underline;
 }
+
 .address-container {
     width: 100%;
 }
@@ -188,12 +192,13 @@ textarea:focus + label {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.92);
 }
 
 .check-button {
     padding: 10px 15px;
-    background-color: #1a0067;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -201,7 +206,7 @@ textarea:focus + label {
 }
 
 .check-button:hover {
-    background-color: #2c0087;
+    background-color: #2a4b00;
 }
 
 /* 로고 컨테이너 스타일 */
@@ -244,7 +249,6 @@ textarea:focus + label {
     font-family: 'NanumSquareRound', sans-serif !important;
 }
 
-/* 로고에 호버 시 텍스트 표시 */
 .logo-container:hover .logo-hover-text {
     opacity: 1;
     pointer-events: auto;

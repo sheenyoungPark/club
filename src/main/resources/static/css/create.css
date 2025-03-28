@@ -1,37 +1,37 @@
 body {
-    background-color: #f5f5f8;
+    background-color: rgba(255, 255, 255, 0.92);
     font-family: 'Noto Sans KR', sans-serif;
 }
 
 .create-club-container {
     margin-top: 150px;
     margin-bottom: 50px;
-    padding: 10px; /* 패딩 축소로 좌우 공간 확보 */
-    width: 95%; /* 화면 너비의 95%를 차지하도록 설정 */
-    max-width: 1400px; /* 최대 너비 대폭 증가 */
+    padding: 10px;
+    width: 95%;
+    max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
 }
 
 .create-club-form {
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.92);
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 50px; /* 내부 패딩 더 증가 */
+    padding: 50px;
 }
 
 .form-title {
-    color: #5d4b8c;
-    font-size: 28px; /* 제목 크기 더 증가 */
+    color: #14191f;
+    font-size: 28px;
     font-weight: bold;
     margin-bottom: 35px;
     padding-bottom: 20px;
-    border-bottom: 3px solid #5d4b8c; /* 테두리 두께 증가 */
+    border-bottom: 3px solid #9cee69;
     text-align: center;
 }
 
 .form-group {
-    margin-bottom: 35px; /* 요소 간 간격 더 증가 */
+    margin-bottom: 35px;
 }
 
 .form-label {
@@ -39,20 +39,20 @@ body {
     font-weight: bold;
     margin-bottom: 12px;
     color: #333;
-    font-size: 18px; /* 라벨 텍스트 크기 더 증가 */
+    font-size: 18px;
 }
 
 .form-input {
     width: 100%;
-    padding: 15px; /* 입력 필드 높이 더 증가 */
+    padding: 15px;
     border: 1px solid #ddd;
-    border-radius: 6px; /* 테두리 라운드 증가 */
-    font-size: 17px; /* 글꼴 크기 증가 */
+    border-radius: 6px;
+    font-size: 17px;
     box-sizing: border-box;
 }
 
 .form-input:focus {
-    border-color: #5d4b8c;
+    border-color: #9cee69;
     outline: none;
     box-shadow: 0 0 0 3px rgba(93, 75, 140, 0.2);
 }
@@ -63,13 +63,13 @@ body {
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 17px;
-    min-height: 250px; /* 텍스트 영역 높이 더 증가 */
+    min-height: 250px;
     resize: vertical;
     box-sizing: border-box;
 }
 
 .form-textarea:focus {
-    border-color: #5d4b8c;
+    border-color: #9cee69;
     outline: none;
     box-shadow: 0 0 0 3px rgba(93, 75, 140, 0.2);
 }
@@ -80,12 +80,12 @@ body {
     border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 17px;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.92);
     box-sizing: border-box;
 }
 
 .form-select:focus {
-    border-color: #5d4b8c;
+    border-color: #9cee69;
     outline: none;
     box-shadow: 0 0 0 3px rgba(93, 75, 140, 0.2);
 }
@@ -93,51 +93,51 @@ body {
 .form-actions {
     display: flex;
     justify-content: center;
-    gap: 30px; /* 버튼 간 간격 더 증가 */
-    margin-top: 50px; /* 버튼 위 여백 더 증가 */
+    gap: 30px;
+    margin-top: 50px;
 }
 
 .btn {
-    padding: 15px 40px; /* 버튼 크기 대폭 증가 */
+    padding: 15px 40px;
     border: none;
     border-radius: 6px;
-    font-size: 18px; /* 버튼 텍스트 크기 증가 */
+    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-primary {
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
 }
 
 .btn-primary:hover {
-    background-color: #4a3b76;
-    transform: translateY(-3px); /* 호버 효과 증가 */
+    background-color: #2a4b00;
+    transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
-    background-color: #e0e0e0;
+    background-color: rgba(255, 255, 255, 0.92);
     color: #333;
 }
 
 .btn-secondary:hover {
-    background-color: #d0d0d0;
+    background-color: rgba(255, 255, 255, 0.92);
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .error-message {
     color: #e74c3c;
-    font-size: 15px; /* 에러 메시지 크기 증가 */
+    font-size: 15px;
     margin-top: 8px;
 }
 
 .category-selection {
     display: flex;
-    gap: 40px; /* 카테고리 선택 영역 간 간격 더 증가 */
+    gap: 40px;
 }
 
 .category-column {
@@ -151,6 +151,7 @@ body {
     font-size: 15px;
     margin-top: 8px;
 }
+
 /* 최소 나이 제한 메뉴바 스타일 */
 .age-slider-container {
     display: flex;
@@ -162,7 +163,7 @@ body {
 .age-value {
     min-width: 80px;
     font-weight: bold;
-    color: #4a90e2;
+    color: #9cee69;
 }
 
 /* 년도 선택 드롭다운 스타일 */
@@ -171,7 +172,7 @@ body {
     border-radius: 4px;
     border: 1px solid #ccc;
     font-size: 14px;
-    background-color: #f8f8f8;
+    background-color: rgba(255, 255, 255, 0.92);
     color: #333;
     width: 120px;
     cursor: pointer;
@@ -180,12 +181,12 @@ body {
 }
 
 .age-select:hover {
-    border-color: #4a90e2;
+    border-color: #9cee69;
 }
 
 .age-select:focus {
     outline: none;
-    border-color: #4a90e2;
+    border-color: #9cee69;
     box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
 }
 
@@ -195,7 +196,7 @@ body {
     border-radius: 4px;
     border: 1px solid #ccc;
     font-size: 14px;
-    background-color: #f8f8f8;
+    background-color: rgba(255, 255, 255, 0.92);
     color: #333;
     width: 100%;
     cursor: pointer;
@@ -205,12 +206,12 @@ body {
 }
 
 .region-select:hover {
-    border-color: #4a90e2;
+    border-color: #9cee69;
 }
 
 .region-select:focus {
     outline: none;
-    border-color: #4a90e2;
+    border-color: #9cee69;
     box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
 }
 

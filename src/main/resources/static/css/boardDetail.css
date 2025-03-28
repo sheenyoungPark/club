@@ -50,7 +50,7 @@
 .like-btn {
     display: inline-flex;
     align-items: center;
-    background-color: #f8f9fa;
+    background-color: rgba(255, 255, 255, 0.92);
     border: 1px solid #ddd;
     border-radius: 20px;
     padding: 8px 15px;
@@ -60,7 +60,7 @@
 }
 
 .like-btn:hover {
-    background-color: #f1f3f5;
+    background-color: rgba(255, 255, 255, 0.92);
 }
 
 .like-btn.active {
@@ -115,6 +115,7 @@
     border: 1px solid #ccc;
     border-radius: 6px;
     margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.92);
 }
 
 .comment-btn {
@@ -138,7 +139,7 @@
 }
 
 .comment-list li {
-    background: #f9f9f9;
+    background: rgba(255, 255, 255, 0.92);
     padding: 12px;
     border-radius: 6px;
     margin-bottom: 12px;
@@ -193,6 +194,7 @@
 .back-btn:hover {
     background-color: #2a4b00;
 }
+
 /* 답글 작성용 폼 */
 .comment-reply-form {
     display: flex;
@@ -204,11 +206,10 @@
 /* 답글 입력창 너비 조정 */
 .comment-reply-form .comment-input {
     flex: 1;
-    margin-bottom: 0; /* 기본 댓글 input과 차별화 */
+    margin-bottom: 0;
 }
 
 /* 버튼은 기존 스타일 유지 */
 .comment-reply-form .comment-btn {
     white-space: nowrap;
 }
-
