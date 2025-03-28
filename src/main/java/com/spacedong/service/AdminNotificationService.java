@@ -25,24 +25,24 @@ public class AdminNotificationService {
         String messageContent;
         if (notificationType.equals("REQUEST1")) {
             messageContent = String.format(
-                    "안녕하세요, 우주동 관리자입니다.\n'%s'에 대한 승인 요청이 접수되었습니다. 검토 후 결과를 알려드리겠습니다.",
+                    "안녕하세요, 우주동입니다.\n'%s'에 대한 승인 요청이 접수되었습니다. 검토 후 결과를 알려드리겠습니다.",
                     itemName);
         } else if(notificationType.equals("REQUEST2")){
             messageContent = String.format(
-                    "안녕하세요, 우주동 관리자입니다.\n'%s'에 대한 승인 요청이 접수되었습니다.",
+                    "안녕하세요, 관리자님,\n'%s'에 대한 승인 요청이 접수되었습니다.",
                     itemName);
         }
         else if (notificationType.equals("APPROVED")) {
             messageContent = String.format(
-                    "안녕하세요, 우주동 관리자입니다.\n'%s'에 대한 승인이 완료되었습니다. %s",
+                    "안녕하세요, 우주동입니다.\n'%s'에 대한 승인이 완료되었습니다. %s",
                     itemName, additionalInfo);
         } else if (notificationType.equals("REJECTED")) {
             messageContent = String.format(
-                    "안녕하세요, 우주동 관리자입니다.\n'%s'에 대한 승인이 거절되었습니다. 사유: %s",
+                    "안녕하세요, 우주동입니다.\n'%s'에 대한 승인이 거절되었습니다. 사유: %s",
                     itemName, additionalInfo);
         } else {
             messageContent = String.format(
-                    "안녕하세요, 우주동 관리자입니다.\n%s",
+                    "안녕하세요, 우주동입니다.\n%s",
                     additionalInfo);
         }
 
