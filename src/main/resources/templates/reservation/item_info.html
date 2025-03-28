@@ -239,7 +239,7 @@
 
         <div class="form-actions" th:if="${loginBusiness == null or loginBusiness.login == false}">
           <button type="submit" class="btn btn-primary" id="reserveButton" disabled>예약하기</button>
-          <a th:href="@{/chat/view/ask(item_id=${item.item_id}, business_id=${item.business_id})}" class="btn btn-secondary" style="margin-left: 10px;">
+          <a th:href="@{/chat/new/ask(item_id=${item.item_id}, business_id=${item.business_id})}" class="btn btn-secondary" style="margin-left: 10px;">
             <i class="fas fa-question-circle"></i> 문의하기
           </a>
         </div>
