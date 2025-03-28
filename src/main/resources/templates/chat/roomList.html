@@ -8,93 +8,15 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-  <style>
-    .chat-list-item {
-      transition: background-color 0.3s;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-    }
-    .chat-list-item:hover {
-      background-color: #f5f5f5;
-    }
-    /* 카카오톡 스타일 읽지 않은 메시지 배지 */
-    .unread-badge {
-      background-color: #FF6C02; /* 카카오톡 주황색 */
-      color: white;
-      border-radius: 50%;
-      min-width: 24px;
-      height: 24px;
-      padding: 0;
-      font-size: 0.85rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 5px;
-    }
-    .user-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .chat-time {
-      font-size: 0.8rem;
-      color: #6c757d;
-      margin-bottom: 5px;
-    }
-    .chat-preview {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 250px;
-      color: #6c757d;
-    }
-    .nav-link {
-      color: #495057;
-      font-weight: 500;
-    }
-    .nav-link.active {
-      color: #FF6C02; /* 카카오톡 주황색 */
-      font-weight: 600;
-    }
-    .empty-list {
-      padding: 30px;
-      text-align: center;
-      color: #6c757d;
-    }
-    /* 채팅방 제목 스타일 */
-    .chat-title {
-      font-weight: 500;
-      margin-bottom: 5px;
-      color: #212529;
-    }
-    /* 채팅방 구분 태그 스타일 */
-    .chat-type-tag {
-      font-size: 0.75rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-left: 5px;
-    }
-    .personal-tag {
-      background-color: #E9ECF3;
-      color: #4D638C;
-    }
-    .club-tag {
-      background-color: #E3F6EC;
-      color: #2B8A5E;
-    }
-  </style>
+  <!-- 커스텀 CSS 파일 연결 -->
+  <link rel="stylesheet" th:href="@{/css/chat-list.css}">
 </head>
 <body>
-
 <div class="container mt-4">
   <!-- 히든 필드 추가 - 현재 사용자 정보 -->
   <input type="hidden" id="currentUserId" th:value="${currentUserId}">
   <input type="hidden" id="currentUserType" th:value="${currentUserType}">
   <input type="hidden" id="currentUserNickname" th:value="${loginMember != null ? loginMember.member_nickname : ''}">
-
   <div class="row mb-3">
     <div class="col">
       <h2>채팅 목록</h2>
@@ -105,7 +27,6 @@
       </a>
     </div>
   </div>
-
   <!-- Chat type tabs -->
   <ul class="nav nav-tabs mb-3" id="chatTabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -127,7 +48,6 @@
       </button>
     </li>
   </ul>
-
   <!-- Chat list tab content -->
   <div class="tab-content" id="chatTabContent">
     <!-- All chats tab -->
@@ -135,137 +55,121 @@
       <div class="card">
         <div class="list-group list-group-flush">
           <div th:each="room : ${rooms}" th:id="'room-' + ${room.room_id}"
-               class="list-group-item chat-list-item p-3"
+               class="list-group-item chat-list-item"
                th:onclick="'location.href=\'' + @{/chat/view/room/{roomId}(roomId=${room.room_id})} + '\''">
-            <div class="d-flex justify-content-between align-items-start">
-              <div class="d-flex" style="width: 100%">
-                <!-- Profile image -->
-                <div class="me-3">
-                  <!-- 동호회 채팅인 경우 기본 이미지 -->
-                  <img th:if="${room.club_id != null}" th:src="@{/sources/picture/기본이미지.png}" alt="Club" class="user-avatar">
-
-                  <!-- 개인 채팅인 경우 상대방 프로필 가져오기 -->
-                  <img th:if="${room.club_id == null}" th:src="${otherParticipants[room.room_id]?.userProfile} != null ?
-               '/profile/' + ${otherParticipants[room.room_id].userProfile} :
-               '/sources/picture/기본이미지.png'" class="user-avatar"/>
-                </div>
-
-                <!-- 채팅방 정보 -->
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <!-- 채팅방 이름 표시 로직 - 수정된 부분 -->
-                    <h5 class="chat-title mb-0">
-                      <!-- 동호회 채팅인 경우 -->
-                      <th:block th:if="${room.club_id != null}" th:text="${room.room_name}"></th:block>
-
-                      <!-- 개인 채팅인 경우 -->
-                      <th:block th:if="${room.club_id == null && room.room_name != null}">
-                        <!-- 쉼표로 분리 -->
-                        <th:block th:with="parts=${room.room_name.split(',')}">
-
-                          <!-- 1. 판매자-일반회원 대화 -->
-                          <th:block th:if="${parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')}">
-                            <!-- 일반회원으로 로그인한 경우: 판매자명 표시 -->
-                            <th:block th:if="${loginMember != null && loginMember.isLogin()}">
-                              <th:block th:text="${parts[0]}"></th:block>
-                            </th:block>
-
-                            <!-- 판매자로 로그인한 경우: 일반회원명 표시 -->
-                            <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
-                              <th:block th:text="${parts[1]}"></th:block>
-                            </th:block>
-
-                            <!-- 관리자는 전체 이름 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${room.room_name}"></th:block>
-                            </th:block>
+            <div class="d-flex">
+              <!-- Profile image -->
+              <div class="profile-container">
+                <!-- 동호회 채팅인 경우 기본 이미지 -->
+                <img th:if="${room.club_id != null}" th:src="@{/sources/picture/기본이미지.png}" alt="Club" class="user-avatar">
+                <!-- 개인 채팅인 경우 상대방 프로필 가져오기 -->
+                <img th:if="${room.club_id == null}" th:src="${otherParticipants[room.room_id]?.userProfile} != null ?
+                 '/profile/' + ${otherParticipants[room.room_id].userProfile} :
+                 '/sources/picture/기본이미지.png'" class="user-avatar"/>
+              </div>
+              <!-- 채팅방 정보 -->
+              <div class="chat-info">
+                <!-- 채팅방 제목 컨테이너 -->
+                <div class="chat-title-container">
+                  <!-- 채팅방 이름 표시 로직 -->
+                  <h5 class="chat-title">
+                    <!-- 동호회 채팅인 경우 -->
+                    <th:block th:if="${room.club_id != null}" th:text="${room.room_name}"></th:block>
+                    <!-- 개인 채팅인 경우 -->
+                    <th:block th:if="${room.club_id == null && room.room_name != null}">
+                      <!-- 쉼표로 분리 -->
+                      <th:block th:with="parts=${room.room_name.split(',')}">
+                        <!-- 1. 판매자-일반회원 대화 -->
+                        <th:block th:if="${parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')}">
+                          <!-- 일반회원으로 로그인한 경우: 판매자명 표시 -->
+                          <th:block th:if="${loginMember != null && loginMember.isLogin()}">
+                            <th:block th:text="${parts[0]}"></th:block>
                           </th:block>
-
-                          <!-- 2. 관리자-일반회원 대화 -->
-                          <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')}">
-                            <!-- 일반회원으로 로그인한 경우: 관리자 표시 -->
-                            <th:block th:if="${loginMember != null && loginMember.isLogin()}">
-                              <th:block th:text="'관리자'"></th:block>
-                            </th:block>
-
-                            <!-- 관리자로 로그인한 경우: 일반회원명 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${parts[1]}"></th:block>
-                            </th:block>
+                          <!-- 판매자로 로그인한 경우: 일반회원명 표시 -->
+                          <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
+                            <th:block th:text="${parts[1]}"></th:block>
                           </th:block>
-
-                          <!-- 3. 관리자-판매자 대화 -->
-                          <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('판매자')}">
-                            <!-- 판매자로 로그인한 경우: 관리자 표시 -->
-                            <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
-                              <th:block th:text="'관리자'"></th:block>
-                            </th:block>
-
-                            <!-- 관리자로 로그인한 경우: 판매자명 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${parts[1]}"></th:block>
-                            </th:block>
-                          </th:block>
-
-                          <!-- 4. 일반회원-일반회원 대화 -->
-                          <th:block th:if="${parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원')}">
-                            <!-- 일반회원으로 로그인한 경우 -->
-                            <th:block th:if="${loginMember != null && loginMember.isLogin()}">
-                              <!-- 첫 번째가 내 닉네임인 경우, 두 번째 사람 이름 표시 -->
-                              <th:block th:if="${parts[0].contains(loginMember.member_nickname)}">
-                                <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
-                                <th:block th:text="${parts[1].substring(4)}"></th:block>
-                              </th:block>
-                              <!-- 두 번째가 내 닉네임인 경우, 첫 번째 사람 이름 표시 -->
-                              <th:block th:unless="${parts[0].contains(loginMember.member_nickname)}">
-                                <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
-                                <th:block th:text="${parts[0].substring(4)}"></th:block>
-                              </th:block>
-                            </th:block>
-
-                            <!-- 판매자는 두 회원 이름 모두 표시 -->
-                            <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
-                              <th:block th:text="${parts[0].substring(4) + ', ' + parts[1].substring(4)}"></th:block>
-                            </th:block>
-
-                            <!-- 관리자는 전체 이름 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${room.room_name}"></th:block>
-                            </th:block>
-                          </th:block>
-
-                          <!-- 5. 그 외 모든 경우 (기본 폴백) -->
-                          <th:block th:unless="${
-        (parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')) ||
-        (parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')) ||
-        (parts[0].startsWith('관리자') && parts[1].startsWith('판매자')) ||
-        (parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원'))
-      }">
+                          <!-- 관리자는 전체 이름 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
                             <th:block th:text="${room.room_name}"></th:block>
                           </th:block>
                         </th:block>
+                        <!-- 2. 관리자-일반회원 대화 -->
+                        <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')}">
+                          <!-- 일반회원으로 로그인한 경우: 관리자 표시 -->
+                          <th:block th:if="${loginMember != null && loginMember.isLogin()}">
+                            <th:block th:text="'관리자'"></th:block>
+                          </th:block>
+                          <!-- 관리자로 로그인한 경우: 일반회원명 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
+                            <th:block th:text="${parts[1]}"></th:block>
+                          </th:block>
+                        </th:block>
+                        <!-- 3. 관리자-판매자 대화 -->
+                        <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('판매자')}">
+                          <!-- 판매자로 로그인한 경우: 관리자 표시 -->
+                          <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
+                            <th:block th:text="'관리자'"></th:block>
+                          </th:block>
+                          <!-- 관리자로 로그인한 경우: 판매자명 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
+                            <th:block th:text="${parts[1]}"></th:block>
+                          </th:block>
+                        </th:block>
+                        <!-- 4. 일반회원-일반회원 대화 -->
+                        <th:block th:if="${parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원')}">
+                          <!-- 일반회원으로 로그인한 경우 -->
+                          <th:block th:if="${loginMember != null && loginMember.isLogin()}">
+                            <!-- 첫 번째가 내 닉네임인 경우, 두 번째 사람 이름 표시 -->
+                            <th:block th:if="${parts[0].contains(loginMember.member_nickname)}">
+                              <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
+                              <th:block th:text="${parts[1].substring(4)}"></th:block>
+                            </th:block>
+                            <!-- 두 번째가 내 닉네임인 경우, 첫 번째 사람 이름 표시 -->
+                            <th:block th:unless="${parts[0].contains(loginMember.member_nickname)}">
+                              <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
+                              <th:block th:text="${parts[0].substring(4)}"></th:block>
+                            </th:block>
+                          </th:block>
+                          <!-- 판매자는 두 회원 이름 모두 표시 -->
+                          <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
+                            <th:block th:text="${parts[0].substring(4) + ', ' + parts[1].substring(4)}"></th:block>
+                          </th:block>
+                          <!-- 관리자는 전체 이름 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
+                            <th:block th:text="${room.room_name}"></th:block>
+                          </th:block>
+                        </th:block>
+                        <!-- 5. 그 외 모든 경우 (기본 폴백) -->
+                        <th:block th:unless="${
+                      (parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')) ||
+                      (parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')) ||
+                      (parts[0].startsWith('관리자') && parts[1].startsWith('판매자')) ||
+                      (parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원'))
+                    }">
+                          <th:block th:text="${room.room_name}"></th:block>
+                        </th:block>
                       </th:block>
-
-                      <!-- 이름이 없는 경우 -->
-                      <th:block th:if="${room.club_id == null && room.room_name == null}">
-                        <th:block th:text="'대화방'"></th:block>
-                      </th:block>
-                    </h5>
-
-                    <span th:if="${room.club_id != null}" class="chat-type-tag club-tag">동호회</span>
-                    <span th:if="${room.club_id == null}" class="chat-type-tag personal-tag">개인</span>
-                    <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mt-1">
-                    <p class="chat-preview mb-0" th:text="${room.lastMessage != null ? room.lastMessage : '새로운 대화를 시작하세요.'}">마지막 메시지</p>
-                    <!-- 읽지 않은 메시지 배지 -->
-                    <div th:if="${room.unreadCount > 0}" class="unread-badge" th:text="${room.unreadCount}">1</div>
-                  </div>
+                    </th:block>
+                    <!-- 이름이 없는 경우 -->
+                    <th:block th:if="${room.club_id == null && room.room_name == null}">
+                      <th:block th:text="'대화방'"></th:block>
+                    </th:block>
+                  </h5>
+                  <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
+                </div>
+                <!-- 채팅 미리보기 컨테이너 -->
+                <div class="chat-preview-container">
+                  <p class="chat-preview" th:text="${room.lastMessage != null ? room.lastMessage : '새로운 대화를 시작하세요.'}">마지막 메시지</p>
+                  <!-- 채팅 유형 태그 -->
+                  <span th:if="${room.club_id != null}" class="chat-type-tag club-tag">동호회</span>
+                  <span th:if="${room.club_id == null}" class="chat-type-tag personal-tag">개인</span>
+                  <!-- 읽지 않은 메시지 배지 -->
+                  <div th:if="${room.unreadCount > 0}" class="unread-badge" th:text="${room.unreadCount}">1</div>
                 </div>
               </div>
             </div>
           </div>
-
           <!-- Empty state -->
           <div th:if="${#lists.isEmpty(rooms)}" class="empty-list">
             <i class="fas fa-comments fa-3x mb-3"></i>
@@ -274,136 +178,122 @@
         </div>
       </div>
     </div>
-
     <!-- Personal chats tab -->
     <div class="tab-pane fade" id="personal-chats" role="tabpanel">
       <div class="card">
         <div class="list-group list-group-flush">
           <div th:each="room : ${personalRooms}" th:if="${room.club_id == null}" th:id="'personal-room-' + ${room.room_id}"
-               class="list-group-item chat-list-item p-3"
+               class="list-group-item chat-list-item"
                th:onclick="'location.href=\'' + @{/chat/view/room/{roomId}(roomId=${room.room_id})} + '\''">
-            <div class="d-flex justify-content-between align-items-start">
-              <div class="d-flex" style="width: 100%">
-                <!-- Profile image - 단순화 -->
-                <div class="me-3">
-                  <img th:src="${otherParticipants[room.room_id]?.userProfile} != null ?
-               '/profile/' + ${otherParticipants[room.room_id].userProfile} :
-               '/sources/picture/기본이미지.png'" class="user-avatar"/>
-                </div>
-
-                <!-- Chat room info -->
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <!-- 채팅방 이름 로직 - 수정된 부분 -->
-                    <h5 class="chat-title mb-0">
-                      <!-- 동호회 채팅인 경우 -->
-                      <th:block th:if="${room.club_id != null}" th:text="${room.room_name}"></th:block>
-
-                      <!-- 개인 채팅인 경우 -->
-                      <th:block th:if="${room.club_id == null && room.room_name != null}">
-                        <!-- 쉼표로 분리 -->
-                        <th:block th:with="parts=${room.room_name.split(',')}">
-
-                          <!-- 1. 판매자-일반회원 대화 -->
-                          <th:block th:if="${parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')}">
-                            <!-- 일반회원으로 로그인한 경우: 판매자명 표시 -->
-                            <th:block th:if="${loginMember != null && loginMember.isLogin()}">
-                              <th:block th:text="${parts[0]}"></th:block>
-                            </th:block>
-
-                            <!-- 판매자로 로그인한 경우: 일반회원명 표시 -->
-                            <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
-                              <th:block th:text="${parts[1]}"></th:block>
-                            </th:block>
-
-                            <!-- 관리자는 전체 이름 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${room.room_name}"></th:block>
-                            </th:block>
+            <div class="d-flex">
+              <!-- Profile image -->
+              <div class="profile-container">
+                <img th:src="${otherParticipants[room.room_id]?.userProfile} != null ?
+                 '/profile/' + ${otherParticipants[room.room_id].userProfile} :
+                 '/sources/picture/기본이미지.png'" class="user-avatar"/>
+              </div>
+              <!-- 채팅방 정보 -->
+              <div class="chat-info">
+                <!-- 채팅방 제목 컨테이너 -->
+                <div class="chat-title-container">
+                  <!-- 채팅방 이름 로직 - 복사본 추가 -->
+                  <h5 class="chat-title">
+                    <!-- 동호회 채팅인 경우 -->
+                    <th:block th:if="${room.club_id != null}" th:text="${room.room_name}"></th:block>
+                    <!-- 개인 채팅인 경우 -->
+                    <th:block th:if="${room.club_id == null && room.room_name != null}">
+                      <!-- 쉼표로 분리 -->
+                      <th:block th:with="parts=${room.room_name.split(',')}">
+                        <!-- 1. 판매자-일반회원 대화 -->
+                        <th:block th:if="${parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')}">
+                          <!-- 일반회원으로 로그인한 경우: 판매자명 표시 -->
+                          <th:block th:if="${loginMember != null && loginMember.isLogin()}">
+                            <th:block th:text="${parts[0]}"></th:block>
                           </th:block>
-
-                          <!-- 2. 관리자-일반회원 대화 -->
-                          <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')}">
-                            <!-- 일반회원으로 로그인한 경우: 관리자 표시 -->
-                            <th:block th:if="${loginMember != null && loginMember.isLogin()}">
-                              <th:block th:text="'관리자'"></th:block>
-                            </th:block>
-
-                            <!-- 관리자로 로그인한 경우: 일반회원명 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${parts[1]}"></th:block>
-                            </th:block>
+                          <!-- 판매자로 로그인한 경우: 일반회원명 표시 -->
+                          <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
+                            <th:block th:text="${parts[1]}"></th:block>
                           </th:block>
-
-                          <!-- 3. 관리자-판매자 대화 -->
-                          <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('판매자')}">
-                            <!-- 판매자로 로그인한 경우: 관리자 표시 -->
-                            <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
-                              <th:block th:text="'관리자'"></th:block>
-                            </th:block>
-
-                            <!-- 관리자로 로그인한 경우: 판매자명 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${parts[1]}"></th:block>
-                            </th:block>
-                          </th:block>
-
-                          <!-- 4. 일반회원-일반회원 대화 -->
-                          <th:block th:if="${parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원')}">
-                            <!-- 일반회원으로 로그인한 경우 -->
-                            <th:block th:if="${loginMember != null && loginMember.isLogin()}">
-                              <!-- 첫 번째가 내 닉네임인 경우, 두 번째 사람 이름 표시 -->
-                              <th:block th:if="${parts[0].contains(loginMember.member_nickname)}">
-                                <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
-                                <th:block th:text="${parts[1].substring(4)}"></th:block>
-                              </th:block>
-                              <!-- 두 번째가 내 닉네임인 경우, 첫 번째 사람 이름 표시 -->
-                              <th:block th:unless="${parts[0].contains(loginMember.member_nickname)}">
-                                <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
-                                <th:block th:text="${parts[0].substring(4)}"></th:block>
-                              </th:block>
-                            </th:block>
-
-                            <!-- 판매자는 두 회원 이름 모두 표시 -->
-                            <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
-                              <th:block th:text="${parts[0].substring(4) + ', ' + parts[1].substring(4)}"></th:block>
-                            </th:block>
-
-                            <!-- 관리자는 전체 이름 표시 -->
-                            <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
-                              <th:block th:text="${room.room_name}"></th:block>
-                            </th:block>
-                          </th:block>
-
-                          <!-- 5. 그 외 모든 경우 (기본 폴백) -->
-                          <th:block th:unless="${
-        (parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')) ||
-        (parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')) ||
-        (parts[0].startsWith('관리자') && parts[1].startsWith('판매자')) ||
-        (parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원'))
-      }">
+                          <!-- 관리자는 전체 이름 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
                             <th:block th:text="${room.room_name}"></th:block>
                           </th:block>
                         </th:block>
+                        <!-- 2. 관리자-일반회원 대화 -->
+                        <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')}">
+                          <!-- 일반회원으로 로그인한 경우: 관리자 표시 -->
+                          <th:block th:if="${loginMember != null && loginMember.isLogin()}">
+                            <th:block th:text="'관리자'"></th:block>
+                          </th:block>
+                          <!-- 관리자로 로그인한 경우: 일반회원명 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
+                            <th:block th:text="${parts[1]}"></th:block>
+                          </th:block>
+                        </th:block>
+                        <!-- 3. 관리자-판매자 대화 -->
+                        <th:block th:if="${parts[0].startsWith('관리자') && parts[1].startsWith('판매자')}">
+                          <!-- 판매자로 로그인한 경우: 관리자 표시 -->
+                          <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
+                            <th:block th:text="'관리자'"></th:block>
+                          </th:block>
+                          <!-- 관리자로 로그인한 경우: 판매자명 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
+                            <th:block th:text="${parts[1]}"></th:block>
+                          </th:block>
+                        </th:block>
+                        <!-- 4. 일반회원-일반회원 대화 -->
+                        <th:block th:if="${parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원')}">
+                          <!-- 일반회원으로 로그인한 경우 -->
+                          <th:block th:if="${loginMember != null && loginMember.isLogin()}">
+                            <!-- 첫 번째가 내 닉네임인 경우, 두 번째 사람 이름 표시 -->
+                            <th:block th:if="${parts[0].contains(loginMember.member_nickname)}">
+                              <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
+                              <th:block th:text="${parts[1].substring(4)}"></th:block>
+                            </th:block>
+                            <!-- 두 번째가 내 닉네임인 경우, 첫 번째 사람 이름 표시 -->
+                            <th:block th:unless="${parts[0].contains(loginMember.member_nickname)}">
+                              <!-- "일반회원" 접두사 제거하고 순수 닉네임만 추출 -->
+                              <th:block th:text="${parts[0].substring(4)}"></th:block>
+                            </th:block>
+                          </th:block>
+                          <!-- 판매자는 두 회원 이름 모두 표시 -->
+                          <th:block th:if="${loginBusiness != null && loginBusiness.isLogin()}">
+                            <th:block th:text="${parts[0].substring(4) + ', ' + parts[1].substring(4)}"></th:block>
+                          </th:block>
+                          <!-- 관리자는 전체 이름 표시 -->
+                          <th:block th:if="${loginAdmin != null && loginAdmin.isAdmin_login()}">
+                            <th:block th:text="${room.room_name}"></th:block>
+                          </th:block>
+                        </th:block>
+                        <!-- 5. 그 외 모든 경우 (기본 폴백) -->
+                        <th:block th:unless="${
+                      (parts[0].startsWith('판매자') && parts[1].startsWith('일반회원')) ||
+                      (parts[0].startsWith('관리자') && parts[1].startsWith('일반회원')) ||
+                      (parts[0].startsWith('관리자') && parts[1].startsWith('판매자')) ||
+                      (parts[0].startsWith('일반회원') && parts[1].startsWith('일반회원'))
+                    }">
+                          <th:block th:text="${room.room_name}"></th:block>
+                        </th:block>
                       </th:block>
-
-                      <!-- 이름이 없는 경우 -->
-                      <th:block th:if="${room.club_id == null && room.room_name == null}">
-                        <th:block th:text="'대화방'"></th:block>
-                      </th:block>
-                    </h5>
-                    <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mt-1">
-                    <p class="chat-preview mb-0" th:text="${room.lastMessage != null ? room.lastMessage : '새로운 대화를 시작하세요.'}">마지막 메시지</p>
-                    <!-- 카카오톡 스타일 읽지 않은 메시지 수 -->
-                    <div th:if="${room.unreadCount > 0}" class="unread-badge" th:text="${room.unreadCount}">1</div>
-                  </div>
+                    </th:block>
+                    <!-- 이름이 없는 경우 -->
+                    <th:block th:if="${room.club_id == null && room.room_name == null}">
+                      <th:block th:text="'대화방'"></th:block>
+                    </th:block>
+                  </h5>
+                  <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
+                </div>
+                <!-- 채팅 미리보기 컨테이너 -->
+                <div class="chat-preview-container">
+                  <p class="chat-preview" th:text="${room.lastMessage != null ? room.lastMessage : '새로운 대화를 시작하세요.'}">마지막 메시지</p>
+                  <!-- 개인 채팅 태그 추가 -->
+                  <span class="chat-type-tag personal-tag">개인</span>
+                  <!-- 읽지 않은 메시지 배지 -->
+                  <div th:if="${room.unreadCount > 0}" class="unread-badge" th:text="${room.unreadCount}">1</div>
                 </div>
               </div>
             </div>
           </div>
-
           <!-- Empty state -->
           <div th:if="${#lists.isEmpty(personalRooms)}" class="empty-list">
             <i class="fas fa-user-friends fa-3x mb-3"></i>
@@ -412,36 +302,36 @@
         </div>
       </div>
     </div>
-
     <!-- Club chats tab -->
     <div class="tab-pane fade" id="club-chats" role="tabpanel">
       <div class="card">
         <div class="list-group list-group-flush">
           <div th:each="room : ${rooms}" th:if="${room.club_id != null}" th:id="'club-room-' + ${room.room_id}"
-               class="list-group-item chat-list-item p-3"
+               class="list-group-item chat-list-item"
                th:onclick="'location.href=\'' + @{/chat/view/room/{roomId}(roomId=${room.room_id})} + '\''">
-            <div class="d-flex justify-content-between align-items-start">
-              <div class="d-flex" style="width: 100%">
-                <!-- Profile image - 단순화 -->
-                <div class="me-3">
-                  <img th:src="@{/sources/picture/기본이미지.png}" alt="Club" class="user-avatar">
+            <div class="d-flex">
+              <!-- Profile image -->
+              <div class="profile-container">
+                <img th:src="@{/sources/picture/기본이미지.png}" alt="Club" class="user-avatar">
+              </div>
+              <!-- 채팅방 정보 -->
+              <div class="chat-info">
+                <!-- 채팅방 제목 컨테이너 -->
+                <div class="chat-title-container">
+                  <h5 class="chat-title" th:text="${room.room_name}">동호회 채팅방</h5>
+                  <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
                 </div>
-                <!-- Chat room info -->
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="chat-title mb-0" th:text="${room.room_name}">동호회 채팅방</h5>
-                    <div class="chat-time" th:text="${room.lastMessageTime != null ? #temporals.format(room.lastMessageTime, 'MM/dd HH:mm') : ''}">01/01 12:00</div>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mt-1">
-                    <p class="chat-preview mb-0" th:text="${room.lastMessage != null ? room.lastMessage : '새로운 대화를 시작하세요.'}">마지막 메시지</p>
-                    <!-- 카카오톡 스타일 읽지 않은 메시지 수 -->
-                    <div th:if="${room.unreadCount > 0}" class="unread-badge" th:text="${room.unreadCount}">1</div>
-                  </div>
+                <!-- 채팅 미리보기 컨테이너 -->
+                <div class="chat-preview-container">
+                  <p class="chat-preview" th:text="${room.lastMessage != null ? room.lastMessage : '새로운 대화를 시작하세요.'}">마지막 메시지</p>
+                  <!-- 동호회 채팅 태그 추가 -->
+                  <span class="chat-type-tag club-tag">동호회</span>
+                  <!-- 읽지 않은 메시지 배지 -->
+                  <div th:if="${room.unreadCount > 0}" class="unread-badge" th:text="${room.unreadCount}">1</div>
                 </div>
               </div>
             </div>
           </div>
-
           <!-- Empty state -->
           <div th:if="${#lists.isEmpty(clubRooms)}" class="empty-list">
             <i class="fas fa-users fa-3x mb-3"></i>
@@ -452,19 +342,16 @@
     </div>
   </div>
 </div>
-
 <!-- WebSocket related JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <!-- 프로필 이미지 URL 처리 함수 -->
 <script th:inline="javascript">
   let otherParticipants = /*[[@{/otherParticipants/}]]*/ '';
   let room = /*[[@{/room/}]]*/ '';
   console.log(otherParticipants[room.room_id].userProfile)
 </script>
-
 <!-- Chat list JavaScript -->
 <script th:src="@{/js/chat-list.js}"></script>
 </body>

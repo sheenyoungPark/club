@@ -1,0 +1,190 @@
+/* 채팅목록 스타일 CSS - chat-list.css */
+
+/* 전체 폰트 설정 */
+body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 채팅방 리스트 아이템 */
+.chat-list-item {
+    transition: background-color 0.3s;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    padding: 15px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.chat-list-item:hover {
+    background-color: #f5f5f5;
+}
+
+/* 채팅방 d-flex 컨테이너 */
+.chat-list-item .d-flex {
+    width: 100%;
+    position: relative;
+}
+
+/* 프로필 이미지 컨테이너 */
+.profile-container {
+    flex-shrink: 0;
+    margin-right: 15px;
+}
+
+/* 유저 아바타 이미지 */
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* 채팅방 정보 컨테이너 */
+.chat-info {
+    flex-grow: 1;
+    min-width: 0;
+    position: relative;
+    width: calc(100% - 65px);
+}
+
+/* 채팅방 제목 컨테이너 */
+.chat-title-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+/* 채팅 제목 */
+.chat-title {
+    max-width: calc(100% - 90px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* 채팅 시간 */
+.chat-time {
+    position: absolute;
+    right: 0;
+    top: 0;
+    text-align: right;
+    min-width: 80px;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* 채팅 미리보기 컨테이너 */
+.chat-preview-container {
+    position: relative;
+    width: 100%;
+}
+
+/* 채팅 미리보기 텍스트 */
+.chat-preview {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 90px);
+    color: #6c757d;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* 채팅방 구분 태그(배지) */
+.chat-type-tag {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    height: 20px;
+}
+
+/* 개인 채팅 태그 */
+.personal-tag {
+    background-color: #E9ECF3;
+    color: #4D638C;
+}
+
+/* 동호회 채팅 태그 */
+.club-tag {
+    background-color: #E3F6EC;
+    color: #2B8A5E;
+}
+
+/* 읽지 않은 메시지 배지 */
+.unread-badge {
+    background-color: #FF6C02;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+/* 네비게이션 링크 */
+.nav-link {
+    color: #495057;
+    font-weight: 500;
+}
+
+.nav-link.active {
+    color: #FF6C02; /* 카카오톡 주황색 */
+    font-weight: 600;
+}
+
+/* 빈 리스트 표시 */
+.empty-list {
+    padding: 30px;
+    text-align: center;
+    color: #6c757d;
+}
+
+/* 반응형 레이아웃 지원 */
+@media (max-width: 576px) {
+    .chat-title {
+        max-width: calc(100% - 80px);
+    }
+
+    .chat-time {
+        font-size: 0.8rem;
+        min-width: 70px;
+    }
+
+    .chat-type-tag {
+        right: 35px;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+
+    .chat-preview {
+        max-width: calc(100% - 80px);
+    }
+}
