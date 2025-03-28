@@ -356,6 +356,20 @@
         }
     </style>
 </head>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const hasReloaded = sessionStorage.getItem("hasReloadedOnce");
+
+        // 자동 상태 변경 이후 1초 뒤 새로고침
+        if (!hasReloaded) {
+            sessionStorage.setItem("hasReloadedOnce", "true");
+            setTimeout(() => location.reload(), 100); // 🔁 0.1초 뒤 새로고침
+        } else {
+            sessionStorage.removeItem("hasReloadedOnce");
+        }
+    });
+</script>
+
 <body>
 <!-- 상단 메뉴 include -->
 <div th:replace="~{include/top_search :: top_search}"></div>

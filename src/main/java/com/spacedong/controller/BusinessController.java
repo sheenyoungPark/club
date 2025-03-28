@@ -194,6 +194,9 @@ public class BusinessController {
             return "redirect:/member/login";
         }
 
+        BusinessBean business = businessService.getBusinessInfoById(loginBusiness.getBusiness_id());
+        loginBusiness.setBusiness_point(business.getBusiness_point());
+
         String businessId = loginBusiness.getBusiness_id();
         logger.info("businessInfo 메소드 호출 - 사업자 ID: {}", businessId);
 

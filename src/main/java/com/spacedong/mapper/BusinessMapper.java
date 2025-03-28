@@ -262,7 +262,7 @@ public interface BusinessMapper {
     //===============================================================
 
     @Update("update club set club_point = club_point + #{price} where club_id = #{club_id}")
-    void clubReservationMP(@Param("price") int price,@Param("club_id)") int club_id);
+    void clubReservationMP(@Param("price") int price,@Param("club_id") int club_id);
 
 
 }
