@@ -1,7 +1,7 @@
 /* find.css */
 body {
     font-family: 'Noto Sans KR', sans-serif;
-    background-color: #f5f5f5;
+    background-color: rgba(245, 245, 245, 0.92); /* #f5f5f5 → 투명도 적용 */
     margin: 0;
     padding: 0;
     display: flex;
@@ -11,11 +11,12 @@ body {
 }
 
 .find-container {
-    background-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.92); /* #ffffff → 투명도 적용 */
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 400px;
     padding: 30px;
+    animation: fadeIn 0.5s ease-out;
 }
 
 h2 {
@@ -78,21 +79,21 @@ label {
 }
 
 .alert-success {
-    background-color: #dff0d8;
-    border: 1px solid #d6e9c6;
+    background-color: rgba(223, 240, 216, 0.92); /* #dff0d8 */
+    border: 1px solid rgba(214, 233, 198, 0.92); /* #d6e9c6 */
     color: #3c763d;
 }
 
 .alert-danger {
-    background-color: #f2dede;
-    border: 1px solid #ebccd1;
+    background-color: rgba(242, 221, 221, 0.92); /* #f2dede */
+    border: 1px solid rgba(235, 204, 209, 0.92); /* #ebccd1 */
     color: #a94442;
 }
 
 .result-container {
     margin-top: 20px;
     padding: 15px;
-    background-color: #f9f9f9;
+    background-color: rgba(249, 249, 249, 0.92); /* #f9f9f9 */
     border-radius: 4px;
     text-align: center;
 }
@@ -132,8 +133,4 @@ label {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.find-container {
-    animation: fadeIn 0.5s ease-out;
 }

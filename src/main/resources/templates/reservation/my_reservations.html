@@ -12,7 +12,7 @@
             max-width: 1200px;
             margin: 2rem auto;
             padding: 2rem;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.92);
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
@@ -22,7 +22,7 @@
             font-size: 2rem;
             margin-bottom: 2rem;
             color: #333;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid rgba(240, 240, 240, 0.92);
             padding-bottom: 1rem;
         }
 
@@ -33,7 +33,7 @@
             align-items: center;
             margin-bottom: 1.5rem;
             padding: 1rem;
-            background-color: #f8f9fa;
+            background-color: rgba(248, 249, 250, 0.92);
             border-radius: 8px;
         }
 
@@ -59,7 +59,7 @@
             padding: 0.5rem 1rem;
             border: 1px solid #ddd;
             border-radius: 4px;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.92);
         }
 
         /* 예약 없음 메시지 스타일 */
@@ -67,7 +67,7 @@
             text-align: center;
             padding: 3rem;
             color: #6c757d;
-            background-color: #f8f9fa;
+            background-color: rgba(248, 249, 250, 0.92);
             border-radius: 8px;
             margin-bottom: 2rem;
         }
@@ -95,6 +95,7 @@
             border-radius: 8px;
             overflow: hidden;
             transition: transform 0.3s, box-shadow 0.3s;
+            background-color: rgba(255, 255, 255, 0.92);
         }
 
         .reservation-card:hover {
@@ -104,7 +105,7 @@
 
         .reservation-header {
             padding: 0.7rem 1rem;
-            background-color: #f8f9fa;
+            background-color: rgba(248, 249, 250, 0.92);
             border-bottom: 1px solid #e9ecef;
         }
 
@@ -175,7 +176,7 @@
             display: flex;
             justify-content: space-between;
             padding: 0.7rem 1rem;
-            background-color: #f8f9fa;
+            background-color: rgba(248, 249, 250, 0.92);
             border-top: 1px solid #e9ecef;
         }
 
@@ -257,7 +258,7 @@
             color: #6c757d;
             pointer-events: none;
             cursor: not-allowed;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.92);
             border-color: #dee2e6;
         }
 
@@ -276,7 +277,7 @@
         }
 
         .modal {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.92);
             border-radius: 8px;
             width: 90%;
             max-width: 500px;
@@ -286,7 +287,7 @@
 
         .modal-header {
             padding: 1rem;
-            background-color: #f8f9fa;
+            background-color: rgba(248, 249, 250, 0.92);
             border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
@@ -313,7 +314,7 @@
 
         .modal-footer {
             padding: 1rem;
-            background-color: #f8f9fa;
+            background-color: rgba(248, 249, 250, 0.92);
             border-top: 1px solid #e9ecef;
             display: flex;
             justify-content: flex-end;
@@ -354,6 +355,7 @@
                 width: 95%;
             }
         }
+
     </style>
 </head>
 <script>
@@ -412,7 +414,9 @@
         <i class="fas fa-calendar-times"></i>
         <h3>예약 내역이 없습니다</h3>
         <p>새로운 예약을 등록하시면 이곳에서 확인하실 수 있습니다.</p>
-        <a th:href="@{/}" class="btn btn-view">메인으로 돌아가기</a>
+        <div style="margin-top: 20px;">
+            <a th:href="@{/}" class="btn btn-view">메인으로 돌아가기</a>
+        </div>
     </div>
 
     <!-- 예약 목록 -->
