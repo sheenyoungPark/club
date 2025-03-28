@@ -133,45 +133,65 @@
             color: #721c24;
         }
 
+        /* 액션 버튼 컨테이너 스타일 수정 */
         .action-buttons {
             display: flex;
             gap: 0.5rem;
+            align-items: center;
+            justify-content: flex-start;
         }
 
+        /* 버튼 스타일 균일화 */
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.35rem 0.8rem;  /* 패딩 줄여서 얇게 만듦 */
             border: none;
             border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s;
+            min-width: 60px;  /* 최소 너비 축소 */
+            text-align: center;
+            display: inline-block;
+            box-sizing: border-box;
+            font-size: 0.9rem;  /* 글꼴 크기 약간 줄임 */
         }
 
-        .btn-approve {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-approve:hover {
-            background-color: #218838;
-        }
-
+        /* 취소 버튼 스타일 */
         .btn-decline {
             background-color: #dc3545;
-            color: #14191f;
+            color: white;
+            width: 60px;  /* 너비 줄임 */
         }
 
         .btn-decline:hover {
             background-color: #c82333;
         }
 
+        /* 상세 버튼 스타일 */
         .btn-view {
             background-color: #9cee69;
             color: #14191f;
+            width: 60px;  /* 너비 줄임 */
         }
 
         .btn-view:hover {
-            background-color: #9cee69;
+            background-color: #8bd858;
+        }
+
+        /* 완료된 예약 섹션 특화 스타일 */
+        #completedTable .action-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #completedTable .action-buttons form {
+            display: inline-block;
+        }
+
+        #completedTable .btn {
+            width: 60px;
+            margin: 0;
+            line-height: 1.2;  /* 줄 높이 줄여서 더 얇게 보이게 함 */
         }
 
         .pagination-container {
