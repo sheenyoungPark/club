@@ -1,5 +1,7 @@
 package com.spacedong.controller;
 
+import com.spacedong.beans.BusinessBean;
+import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.beans.BusinessItemBean;
 import com.spacedong.beans.CategoryBean;
 import com.spacedong.beans.ClubBean;
@@ -25,18 +27,21 @@ public class HomeController {
     @Autowired
     private ItemService itemService;
 
-
     @RequestMapping("/")
     public String home(Model model) {
-
+        // 카테고리 정보 가져오기
         List<CategoryBean> categoryCount = categoryService.categoryTypeCount();
+
+        // 인기 동호회 정보 가져오기
         List<ClubBean> clubCount = clubService.countClub();
+
+        // 랜덤 아이템 리스트 가져오기 (5개 이상 가져오도록 확인)
         List<BusinessItemBean> itemList = itemService.randomItemList();
 
+        // 모델에 데이터 추가
         model.addAttribute("categoryCount", categoryCount);
         model.addAttribute("clubCount", clubCount);
         model.addAttribute("itemList", itemList);
-
 
         return "main";
     }

@@ -49,4 +49,6 @@ public interface ItemMapper {
 	@Select("SELECT * FROM business_item ORDER BY DBMS_RANDOM.VALUE")
 	List<BusinessItemBean> randomItemList();
 
+
+
 }

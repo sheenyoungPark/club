@@ -1,311 +1,143 @@
+/* main.css - Envato Elements 스타일 - 중앙 정렬 */
 * {
     user-select: none;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background-color: #f5f5f5;
-}
-
-.header {
-    background-color: transparent;
-    padding: 15px 30px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    z-index: 100;
-}
-
-.logo {
-    width: 40px;
-    height: 40px;
-    background-color: #c5e1c5;
-    border-radius: 50%;
-}
-
-.nav {
-    display: flex;
-    gap: 20px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.nav a {
-    color: white;
-    text-decoration: none;
-    font-size: 14px;
-}
-
-.right-section {
-    display: flex;
-    align-items: center;
-    min-width: 100px;
-    justify-content: flex-end;
-}
-
-.login-btn {
-    background-color: white;
-    color: #5d4b8c;
-    border: none;
-    border-radius: 20px;
-    padding: 5px 15px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.search-container {
-    width: 100%;
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    position: fixed;
-    top: 70px;
-    z-index: 99;
 }
 
-.hidden {
-    transform: translateY(-100%);
-    opacity: 0;
-}
-
-.search-box {
+/* 전체 페이지 */
+body {
+    font-family: 'NanumSquare', sans-serif;
+    background-color: #f5f5f5;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+    margin: 0; /* 마진 제거 */
+    width: 100%; /* 전체 너비 사용 */
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: center; /* 내용을 가운데 정렬 */
 }
 
-.search-dropdown {
-    padding: 8px;
-    width: 100px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    margin-right: 10px;
-}
-
-.search-input {
-    flex-grow: 1;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    margin-right: 10px;
-}
-
-.search-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.search-tags {
+/* 상단 컨테이너 - 슬라이더 및 카테고리 */
+.top-section-container {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    overflow-x: auto;
+    flex-direction: row;
+    width: 90%; /* 너비 조정 */
+    max-width: 1400px;
+    padding-top: 100px;
+    gap: 30px;
+    justify-content: center; /* 중앙 정렬 */
+    margin: 0 auto 0px;
+    align-items: flex-end;
 }
 
-.tag {
-    background-color: #ebebeb;
-    padding: 5px 15px;
-    border-radius: 20px;
-    white-space: nowrap;
-}
-
-.slider-nav {
-    position: absolute;
-    bottom: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-.slider-dot {
-    width: 10px;
-    height: 10px;
-    background-color: #e0b8a8;
-    border-radius: 50%;
-}
-
-.arrow-left, .arrow-right {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #e0b8a8;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.arrow-left {
-    left: 20px;
-}
-
-.arrow-right {
-    right: 20px;
-}
-
+/* 카테고리 섹션 - 왼쪽 배치 */
 .categories {
-    padding: 30px;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px 20px 20px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    order: 1;
+    height: 500px;
 }
 
 .categories h2,
 .recommended-clubs h2 {
-    margin-bottom: 30px;
-    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 700;
     color: white;
+    position: relative;
+    padding-bottom: 10px;
 }
 
+.categories h2:after,
+.recommended-clubs h2:after {
+    display: none; /* 밑줄 제거 */
+}
+
+/* 카테고리 아이콘 컨테이너 */
 .category-icons {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: hidden;
+    padding-right: 10px;
+    height: auto;
 }
 
-/* 추천 카테고리 카드 완전 투명 */
+/* 개별 카테고리 스타일 */
 .category {
-    width: 19%;
-    min-height: 250px;
-    background: transparent;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: none;
+    align-items: center;
+    gap: 15px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.category:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .category-icon {
-    width: 100%;
-    height: 150px;
-    background-color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    margin-bottom: 10px;
+    width: 50px;
+    height: 50px;
+    min-width: 50px; /* 아이콘 크기 유지 */
+    border-radius: 12px;
+    background: white;
     display: flex;
-    justify-content: center;
     align-items: center;
-    cursor: pointer;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.category-icon:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .category-icon img {
-    width: 100%;
-    height: 100%;
+    width: 80%;
+    height: 80%;
     object-fit: contain;
-    border-radius: 10px;
 }
 
 .category-name {
     font-size: 16px;
-    font-weight: bold;
-    color: #fff;
-}
-
-.search-toggle {
-    display: none;
-    margin-right: 15px;
-    background: none;
-    border: none;
+    font-weight: 600;
     color: white;
-    cursor: pointer;
-    font-size: 16px;
-    position: relative;
+    flex: 1;
 }
 
-@media (max-width: 768px) {
-    .category {
-        width: 30%;
-        margin-bottom: 20px;
-    }
-
-    .nav {
-        position: static;
-        transform: none;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-}
-
-.recommended-clubs {
-    padding: 30px;
-}
-
-.club-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: space-between;
-}
-
-/* 인기 동호회 카드 완전 투명 */
-.club-box {
-    width: 19%;
-    min-height: 250px;
-    background: transparent;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: none;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-button:active {
-    transform: scale(0.98);
-}
-
-.club-image {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-}
-
-.club-name {
-    font-size: 16px;
-    margin: 10px 0;
-    font-weight: bold;
-    color: white;
-}
-
-.club-category, .club-location, .club-members {
-    font-size: 14px;
-    color: gray;
-}
-
-@media (max-width: 1024px) {
-    .club-box {
-        width: 48%;
-    }
-}
-
-@media (max-width: 768px) {
-    .club-box {
-        width: 100%;
-    }
-}
-
+/* 슬라이더 스타일 - Envato 스타일 */
 .slider {
-    background-color: #e6d7f9;
+    width: 75%;
     height: 500px;
-    width: 100%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    border-radius: 12px;
     overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    order: 2;
+    background: white;
 }
 
 .slider-images {
@@ -316,7 +148,7 @@ button:active {
 }
 
 .slider-image {
-    width: 100%;
+    min-width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
@@ -325,25 +157,454 @@ button:active {
 
 .slider-image img {
     width: 100%;
-    height: auto;
-    max-height: 100%;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
+    object-position: 10px center; /* 오른쪽으로 10px 이동 */
+}
+.slider-images .slider-image:first-child img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center; /* 첫 번째 이미지만 오른쪽으로 이동 */
+}
+.slider-images .slider-image:nth-child(3) img,
+.slider-images .slider-image:nth-child(4) img,
+.slider-images .slider-image:nth-child(5) img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left center; /* 왼쪽으로 살짝 이동 */
+}
+
+.arrow-left, .arrow-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #333;
+    font-size: 18px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.arrow-left {
+    left: 20px;
+}
+
+.arrow-right {
+    right: 20px;
+}
+
+.arrow-left:hover, .arrow-right:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.slider-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.slider-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slider-dot.active {
+    background: white;
+    transform: scale(1.2);
+}
+
+/* 인기 동호회 섹션 */
+.recommended-clubs {
+    width: 90%; /* 너비 조정 */
+    max-width: 1400px;
+    margin: 10px auto;
+    padding: 30px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.club-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+.club-box {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.club-box:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .club-image-container {
     width: 100%;
-    height: 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    height: 180px;
     overflow: hidden;
-    border-radius: 10px;
-    background-color: #ffffff;
+    background: #f8f8f8;
+    border-radius: 12px 12px 0 0;
 }
 
 .club-profile-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 10px;
+    transition: transform 0.5s ease;
+}
+
+.club-box:hover .club-profile-image {
+    transform: scale(1.05);
+}
+
+.club-name {
+    padding: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+/* 미디어 쿼리 - Envato는 더 부드러운 반응형 */
+@media (max-width: 1200px) {
+    .club-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .top-section-container {
+        flex-direction: column;
+        align-items: stretch;
+        width: 95%; /* 모바일에서 너비 확장 */
+    }
+
+    .categories, .slider {
+        width: 100%;
+    }
+
+    .categories {
+        order: 2;
+        margin-top: 30px;
+        height: auto;
+        min-height: 300px;
+    }
+
+    .slider {
+        order: 1;
+        height: 400px;
+    }
+
+    .club-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .recommended-clubs {
+        width: 95%; /* 모바일에서 너비 확장 */
+    }
+}
+
+@media (max-width: 768px) {
+    .categories h2,
+    .recommended-clubs h2 {
+        font-size: 20px;
+    }
+
+    .club-container {
+        grid-template-columns: 1fr;
+    }
+
+    .slider {
+        height: 300px;
+    }
+}
+
+/* special-section-container 스타일 - 설명4 이미지와 상품 목록을 위한 컨테이너 */
+.special-section-container {
+    display: flex;
+    flex-direction: row;
+    width: 90%;
+    max-width: 1400px;
+    gap: 30px;
+    justify-content: center;
+    margin: 30px auto;
+    align-items: flex-start;
+}
+
+/* 설명4 이미지 컨테이너 */
+.special-image {
+    width: 55%;
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    background: white;
+}
+
+.special-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 상품 목록 섹션 */
+.item-list-section {
+    width: 45%;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-height: 400px;
+}
+
+.item-list-section h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* 상품 컨테이너 */
+.item-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* 개별 상품 박스 */
+.item-box {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    z-index: 1; /* 클릭 영역이 다른 요소에 가려지지 않도록 */
+}
+
+.item-box:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+/* 상품 이미지 컨테이너 */
+.item-image-container {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-right: 15px;
+    background: white;
+}
+
+.item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 상품 정보 */
+.item-info {
+    flex: 1;
+}
+
+.item-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 5px 0;
+}
+
+.item-price {
+    font-size: 14px;
+    color: #9cee69;
+    margin: 0;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 992px) {
+    .special-section-container {
+        flex-direction: column;
+        width: 95%;
+    }
+
+    .special-image, .item-list-section {
+        width: 100%;
+    }
+
+    .special-image {
+        height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .special-image {
+        height: 250px;
+    }
+
+    .item-list-section h2 {
+        font-size: 20px;
+    }
+}
+
+.categories, .slider {
+    opacity: 0;
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.categories {
+    transform: translateX(-20px);
+    transition-delay: 0.3s;
+}
+
+.slider {
+    transform: translateX(20px);
+    transition-delay: 0.5s;
+}
+
+.is-visible .categories, .is-visible .slider {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 슬라이더 이미지에 애니메이션 효과 */
+.slider-image {
+    transition: transform 0.5s ease;
+}
+
+.slider-image img {
+    transform: scale(1.05);
+    transition: transform 0.5s ease;
+}
+
+.is-visible .slider-image img {
+    transform: scale(1);
+}
+
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(30px);
+    visibility: hidden;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: opacity, visibility;
+}
+
+.fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+/* 항목별 순차적 등장 효과 */
+.item-box, .club-box {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+    transition-delay: calc(var(--item-index) * 0.1s);
+}
+
+.is-visible .item-box, .is-visible .club-box {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 아이콘 폰트를 위한 스타일 */
+.fas {
+    font-family: "Font Awesome 6 Free";
+}
+
+/* 카테고리별 아이콘 배경색 설정 */
+.category[title="운동"] .category-icon {
+    background-color: #f4c5c5;
+}
+
+.category[title="언어"] .category-icon {
+    background-color: #c5f4f4;
+}
+
+.category[title="사교"] .category-icon {
+    background-color: #dcf4c5;
+}
+
+.category[title="반려동물"] .category-icon {
+    background-color: #f4e7c5;
+}
+
+.category[title="문화"] .category-icon {
+    background-color: #e8b7ff;
+}
+.category[title="게임"] .category-icon {
+    background-color: #f4c5c5;
+}
+.category[title="공예"] .category-icon {
+    background-color: #c5f4f4;
+}
+.category[title="댄스"] .category-icon {
+    background-color: #f4c5c5;
+}
+.category[title="사진"] .category-icon {
+    background-color: #b7e5ff;
+}
+.category[title="봉사활동"] .category-icon {
+    background-color: #f4e7c5;
+}
+.category[title="스포츠관람"] .category-icon {
+    background-color: #f4c5c5;
+}
+.category[title="아웃도어"] .category-icon {
+    background-color: #dcf4c5;
+}
+.category[title="업종"] .category-icon {
+    background-color: #b7e5ff;
+}
+.category[title="요리"] .category-icon {
+    background-color: #f4e7c5;
+}
+.category[title="음악"] .category-icon {
+    background-color: #e8b7ff;
+}
+.category[title="인문학"] .category-icon {
+    background-color: #c5f4f4;
+}
+.category[title="자기계발"] .category-icon {
+    background-color: #dcf4c5;
+}
+.category[title="자동차"] .category-icon {
+    background-color: #b7e5ff;
 }

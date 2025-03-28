@@ -45,4 +45,9 @@ public class ItemRepository {
     public List<BusinessItemBean> randomItemList(){
         return itemMapper.randomItemList();
     }
+
+
+
+
+
 }

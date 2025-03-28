@@ -114,95 +114,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmRegion = document.getElementById('confirmRegion');
     const cityList = document.getElementById('cityList');
     const districtList = document.getElementById('districtList');
-
-    // 검색 폼 선택 및 이벤트 연결
-    const searchForm = document.querySelector('.search-box form');
-
-    // 페이지 로드 시 저장된 검색어 표시
-    displaySearchHistory();
-
-    // 폼 제출 시 중복 region 매개변수 제거
-    if (searchForm) {
-        searchForm.addEventListener('submit', (e) => {
-            // 먼저 기존 이벤트 실행 중지
-            e.preventDefault();
-
-            // 검색어 저장 로직
-            const searchInput = document.querySelector('input[name="searchtxt"]');
-            if (searchInput) {
-                const searchTerm = searchInput.value.trim();
-                if (searchTerm) {
-                    addSearchTerm(searchTerm);
-                }
-            }
-
-            // 폼 데이터 수집
-            const formData = new FormData(searchForm);
-
-            // URL 쿼리 문자열 생성
-            const params = new URLSearchParams();
-
-            // 중복 없이 폼 데이터 추가
-            // region은 한 번만 추가되도록 함
-            let regionAdded = false;
-
-            for (const [key, value] of formData.entries()) {
-                // region 매개변수인 경우 중복 검사
-                if (key === 'region') {
-                    if (!regionAdded) {
-                        params.append(key, value);
-                        regionAdded = true;
-                    }
-                } else {
-                    // 다른 매개변수는 그대로 추가
-                    params.append(key, value);
-                }
-            }
-
-            // region 매개변수가 없으면 빈 값으로 추가
-            if (!regionAdded) {
-                params.append('region', '');
-            }
-
-            // 새 URL 생성 및 이동
-            const url = `${searchForm.action}?${params.toString()}`;
-            window.location.href = url;
-        });
-    }
-
-
-    // 검색 토글 버튼 이벤트
-    if (searchToggle && searchContainer) {
-        searchToggle.addEventListener('click', function(e) {
-            e.preventDefault(); // 기본 동작 방지
-            e.stopPropagation(); // 이벤트 버블링 방지
-
-            // 직접 style 속성으로 표시/숨김 처리
-            if (searchContainer.style.display === 'none' || getComputedStyle(searchContainer).display === 'none') {
-                searchContainer.style.display = 'block';
-                searchContainer.classList.remove('hidden');
-            } else {
-                searchContainer.style.display = 'none';
-                searchContainer.classList.add('hidden');
-            }
-        });
-    }
-
-    // 변수 초기화
     let selectedCity = null;
     let selectedDistrict = null;
-
-    // 지역 데이터 초기화
     let regionData = initializeRegionData();
-
-    // 지역 드롭다운 초기값 설정
-    if (regionDropdown) {
-        // 페이지 로드 시 select 요소 내의 첫 번째 option에 value="" 설정
-        const firstOption = regionDropdown.querySelector('option');
-        if (firstOption) {
-            firstOption.value = '';
-        }
-    }
 
     // 시/도 목록 렌더링 함수
     function renderCityList() {
@@ -263,8 +177,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         item.style.backgroundColor = '#f0f0f7';
                         item.style.color = 'black';
                     });
-                    allDiv.style.backgroundColor = '#5d4b8c';
-                    allDiv.style.color = 'white';
+                    allDiv.style.backgroundColor = '#9cee69'; // #5d4b8c에서 #9cee69로 변경
+                    allDiv.style.color = 'black'; // 텍스트 색상을 검정색으로 변경
                     selectedDistrict = '전체';
                 });
 
@@ -283,8 +197,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             item.style.backgroundColor = '#f0f0f7';
                             item.style.color = 'black';
                         });
-                        div.style.backgroundColor = '#5d4b8c';
-                        div.style.color = 'white';
+                        div.style.backgroundColor = '#9cee69'; // #5d4b8c에서 #9cee69로 변경
+                        div.style.color = 'black'; // 텍스트 색상을 검정색으로 변경
                         selectedDistrict = district;
                     });
 
@@ -294,90 +208,137 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 지역 드롭다운 클릭 이벤트
-    if (regionDropdown) {
-        regionDropdown.addEventListener('click', function(e) {
-            e.stopPropagation();
+    // 로고 링크 요소 가져오기
+    const logoLink = document.querySelector('.header a:first-child');
+
+    if (logoLink) {
+        // 호버 텍스트 요소 생성
+        const hoverText = document.createElement('div');
+        hoverText.className = 'logo-hover-text';
+
+        // 각 줄을 분리해서 처리
+        const lines = ['우리', '주변의', '동호회'];
+
+        lines.forEach(line => {
+            const lineDiv = document.createElement('div');
+
+            // 첫 글자 분리해서 색상 변경
+            const firstLetter = line.charAt(0);
+            const restOfLine = line.substring(1);
+
+            // 첫 글자 요소 생성
+            const firstLetterSpan = document.createElement('span');
+            firstLetterSpan.className = 'first-letter';
+            firstLetterSpan.textContent = firstLetter;
+
+            // 나머지 텍스트 생성
+            const restSpan = document.createElement('span');
+            restSpan.textContent = restOfLine;
+
+            // 줄에 첫 글자와 나머지 텍스트 추가
+            lineDiv.appendChild(firstLetterSpan);
+            lineDiv.appendChild(restSpan);
+
+            // 생성된 줄을 호버 텍스트에 추가
+            hoverText.appendChild(lineDiv);
+        });
+
+        // 로고 컨테이너에 추가 (display 속성 제거)
+        logoLink.appendChild(hoverText);
+
+        // 호버 이벤트는 CSS에서 처리하므로 JavaScript 이벤트 리스너 제거
+        // mouseenter와 mouseleave 이벤트 리스너 제거
+    }
+
+
+
+    // 검색 폼 선택 및 이벤트 연결
+    const searchForm = document.querySelector('.search-box form');
+
+    // 페이지 로드 시 저장된 검색어 표시
+    displaySearchHistory();
+
+    // 폼 제출 시 중복 region 매개변수 제거
+    if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+            // 먼저 기존 이벤트 실행 중지
             e.preventDefault();
-            // 시/도와 구/군 모두 초기화
-            selectedCity = null;
-            selectedDistrict = null;
 
-            // 선택된 시/도 항목의 active 클래스 제거
-            document.querySelectorAll('.city-item').forEach(item => {
-                item.classList.remove('active');
-            });
-
-            // 구/군 목록 비우기
-            if (districtList) districtList.innerHTML = '';
-
-            // 모달 표시
-            if (regionModal) {
-                regionModal.style.display = 'block';
-                // 시/도 목록 렌더링
-                renderCityList();
+            // 검색어 저장 로직
+            const searchInput = document.querySelector('input[name="searchtxt"]');
+            if (searchInput) {
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm) {
+                    addSearchTerm(searchTerm);
+                }
             }
+
+            // 폼 데이터 수집
+            const formData = new FormData(searchForm);
+
+            // URL 쿼리 문자열 생성
+            const params = new URLSearchParams();
+
+            // 중복 없이 폼 데이터 추가
+            // region은 한 번만 추가되도록 함
+            let regionAdded = false;
+
+            for (const [key, value] of formData.entries()) {
+                // region 매개변수인 경우 중복 검사
+                if (key === 'region') {
+                    if (!regionAdded) {
+                        params.append(key, value);
+                        regionAdded = true;
+                    }
+                } else {
+                    // 다른 매개변수는 그대로 추가
+                    params.append(key, value);
+                }
+            }
+
+            // region 매개변수가 없으면 빈 값으로 추가
+            if (!regionAdded) {
+                params.append('region', '');
+            }
+
+            // 새 URL 생성 및 이동
+            const url = `${searchForm.action}?${params.toString()}`;
+            window.location.href = url;
         });
     }
 
-    // 모달 닫기 및 선택 반영 함수
-    function closeModalWithReset() {
-        let selectedRegionText = '지역';
+    // 검색 토글 버튼 이벤트 개선
+    if (searchToggle && searchContainer) {
+        // 초기 상태 설정
+        searchContainer.classList.add('hidden');
 
-        // 시/도와 구/군이 모두 선택된 경우
-        if (selectedCity && selectedDistrict) {
-            selectedRegionText = selectedCity + " " + selectedDistrict;
-        }
-        // 시/도만 선택된 경우
-        else if (selectedCity) {
-            selectedRegionText = '지역';
-        }
+        // 검색창 열고 닫는 함수
+        function toggleSearchContainer() {
+            const isHidden = searchContainer.classList.contains('hidden');
 
-        if (regionDropdown) {
-            regionDropdown.innerHTML = '';
-            const newOption = document.createElement('option');
-            newOption.selected = true;
-            newOption.textContent = selectedRegionText;
-
-            // value 값도 적절히 설정 (폼 제출 시 사용)
-            if (selectedCity && selectedDistrict) {
-                newOption.value = selectedCity + selectedDistrict;
-            } else if (selectedCity) {
-                newOption.value = '';
+            if (isHidden) {
+                // 검색창 열기
+                searchContainer.classList.remove('hidden');
+                searchContainer.style.animation = 'searchAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
             } else {
-                newOption.value = "";
+                // 검색창 닫기
+                // 애니메이션 효과를 위해 바로 hidden 클래스를 추가하지 않고 애니메이션 후 추가
+                searchContainer.style.animation = 'searchDisappear 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+
+                // 애니메이션이 끝난 후 hidden 클래스 추가
+                setTimeout(() => {
+                    searchContainer.classList.add('hidden');
+                }, 300); // 애니메이션 시간과 동일하게 설정 (0.3초)
             }
-
-            regionDropdown.appendChild(newOption);
         }
 
-        if (regionModal) {
-            regionModal.style.display = 'none';
-        }
-    }
-
-    // 모달 닫기 버튼 이벤트
-    if (regionModalClose) {
-        regionModalClose.addEventListener('click', function(e) {
+        // 검색 토글 버튼 클릭 이벤트 리스너
+        searchToggle.addEventListener('click', function(e) {
             e.preventDefault();
-            closeModalWithReset();
+            e.stopPropagation();
+            toggleSearchContainer();
         });
     }
-
-    // 확인 버튼 이벤트
-    if (confirmRegion) {
-        confirmRegion.addEventListener('click', function(e) {
-            e.preventDefault();
-            closeModalWithReset();
-        });
-    }
-
-    // 모달 외부 클릭 이벤트
-    document.addEventListener('click', function(e) {
-        if (regionModal && regionModal.style.display === 'block' && !regionModal.contains(e.target) && e.target !== regionDropdown) {
-            closeModalWithReset();
-        }
-    });
 
     // '전체' 옵션 추가 (필요한 경우)
     Object.keys(regionData).forEach(city => {
@@ -386,4 +347,137 @@ document.addEventListener('DOMContentLoaded', function() {
             regionData[city].unshift('전체');
         }
     });
+
+    // 기존 셀렉트 박스를 버튼으로 교체
+    if (regionDropdown && regionDropdown.parentNode) {
+        // 새 버튼 생성
+        const regionButton = document.createElement('button');
+        regionButton.id = 'regionButton';
+        regionButton.className = 'region-button';
+        regionButton.innerHTML = '<span>지역</span> <i class="fas fa-chevron-down"></i>';
+
+        // 버튼 스타일 적용
+        regionButton.style.padding = '12px 15px';
+        regionButton.style.borderRadius = '5px';
+        regionButton.style.border = '1px solid #e0e0e0';
+        regionButton.style.backgroundColor = 'white';
+        regionButton.style.fontSize = '15px';
+        regionButton.style.minWidth = '150px';
+        regionButton.style.cursor = 'pointer';
+        regionButton.style.display = 'flex';
+        regionButton.style.alignItems = 'center';
+        regionButton.style.justifyContent = 'space-between';
+        regionButton.style.transition = 'border-color 0.3s';
+
+        // 아이콘 스타일
+        const icon = regionButton.querySelector('i');
+        if (icon) {
+            icon.style.marginLeft = '10px';
+        }
+
+        // 드롭다운을 버튼으로 교체
+        regionDropdown.parentNode.replaceChild(regionButton, regionDropdown);
+
+        // 버튼 클릭 이벤트 처리 - 토글 기능 추가
+        regionButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // 이미 모달이 표시되어 있으면 닫기
+            if (regionModal.style.display === 'block') {
+                regionModal.style.display = 'none';
+                return;
+            }
+
+            // 모달 위치 조정 - 버튼 바로 아래에 위치하도록 수정
+            const buttonRect = regionButton.getBoundingClientRect();
+
+            // 위치를 absolute로 변경하고 부모 요소에 대한 상대적 위치 설정
+            regionModal.style.position = 'absolute';
+            regionModal.style.top = buttonRect.height + 'px';
+            regionModal.style.left = '0px';
+
+            // 모달이 화면 밖으로 나가지 않도록 조정
+            const modalWidth = 550; // 모달 너비
+            if (buttonRect.left + modalWidth > window.innerWidth) {
+                // 오른쪽 화면 경계를 넘어가면 오른쪽 정렬
+                regionModal.style.left = 'auto';
+                regionModal.style.right = '0px';
+            }
+
+            // 모달 표시
+            regionModal.style.display = 'block';
+
+            // 나머지 초기화 코드는 그대로 유지
+            selectedCity = null;
+            selectedDistrict = null;
+            document.querySelectorAll('.city-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            if (districtList) districtList.innerHTML = '';
+            renderCityList();
+        });
+
+        // 모달 닫기 및 선택 반영 함수
+        function closeModalWithSelection() {
+            let selectedRegionText = '지역';
+
+            // 시/도와 구/군이 모두 선택된 경우
+            if (selectedCity && selectedDistrict) {
+                selectedRegionText = selectedCity + " " + selectedDistrict;
+            }
+            // 시/도만 선택된 경우
+            else if (selectedCity) {
+                selectedRegionText = selectedCity;
+            }
+
+            // 버튼 텍스트 업데이트
+            regionButton.innerHTML = '<span>' + selectedRegionText + '</span> <i class="fas fa-chevron-down"></i>';
+
+            // 모달 닫기
+            if (regionModal) {
+                regionModal.style.display = 'none';
+            }
+
+            // 선택된 지역 값을 form에 저장하기 위한 hidden input 추가
+            let hiddenInput = document.querySelector('input[name="region"]');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'region';
+                regionButton.parentNode.appendChild(hiddenInput);
+            }
+
+            // 값 설정
+            if (selectedCity && selectedDistrict) {
+                hiddenInput.value = selectedCity + selectedDistrict;
+            } else {
+                hiddenInput.value = '';
+            }
+        }
+
+        // 모달 닫기 버튼 이벤트
+        if (regionModalClose) {
+            regionModalClose.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModalWithSelection();
+            });
+        }
+
+        // 확인 버튼 이벤트
+        if (confirmRegion) {
+            confirmRegion.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModalWithSelection();
+            });
+        }
+
+        // 모달 외부 클릭 이벤트
+        document.addEventListener('click', function(e) {
+            if (regionModal && regionModal.style.display === 'block' &&
+                !regionModal.contains(e.target) && e.target !== regionButton) {
+                closeModalWithSelection();
+            }
+        });
+    }
 });

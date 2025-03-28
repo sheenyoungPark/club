@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Top Menu</title>
+    <!-- 나눔스퀘어라운드 폰트 추가 -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/moonspam/NanumSquareRound@1.0/nanumsquareround.css">
 </head>
 <body>
 <!-- fragment 명확히 지정 -->
 <div th:fragment="top_search">
     <header class="header">
-        <a th:href="@{/}">
+        <a th:href="@{/}" class="logo-container">
             <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
+            <!-- 로고 호버 텍스트는 JavaScript에서 동적으로 추가됩니다 -->
         </a>
         <nav class="nav">
             <a th:href="@{/category/category}">동호회</a>
@@ -30,9 +33,9 @@
                     </span>
                 </a>
             </li>
-            <div class="right-section">
-                <button id="searchToggle" class="search-toggle" type="button">🔍</button>
-            </div>
+            <button id="searchToggle" class="search-toggle" type="button">
+                <img src="/sources/picture/돋보기1.png" alt="검색" class="search-icon-img">
+            </button>
         </nav>
 
         <div class="right-section">
@@ -72,7 +75,9 @@
                 </select>
                 <input type="text" name="age" class="search-age" placeholder="나이(만)">
                 <input type="text" name="searchtxt" class="search-input" placeholder="검색어를 입력하세요">
-                <button class="search-btn" type="submit">🔍</button>
+                <button class="search-btn" type="submit">
+                    <img src="/sources/picture/돋보기1.png" alt="검색" class="search-btn-img">
+                </button>
             </form>
         </div>
 
