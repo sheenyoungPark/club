@@ -222,7 +222,7 @@
                         <td class="checkbox-cell">
                             <input type="checkbox" name="member_ids" th:value="${member.member_id}" class="member-checkbox" />
                         </td>
-                        <td th:text="${member.member_id}">아이디</td>
+                        <td th:text="${member.member_nickname}">아이디</td>
                         <td class="date-cell" th:text="${#dates.format(member.member_joinDate, 'yyyy-MM-dd')}">2025-03-14</td>
                     </tr>
                     </tbody>

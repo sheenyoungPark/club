@@ -1,11 +1,7 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.*;
-import com.spacedong.service.BusinessService;
-import com.spacedong.service.ClubService;
-import com.spacedong.service.MemberService;
-import com.spacedong.service.PaymentService;
-import com.spacedong.service.ReservationService;
+import com.spacedong.service.*;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +40,9 @@ public class ReservationController {
 
     @Autowired
     private ClubService clubService;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     // 예약 가능 시간 확인 API
     @GetMapping("/check-availability")
@@ -212,6 +211,7 @@ public class ReservationController {
             String clubType = "club";
             reservation.setUser_type(clubType);
 
+
         } else {
             // 개인 예약 처리
             if (loginMember.getMember_point() < totalPrice) {
@@ -230,6 +230,9 @@ public class ReservationController {
         // 예약 생성
         reservationService.createReservation(reservation);
         int reservationId = reservationService.getReservationId(reservation.getMember_id(), reservation.getItem_id(), reservation.getStart_time(), reservation.getReservation_date());
+
+        adminNotificationService.sendApprovalNotification(item.getBusiness_id(), "BUSINESS",
+                "REQUEST3", item.getItem_title()+" 예약", "");
 
         return "redirect:/reservation/confirmation?reservation_id=" + reservationId;
     }
@@ -368,6 +371,9 @@ public class ReservationController {
         // 예약 취소 (상태 변경)
         reservation.setStatus("CANCELLED");
         reservationService.cancelReservation(reservationId);
+
+        adminNotificationService.sendApprovalNotification(businessItemBean.getBusiness_id(), "BUSINESS",
+                "CANCEL", businessItemBean.getItem_title(), "구매자 취소");
 
         return "redirect:/reservation/my-reservations?cancel=success";
     }

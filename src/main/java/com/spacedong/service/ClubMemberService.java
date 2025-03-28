@@ -30,4 +30,10 @@ public class ClubMemberService {
     public List<ClubMemberBean> getClubMemberList(int club_id) {
         return clubMemberRepsoitory.getClubMemberList(club_id);
     }
+
+    public String getMasterMember(int club_id){
+        return clubMemberRepsoitory.getMasterMember(club_id);
+    }
+
+
 }

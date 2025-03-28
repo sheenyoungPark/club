@@ -52,4 +52,8 @@ public class BankRepository {
     public void reduceBusinessPoint(String business_id, int exchange_point) {
         bankMapper.reduceBusinessPoint(business_id, exchange_point);
     }
+
+    public String getBusinessIdByBankId(int bank_id) {
+        return bankMapper.getBusinessIdByBankId(bank_id);
+    }
 }

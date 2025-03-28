@@ -1,10 +1,7 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.*;
-import com.spacedong.service.BusinessService;
-import com.spacedong.service.CategoryService;
-import com.spacedong.service.ItemService;
-import com.spacedong.service.ReservationService;
+import com.spacedong.service.*;
 import com.spacedong.validator.BusinessValidator;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
@@ -47,6 +44,9 @@ public class BusinessController {
     private ItemService itemService;
 
     @Autowired
+    private AdminNotificationService adminNotificationService;
+
+    @Autowired
     private BusinessValidator businessValidator;
 
     // session‑scope 빈(loginBusiness)을 주입받음 (Spring 설정 필요)
@@ -86,6 +86,8 @@ public class BusinessController {
         // 사업자 번호 검증은 프론트엔드에서 처리
         // 사업자 번호가 정상적이면 회원가입 진행
         businessService.businessJoin(businessBean);
+        adminNotificationService.sendApprovalNotification("admin", "ADMIN", "REQUEST2", "판매자 " + businessBean.getBusiness_name(),"");
+
         return "business/signup_success";
     }
 

@@ -101,7 +101,11 @@ public class ClubController {
 		if (member_id != null) {
 			ClubMemberBean clubMemberBean = clubService.getClubMember(club_id, member_id);
 			if (clubMemberBean == null) {
+				ClubBean club = clubService.oneClubInfo(club_id);
 				clubService.join_club(club_id, loginMember.getMember_id());
+				String masterId = clubMemberService.getMasterMember(club_id);
+				adminNotificationService.sendApprovalNotification(masterId, "MEMBER", "REQUEST3",
+						club.getClub_name() + " 클럽 가입 신청", "");
 				return "club/club_join_success";
 			} else {
 				return "club/club_member_fail";

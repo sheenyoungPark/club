@@ -37,7 +37,9 @@ public class ClubMemberRepsoitory {
         return clubMemberMapper.getClubMemberList(club_id);
     }
 
-
+    public String getMasterMember(int club_id){
+        return clubMemberMapper.getMasterMember(club_id);
+    }
 
 }
 

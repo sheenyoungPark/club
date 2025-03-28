@@ -31,16 +31,27 @@ public class AdminNotificationService {
             messageContent = String.format(
                     "안녕하세요, 관리자님,\n'%s'에 대한 승인 요청이 접수되었습니다.",
                     itemName);
-        }
-        else if (notificationType.equals("APPROVED")) {
+        }else if(notificationType.equals("REQUEST3")){
+            messageContent = String.format(
+                    "안녕하세요, 우주동입니다.\n'%s'에 대한 승인 요청이 접수되었습니다.",
+                    itemName);
+        }else if (notificationType.equals("APPROVED")) {
             messageContent = String.format(
                     "안녕하세요, 우주동입니다.\n'%s'에 대한 승인이 완료되었습니다. %s",
                     itemName, additionalInfo);
-        } else if (notificationType.equals("REJECTED")) {
+        } else if (notificationType.equals("REJECTED1")) {
             messageContent = String.format(
                     "안녕하세요, 우주동입니다.\n'%s'에 대한 승인이 거절되었습니다. 사유: %s",
                     itemName, additionalInfo);
-        } else {
+        } else if (notificationType.equals("CANCEL")) {
+            messageContent = String.format(
+                    "안녕하세요, 우주동입니다.\n'%s'에 대한 예약이 취소되었습니다. 사유: %s",
+                    itemName, additionalInfo);
+        }else if (notificationType.equals("REJECTED2")) {
+            messageContent = String.format(
+                    "안녕하세요, 우주동입니다.\n'%s'에 대한 예약이 취소되었습니다. 사유: %s",
+                    itemName, additionalInfo);
+        }else {
             messageContent = String.format(
                     "안녕하세요, 우주동입니다.\n%s",
                     additionalInfo);

@@ -51,6 +51,12 @@ public class AdminController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private ClubMemberService clubMemberService;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
+
     @GetMapping("/init")
     public String admininit() {
         return "admin/init";
@@ -176,6 +182,10 @@ public class AdminController {
         try {
             clubService.updateClubStatus(club_id, "PASS");
             response.put("success", true);
+            List<ClubMemberBean> clubmembers =  clubMemberService.getClubMemberList(club_id);
+            for(ClubMemberBean cmb : clubmembers) {
+                adminNotificationService.sendApprovalNotification(cmb.getMember_id(), "MEMBER", "APPROVED", "동호회 생성", "");
+            }
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", e.getMessage());
@@ -698,6 +708,8 @@ public class AdminController {
         try {
             // 환전 요청 승인 처리
             bankService.approveExchangeRequest(bankId, loginAdmin.getAdmin_id());
+            String business_id = bankService.getBusinessIdByBankId(bankId);
+            adminNotificationService.sendApprovalNotification(business_id, "BUSINESS", "APPROVED", "환전", "");
             response.put("success", true);
         } catch (Exception e) {
             response.put("success", false);
@@ -715,7 +727,9 @@ public class AdminController {
 
         try {
             // 환전 요청 거부 처리
+            String business_id = bankService.getBusinessIdByBankId(bankId);
             bankService.deleteExchangeRequest(bankId);
+            adminNotificationService.sendApprovalNotification(business_id, "BUSINESS", "REJECTED1", "환전", "관리자 취소");
             response.put("success", true);
         } catch (Exception e) {
             response.put("success", false);

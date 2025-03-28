@@ -103,4 +103,7 @@ public class BankService {
 
         bankRepository.deleteExchangeRequest(bankId);
     }
+    public String getBusinessIdByBankId(int bankId) {
+        return bankRepository.getBusinessIdByBankId(bankId);
+    }
 }

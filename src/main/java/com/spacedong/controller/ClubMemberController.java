@@ -2,6 +2,7 @@ package com.spacedong.controller;
 
 import com.spacedong.beans.ClubMemberBean;
 import com.spacedong.beans.MemberBean;
+import com.spacedong.service.AdminNotificationService;
 import com.spacedong.service.ClubMemberService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class ClubMemberController {
     private MemberBean loginMember;
     @Autowired
     private ClubMemberService clubMemberService;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     // 대기 중인 회원 목록 페이지
     @GetMapping("pending")
@@ -65,6 +69,9 @@ public class ClubMemberController {
         // 선택된 회원들 승인 처리
         for (String memberId : memberIds) {
             clubMemberService.approveMember(clubId, memberId);
+
+            adminNotificationService.sendApprovalNotification(memberId,"MEMBER", "APPROVED",
+                    "클럽 가입 신청", "");
 
         }
 

@@ -2,6 +2,7 @@ package com.spacedong.controller;
 
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.MemberBean;
+import com.spacedong.service.AdminNotificationService;
 import com.spacedong.service.BankService;
 import com.spacedong.service.BusinessService;
 import com.spacedong.service.PaymentService;
@@ -41,6 +42,9 @@ public class PaymentController {
     private BusinessService businessService;
     @Autowired
     private BankService bankService;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     // 🔹 충전 페이지 이동
     @GetMapping("/charge")
@@ -163,6 +167,7 @@ public class PaymentController {
             logger.info("환전 요청 성공 - 판매자: {}, 금액: {}", loginBusiness.getBusiness_id(), exchangePoint);
             redirectAttributes.addAttribute("success", "환전 신청이 완료되었습니다. 관리자 승인 후 처리됩니다.");
 
+            adminNotificationService.sendApprovalNotification("admin", "ADMIN", "REQUEST2", "환전 신청", "");
         } catch (Exception e) {
             logger.error("환전 요청 실패", e);
             redirectAttributes.addAttribute("error", "환전 신청 중 오류가 발생했습니다: " + e.getMessage());
