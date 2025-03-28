@@ -6,7 +6,7 @@
 }
 
 body {
-    background-color: #f8f9fa;
+    background-color: rgba(248, 249, 250, 0.9); /* 수정됨 */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,7 +17,7 @@ body {
     width: 100%;
     max-width: 800px;
     padding: 40px;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.9); /* 수정됨 */
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -28,7 +28,7 @@ body {
 }
 
 .signup-header h1 {
-    color: #5d4b8c;
+    color: #27374c;
     font-size: 32px;
     margin-bottom: 10px;
 }
@@ -53,7 +53,8 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
-    border: 2px solid #f0f0f7;
+    background-color: #ffffff; /* ✅ 불투명하게 수정 */
+    border: 2px solid #f0f0f7; /* ✅ 원래대로 복원 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -62,7 +63,7 @@ body {
 .signup-option:hover {
     transform: translateY(-10px);
     box-shadow: 0 10px 20px rgba(93, 75, 140, 0.1);
-    border-color: #5d4b8c;
+    border-color: #9cee69;
 }
 
 .signup-icon {
@@ -74,8 +75,8 @@ body {
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: #f0f0f7;
-    color: #5d4b8c;
+    background-color: rgba(240, 240, 247, 0.9); /* 기본값 수정 */
+    color: #9cee69;
 }
 
 .signup-option h2 {
@@ -92,8 +93,8 @@ body {
 }
 
 .signup-btn {
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69;
+    color: black;
     border: none;
     padding: 12px 30px;
     border-radius: 5px;
@@ -105,16 +106,16 @@ body {
 }
 
 .signup-btn:hover {
-    background-color: #4a3d70;
+    background-color: #2a4b00;
 }
 
 .signup-option:nth-child(1) .signup-icon {
-    background-color: #e9e5f3;
+    background-color: rgba(233, 229, 243, 0.9); /* 수정됨 */
     color: #5d4b8c;
 }
 
 .signup-option:nth-child(2) .signup-icon {
-    background-color: #e5ebf3;
+    background-color: rgba(229, 235, 243, 0.9); /* 수정됨 */
     color: #3d5a8c;
 }
 
@@ -123,7 +124,7 @@ body {
 }
 
 .return-login a {
-    color: #5d4b8c;
+    color: #27374c;
     text-decoration: none;
     font-size: 14px;
 }
