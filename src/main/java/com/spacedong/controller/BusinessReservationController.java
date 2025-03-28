@@ -33,11 +33,18 @@ public class BusinessReservationController {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private AdminNotificationService adminNotificationService;
+
     @Resource(name = "loginBusiness")
     private BusinessBean loginBusiness;
 
     @Autowired
     private BusinessService businessService;
+    @Autowired
+    private ClubService clubService;
+    @Autowired
+    private ClubMemberService clubMemberService;
 
     // 통합 예약 관리 페이지 (대기 + 완료)
     @GetMapping("")
@@ -140,6 +147,10 @@ public class BusinessReservationController {
         BusinessBean bs = businessService.getBusinessById(loginBusiness.getBusiness_id());
         loginBusiness.setBusiness_point(bs.getBusiness_point());
 
+        // 예약자에게 알림 보내기
+        adminNotificationService.sendApprovalNotification(reservation.getMember_id(),"MEMBER", "APPROVED",item.getItem_title()+" 예약", "");
+
+
         return "redirect:/business/reservations/waiting?success=approved";
     }
 
@@ -165,11 +176,19 @@ public class BusinessReservationController {
         if (reservation.getClub_id() != null){
             reservationService.updateReservationStatus("CANCELLED", reservationId);
             businessService.clubReservationMP(reservation.getTotal_price(), reservation.getClub_id());
+            String masterId = clubMemberService.getMasterMember(reservation.getClub_id());
+
+            adminNotificationService.sendApprovalNotification(masterId,"MEMBER", "REJECTED2",
+                    item.getItem_title(), "판매자 취소");
+
             return "redirect:/business/reservations/waiting?success=declined";
         }else {
         // 예약 상태 변경 (대기중 -> 취소됨)
         reservationService.updateReservationStatus("CANCELLED", reservationId);
         businessService.cancleReservationMP(reservation.getTotal_price(), reservation.getMember_id());
+
+        adminNotificationService.sendApprovalNotification(reservation.getMember_id(),"MEMBER", "REJECTED2",
+                    item.getItem_title(), "판매자 취소");
         return "redirect:/business/reservations/waiting?success=declined";
         }
     }
@@ -209,11 +228,16 @@ public class BusinessReservationController {
         if (reservation.getClub_id() != null){
             reservationService.updateReservationStatus("CANCELLED", reservationId);
             businessService.clubReservationMP(reservation.getTotal_price(), reservation.getClub_id());
+            String masterId = clubMemberService.getMasterMember(reservation.getClub_id());
+            adminNotificationService.sendApprovalNotification(masterId,"MEMBER", "REJECTED2",
+                    item.getItem_title(), "판매자 취소");
             return "redirect:/business/reservations/waiting?success=declined";
         }else {
             // 예약 상태 변경 (대기중 -> 취소됨)
             reservationService.updateReservationStatus("CANCELLED", reservationId);
             businessService.cancleReservationMP(reservation.getTotal_price(), reservation.getMember_id());
+            adminNotificationService.sendApprovalNotification(reservation.getMember_id(),"MEMBER", "REJECTED2",
+                    item.getItem_title(), "판매자 취소");
             return "redirect:/business/reservations/waiting?success=declined";
         }
 

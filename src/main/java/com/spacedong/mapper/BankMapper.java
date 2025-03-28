@@ -50,4 +50,7 @@ public interface BankMapper {
     // 판매자의 포인트 업데이트 (환전 승인 시 포인트를 0으로 설정)
     @Update("UPDATE business SET business_point = business_point - #{exchange_point} WHERE business_id = #{business_id}")
     void reduceBusinessPoint(@Param("business_id") String business_id, @Param("exchange_point") int exchange_point);
+
+    @Select("select business_id from bank where bank_id = #{bank_id}")
+    String getBusinessIdByBankId(@Param("bank_id") int bank_id);
 }

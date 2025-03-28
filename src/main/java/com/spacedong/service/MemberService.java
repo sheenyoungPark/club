@@ -304,6 +304,10 @@ public class MemberService {
 		}
 	}
 
+	public String getMemberIdbyNickname(String member_nickname){
+		return memberRepository.getMemberIdbyNickname(member_nickname);
+	}
+
 
 
 }

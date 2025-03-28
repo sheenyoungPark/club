@@ -13,7 +13,7 @@ public interface ClubMemberMapper {
     ClubMemberBean getMemberInfo(@Param("club_id") int club_id,@Param("member_id") String member_id);
 
     //신청한 회원들 리스트
-    @Select("SELECT cm.*, m.member_name FROM club_member cm " +
+    @Select("SELECT cm.*, m.member_name, m.member_nickname FROM club_member cm " +
             " JOIN member m ON cm.member_id = m.member_id " +
             " WHERE cm.club_id = #{club_id} AND cm.member_role = 'reserve'" +
             " ORDER BY cm.member_joindate ASC")
@@ -35,6 +35,9 @@ public interface ClubMemberMapper {
             "WHERE cm.club_id = #{club_id} " +
             "AND cm.member_role IN ('normal', 'master')")
     List<ClubMemberBean> getClubMemberList(@Param("club_id") int club_id);
+
+    @Select("select member_id from club_member where club_id=#{club_id} and member_role='master'")
+    String getMasterMember(@Param("club_id") int club_id);
 
 
 

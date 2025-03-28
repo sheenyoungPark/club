@@ -132,6 +132,10 @@ public class MemberRepository {
 		memberMapper.resetPw(member_id, newPassword);
 	}
 
+	public String getMemberIdbyNickname(String member_nickname){
+		return memberMapper.getMemberIdbyNickname(member_nickname);
+	}
+
 
 
 

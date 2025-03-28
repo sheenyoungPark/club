@@ -152,5 +152,8 @@ public interface MemberMapper {
     @Update("UPDATE member SET member_pw = #{newPassword} WHERE member_id = #{member_id}")
     void resetPw(@Param("member_id") String member_id,@Param("newPassword") String newPassword);
 
+    @Select("select member_id from member where member_nickname = #{member_nickname}")
+    String getMemberIdbyNickname(String member_nickname);
+
 
 }
