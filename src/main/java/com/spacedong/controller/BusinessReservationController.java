@@ -85,6 +85,10 @@ public class BusinessReservationController {
         // 해당 사업자의 상품 ID 목록 조회
         List<Integer> businessItemIds = businessItemService.getItemIdsByBusinessId(loginBusiness.getBusiness_id());
 
+        if(businessItemIds == null){
+            return "redirect:/business/info?error=no_have_item";
+        }
+
         // 대기 중인 예약 목록 조회 (상태가 'PENDING'인 예약)
         List<ReservationBean> waitingReservationsList = reservationService.getReservationsByItemIdsAndStatus(
                 businessItemIds, "PENDING");
