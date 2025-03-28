@@ -19,7 +19,7 @@ body {
     margin: 50px auto;
     display: flex;
     gap: 30px;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.9); /* ✅ 수정됨 */
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     padding: 40px;
