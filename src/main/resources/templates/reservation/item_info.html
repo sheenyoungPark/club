@@ -95,26 +95,42 @@
         <div class="form-group reservation-type-container">
           <label>예약 유형</label>
           <div class="reservation-type-options">
-            <div class="option">
+            <div class="reservation-type-card" id="personal-card">
               <input type="radio" id="personal_reservation" name="user_type" value="member" checked>
-              <label for="personal_reservation">개인 예약</label>
+              <label for="personal_reservation" class="reservation-type-label">
+                <i class="fas fa-user reservation-icon"></i>
+                <div class="reservation-text-container">
+                  <div class="reservation-type-title">개인 예약</div>
+                  <div class="reservation-type-desc">내 포인트로 예약하기</div>
+                </div>
+              </label>
             </div>
-            <div class="option">
+            <div class="reservation-type-card" id="club-card">
               <input type="radio" id="club_reservation" name="user_type" value="club">
-              <label for="club_reservation">클럽 예약</label>
+              <label for="club_reservation" class="reservation-type-label">
+                <i class="fas fa-users reservation-icon"></i>
+                <div class="reservation-text-container">
+                  <div class="reservation-type-title">클럽 예약</div>
+                  <div class="reservation-type-desc">클럽 포인트로 예약하기</div>
+                </div>
+              </label>
             </div>
           </div>
         </div>
 
-        <!-- 클럽 선택 (초기에는 숨김) -->
+        <!-- 클럽 선택 (초기에는 숨김) - 납작한 디자인 -->
         <div class="form-group club-selection" style="display: none;">
-          <label for="club_id">클럽 선택</label>
-          <select id="club_id" name="club_id" class="form-control" disabled>
-            <option value="">클럽을 선택하세요</option>
-          </select>
-          <div class="club-point-info" style="display: none;">
-            <span class="label">클럽 포인트:</span>
-            <span class="value" id="clubPointDisplay">0</span>
+          <div class="club-selection-container">
+            <label for="club_id">
+              <i class="fas fa-building"></i> 클럽 선택
+            </label>
+            <select id="club_id" name="club_id" class="form-control" disabled>
+              <option value="">클럽을 선택하세요</option>
+            </select>
+            <div class="club-point-info" style="display: none;">
+              <span class="label">클럽 포인트:</span>
+              <span class="value" id="clubPointDisplay">0</span>
+            </div>
           </div>
         </div>
 
