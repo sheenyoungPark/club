@@ -128,4 +128,9 @@ public class ReservationService {
         return reservationRepository.getReviewsByItemId(itemId);
     }
 
+    //리뷰 존재여부 체크
+    public boolean checkReviewExists(int reservation_id) {
+        return reservationRepository.checkReviewExists(reservation_id);
+    }
+
 }

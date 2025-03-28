@@ -284,11 +284,15 @@ public class ReservationController {
         // 예약 목록 가져오기
         List<ReservationBean> reservations = reservationService.getReservationsByMemberId2(loginMember.getMember_id());
 
-        for (ReservationBean r : reservations){
-            System.out.println(r.getItem_title());
+        // 각 예약에 대해 리뷰 존재 여부 확인
+        Map<Integer, Boolean> reviewExistsMap = new HashMap<>();
+        for (ReservationBean r : reservations) {
+            boolean hasReview = reservationService.checkReviewExists(r.getReservation_id());
+            reviewExistsMap.put(r.getReservation_id(), hasReview);
         }
 
         model.addAttribute("reservations", reservations);
+        model.addAttribute("reviewExistsMap", reviewExistsMap);
 
         return "reservation/my_reservations";
     }
@@ -315,12 +319,19 @@ public class ReservationController {
         // 클럽 예약 목록 가져오기
         List<ReservationBean> reservations = reservationService.getReservationsByClubId(clubId);
 
+        // ✅ 리뷰 존재 여부를 Map으로 만들어서 전달
+        Map<Integer, Boolean> reviewExistsMap = new HashMap<>();
+        for (ReservationBean r : reservations) {
+            boolean hasReview = reservationService.checkReviewExists(r.getReservation_id());
+            reviewExistsMap.put(r.getReservation_id(), hasReview);
+        }
+
         model.addAttribute("club", club);
-        model.addAttribute("reservations", reservations);
+        model.addAttribute("clubReservation", reservations);
+        model.addAttribute("reviewExistsMap", reviewExistsMap);
 
         return "reservation/club_reservations";
     }
-
     // 예약 취소
     @PostMapping("/cancel")
     public String cancelReservation(

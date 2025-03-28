@@ -18,7 +18,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -50,41 +52,42 @@ public class ClubController {
 	@GetMapping("/club_info")
 	public String club_info(@RequestParam("club_id") int club_id, Model model) {
 		ClubBean club = clubService.oneClubInfo(club_id);
+		model.addAttribute("club", club);
 
 		List<ClubDonationBean> donationList = clubService.getRecentDonations(club_id);
 		model.addAttribute("donationList", donationList);
 
-
 		if (loginMember.getMember_id() != null) {
 			ClubMemberBean clubMemberBean = clubMemberService.getMemberInfo(club_id, loginMember.getMember_id());
-
 			if (clubMemberBean != null) {
 				String member_role = clubMemberBean.getMember_role();
-
 				model.addAttribute("member_role", member_role);
 			}
 		}
 
-		// ✅ 클럽 회원 리스트 추가 (변수명 HTML과 통일)
 		List<ClubMemberBean> clubMemberList = clubMemberService.getClubMemberList(club_id);
 		model.addAttribute("clubMemberList", clubMemberList);
 
-		model.addAttribute("club", club);
 		List<ClubBoardBean> clubBoardList = clubService.getBoardListByClubId(club_id);
-
-		// ✅ 현재 사용자가 해당 클럽의 회원인지 확인
-		boolean isMember = clubService.isMemberOfClub(club_id, loginMember.getMember_id());
-
-		//클럽예약 리스트
-		List<ReservationBean> clubReservation = reservationService.getReservationsByClubId(club_id);
-
-		model.addAttribute("clubReservation", clubReservation);
-		model.addAttribute("club", club);
 		model.addAttribute("clubBoardList", clubBoardList);
+
+		boolean isMember = clubService.isMemberOfClub(club_id, loginMember.getMember_id());
 		model.addAttribute("isMember", isMember);
+
+		List<ReservationBean> clubReservation = reservationService.getReservationsByClubId(club_id);
+		model.addAttribute("clubReservation", clubReservation);
+
+		// ✅ 리뷰 존재 여부 맵 추가
+		Map<Integer, Boolean> reviewExistsMap = new HashMap<>();
+		for (ReservationBean reservation : clubReservation) {
+			boolean hasReview = reservationService.checkReviewExists(reservation.getReservation_id());
+			reviewExistsMap.put(reservation.getReservation_id(), hasReview);
+		}
+		model.addAttribute("reviewExistsMap", reviewExistsMap);
 
 		return "club/club_info";
 	}
+
 
 	// ✅ 클럽 가입
 	@GetMapping("/club_join")

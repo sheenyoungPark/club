@@ -99,5 +99,7 @@ public class ReservationRepository {
     }
 
 
-
+    public boolean checkReviewExists(int reservationId) {
+        return reservationMapper.countReviewByReservationId(reservationId) >0;
+    }
 }

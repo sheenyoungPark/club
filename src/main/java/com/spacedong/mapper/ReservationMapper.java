@@ -139,5 +139,10 @@ public interface ReservationMapper {
     @Update("UPDATE reservation SET status = #{status} WHERE reservation_id = #{reservation_id}")
     void updateReservation(ReservationBean reservation);
 
+    // 특정 예약 ID에 해당하는 리뷰가 존재하는지 확인
+    @Select("SELECT COUNT(*) FROM reservation_review WHERE review_id = #{reservationId}")
+    int countReviewByReservationId(@Param("reservationId") int reservationId);
+
+
 
 }

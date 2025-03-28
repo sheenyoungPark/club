@@ -427,11 +427,11 @@
                         th:classappend="${status == 'PENDING' ? 'status-pending' :
                                         (status == 'CONFIRMED' ? 'status-confirmed' :
                                         (status == 'CANCELLED' ? 'status-cancelled' :
-                                        (status == 'COMPLETE' ? 'status-completed' : '')))}"
+                                        (status == 'COMPLETED' ? 'status-completed' : '')))}"
                         th:text="${status == 'PENDING' ? '대기중' :
                                  (status == 'CONFIRMED' ? '예약완료' :
                                  (status == 'CANCELLED' ? '취소됨' :
-                                 (status == 'COMPLETE' ? '사용완료' : '알 수 없음')))}">
+                                 (status == 'COMPLETED' ? '이용완료' : '알 수 없음')))}">
                 상태
                 </span>
                     </div>
@@ -451,12 +451,16 @@
                 </button>
 
 
-                <!-- ✅ 리뷰 남기기 버튼 (예약완료 상태인 경우만 표시) -->
-                <a th:if="${reservation.status == 'COMPLETED'}"
+                <!-- ✅ 리뷰 남기기 버튼 또는 완료된 버튼 조건 분기 -->
+                <a th:if="${reservation.status == 'COMPLETED' and !reviewExistsMap[reservation.reservation_id]}"
                    th:href="@{/reservation/write_review(reservation_id=${reservation.reservation_id})}"
                    class="btn btn-secondary">
                     리뷰 남기기
                 </a>
+                <button th:if="${reservation.status == 'COMPLETED' and reviewExistsMap[reservation.reservation_id]}"
+                        class="btn btn-disabled" disabled>
+                    리뷰 완료
+                </button>
 
 
                 <a
