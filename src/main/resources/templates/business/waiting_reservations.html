@@ -578,7 +578,7 @@
                                     onclick="return confirm('이 예약을 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.')">취소</button>
                         </form>
                     </div>
-                    <a th:href="@{/reservation/detail(reservation_id=${reservation.reservation_id})}" class="btn btn-view">상세</a>
+                    <a th:href="@{/reservation/confirmation(reservation_id=${reservation.reservation_id})}" class="btn btn-view">상세</a>
                 </td>
             </tr>
             </tbody>

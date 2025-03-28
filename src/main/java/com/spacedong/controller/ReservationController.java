@@ -243,21 +243,14 @@ public class ReservationController {
             @RequestParam("reservation_id") int reservationId,
             Model model) {
 
-        System.out.println("Res" + reservationId);
-
         // 로그인 확인
-        if (loginMember.getMember_id() == null || loginBusiness.getBusiness_id() != null) {
+        if (loginMember.getMember_id() == null && loginBusiness.getBusiness_id() == null) {
             return "redirect:/member/login";
         }
-
         // 예약 정보 가져오기
         ReservationBean reservation = reservationService.getReservationById(reservationId);
 
-        System.out.println(reservation.getReservation_id());
-        System.out.println(reservation.getMember_id());
-
-
-        if (reservation == null || !reservation.getMember_id().equals(loginMember.getMember_id())) {
+        if (!reservation.getMember_id().equals(loginMember.getMember_id()) && loginBusiness.getBusiness_id() == null) {
             return "redirect:/member/memberinfo";
         }
 
@@ -280,7 +273,7 @@ public class ReservationController {
     @GetMapping("/my-reservations")
     public String myReservations(Model model) {
         // 로그인 확인
-        if (loginMember.getMember_id() == null) {
+        if (loginMember.getMember_id() == null && loginBusiness.getBusiness_id() == null) {
             return "redirect:/member/login";
         }
 
@@ -306,7 +299,7 @@ public class ReservationController {
             @RequestParam("club_id") int clubId,
             Model model) {
         // 로그인 확인
-        if (loginMember.getMember_id() == null) {
+        if (loginMember.getMember_id() == null && loginBusiness.getBusiness_id() == null) {
             return "redirect:/member/login";
         }
 
