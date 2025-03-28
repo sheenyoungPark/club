@@ -156,4 +156,9 @@ public class BoardRepository {
         return boardMapper.searchBoards(searchType, keyword);
     }
 
+    //모든 게시물(관리자 맨위)20개까지
+    public List<BoardBean> homeAllList(){
+        return boardMapper.homeAllList();
+    }
+
 }

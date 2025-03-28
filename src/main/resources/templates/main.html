@@ -181,6 +181,30 @@
     </div>
   </section>
 </div>
+<!-- 커뮤니티 섹션 - 게시글(왼쪽) + 이미지(오른쪽) -->
+<div class="community-section-container fade-in-section">
+  <!-- 왼쪽에 게시판 목록 -->
+  <section class="board-list-section">
+    <h2><span style="color: #9cee69;">커뮤니티</span> 게시글</h2>
+    <div class="board-container">
+      <div class="board-box" th:each="board, iterStat : ${boardList}" th:if="${iterStat.index < 5}"
+           th:onclick="|location.href='@{/community/boardDetail(id=${board.board_id}, boardType=all)}'|">
+        <div class="board-info">
+          <h3 class="board-title" th:text="${board.board_title}">게시글 제목</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 오른쪽에 이미지 -->
+  <div class="community-image">
+    <img th:src="@{/sources/picture/설명7.jpg}" alt="커뮤니티 이미지">
+  </div>
+</div>
+
+<!-- float 해제를 위한 div -->
+<div style="clear: both;"></div>
+
 
 <!-- float 해제를 위한 div -->
 <div style="clear: both;"></div>

@@ -36,6 +36,9 @@ public class ReservationController {
     @Resource(name = "loginMember")
     private MemberBean loginMember;
 
+    @Resource(name = "loginBusiness")
+    private BusinessBean loginBusiness;
+
     @Autowired
     private PaymentService paymentService;
 
@@ -243,7 +246,7 @@ public class ReservationController {
         System.out.println("Res" + reservationId);
 
         // 로그인 확인
-        if (loginMember.getMember_id() == null) {
+        if (loginMember.getMember_id() == null || loginBusiness.getBusiness_id() != null) {
             return "redirect:/member/login";
         }
 

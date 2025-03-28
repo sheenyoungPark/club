@@ -217,4 +217,26 @@ public interface BoardMapper {
             "</script>"
     })
     List<BoardBean> searchBoards(@Param("searchType") String searchType, @Param("keyword") String keyword);
+
+    //모든 게시물(관리자 맨위)20개까지
+
+    @Select("SELECT * FROM (" +
+            "SELECT * FROM (" +
+            "    SELECT 1 s, 'admin' t, board_id, board_title, board_text, " +
+            "           board_writer_id, board_view, board_like, create_date, update_date " +
+            "    FROM admin_board" +
+            "    UNION ALL" +
+            "    SELECT 2, 'business', board_id, board_title, board_text, " +
+            "           board_writer_id, board_view, board_like, create_date, update_date " +
+            "    FROM business_board" +
+            "    UNION ALL" +
+            "    SELECT 3, 'member', board_id, board_title, board_text, " +
+            "           board_writer_id, board_view, board_like, create_date, update_date " +
+            "    FROM member_board" +
+            ") ORDER BY s, create_date DESC" +
+            ") WHERE ROWNUM <= 20")
+    List<BoardBean> homeAllList();
+
+
+
 }
