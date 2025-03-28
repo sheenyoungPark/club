@@ -168,4 +168,42 @@ public class ChatRepository {
     public int getTotalUnreadMessageCount(String userId) {
         return chatMapper.getTotalUnreadMessageCount(userId);
     }
+
+    /**
+     * 참여자의 닉네임을 업데이트합니다.
+     *
+     * @param participant 업데이트할 참여자 정보
+     * @return 업데이트된 행 수
+     */
+    public int updateParticipantNickname(ChatParticipantBean participant) {
+        return chatMapper.updateParticipantNickname(participant);
+    }
+
+    /**
+     * 닉네임이 없는 모든 참여자의 정보를 업데이트합니다.
+     *
+     * @return 업데이트된 행 수
+     */
+    public int updateAllParticipantsNickname() {
+        return chatMapper.updateAllParticipantsNickname();
+    }
+
+    /**
+     * 닉네임이 없는 참여자 목록을 조회합니다.
+     *
+     * @return 닉네임이 없는 참여자 목록
+     */
+    public List<ChatParticipantBean> getParticipantsWithoutNickname() {
+        return chatMapper.getParticipantsWithoutNickname();
+    }
+
+    public int updateParticipant(ChatParticipantBean participant) {
+        return chatMapper.updateParticipant(participant);
+    }
+
+    public void updateProfile(String user_id, String userProfile){
+        chatMapper.updateProfile(user_id, userProfile);
+    }
+
+
 }

@@ -5,6 +5,9 @@ let isConnected = false;
 let readCheckInterval;
 let room = null;
 
+// 발신자별 마지막 메시지 시간을 저장할 객체
+let lastMessageDateBySender = {};
+
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
     // WebSocket 연결
@@ -163,7 +166,7 @@ function startPeriodicReadCheck() {
     }, 30000); // 30초마다
 }
 
-// 서버에서 받은 메시지 처리
+// 웹소켓으로 새 메시지 수신 처리 (완전히 수정된 버전)
 function handleServerMessage(message) {
     console.log("서버에서 받은 메시지:", message);
 
@@ -188,68 +191,124 @@ function handleServerMessage(message) {
         existingMessage.dataset.messageId = messageId;
 
         // 읽지 않은 사용자 수 업데이트
-        const timeWrapper = existingMessage.querySelector('.message-time-wrapper');
-        if (timeWrapper) {
-            // 읽지 않은 사용자 수 계산
-            let unreadCount = 0;
+        updateReadCount(existingMessage, message);
+    } else {
+        // 새 메시지의 시간 정보 가져오기
+        const messageTime = new Date(message.sendTime);
+        const messageHour = messageTime.getHours();
+        const messageMinute = messageTime.getMinutes();
 
-            if (participants && participants.length > 0) {
-                unreadCount = participants.length - (message.readCount+1 || 1);
-                unreadCount = unreadCount < 0 ? 0 : unreadCount;
+        console.log(`새 메시지 시간: ${messageHour}:${messageMinute}`);
 
-                console.log(`메시지 ID: ${messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount+1 || 1}, 안 읽은 사용자 수: ${unreadCount}`);
-            }
+        // 같은 발신자의 마지막 메시지 찾기
+        const senderMessages = document.querySelectorAll(`.message[data-sender-id="${message.senderId}"]`);
+        let isNewGroup = true;
+        let prevLastMessageInGroup = null;
 
-            // 현재 메시지가 내가 보낸 메시지인지 확인
-            const isSentByMe = existingMessage.classList.contains('message-sent');
+        if (senderMessages.length > 0) {
+            // 같은 발신자의 마지막 메시지
+            const lastMessage = senderMessages[senderMessages.length - 1];
 
-            // 시간 요소 찾기
-            const timeElement = timeWrapper.querySelector('.message-time');
+            // 마지막 메시지의 시간 요소 찾기
+            const lastTimeElement = lastMessage.querySelector('.message-time');
 
-            if (timeElement) {
-                const timeText = timeElement.textContent;
+            if (lastTimeElement) {
+                // 시간 텍스트에서 시와 분 추출 (예: "14:30" -> 14시 30분)
+                const timeText = lastTimeElement.textContent;
+                const timeParts = timeText.split(':');
 
-                // 완전히 새로운 HTML로 내용 교체
-                if (isSentByMe) {
-                    // 내가 보낸 메시지
-                    timeWrapper.innerHTML = '';
+                if (timeParts.length === 2) {
+                    const lastHour = parseInt(timeParts[0]);
+                    const lastMinute = parseInt(timeParts[1]);
 
-                    if (unreadCount > 0) {
-                        const countSpan = document.createElement('span');
-                        countSpan.className = 'text-primary read-count me-1';
-                        countSpan.textContent = unreadCount;
-                        timeWrapper.appendChild(countSpan);
-                    }
+                    console.log(`마지막 메시지 시간: ${lastHour}:${lastMinute}`);
 
-                    const newTimeSpan = document.createElement('span');
-                    newTimeSpan.className = 'message-time';
-                    newTimeSpan.textContent = timeText;
-                    timeWrapper.appendChild(newTimeSpan);
-                } else {
-                    // 상대방이 보낸 메시지
-                    timeWrapper.innerHTML = '';
-
-                    const newTimeSpan = document.createElement('span');
-                    newTimeSpan.className = 'message-time';
-                    newTimeSpan.textContent = timeText;
-                    timeWrapper.appendChild(newTimeSpan);
-
-                    if (unreadCount > 0) {
-                        const countSpan = document.createElement('span');
-                        countSpan.className = 'text-primary read-count ms-1';
-                        countSpan.textContent = unreadCount;
-                        timeWrapper.appendChild(countSpan);
+                    // 시와 분이 같은지 확인
+                    if (lastHour === messageHour && lastMinute === messageMinute) {
+                        isNewGroup = false;
+                        prevLastMessageInGroup = lastMessage;
                     }
                 }
             }
         }
-    } else {
-        // 새 메시지 추가 (이전 메시지와 연속성 확인)
-        const lastMessage = document.querySelector('#chatMessages .message:last-child');
-        const isNewSender = !lastMessage || lastMessage.dataset.senderId !== message.senderId;
 
-        // 새 메시지 추가
-        appendMessage(message, true, isNewSender, true);
+        if (isNewGroup) {
+            // 새 그룹으로 처리 - 항상 시간 표시
+            console.log("새 그룹으로 처리 - 시간 표시");
+            appendMessage(message, true, true, true, true);
+        } else {
+            // 같은 그룹으로 처리 - 이전 메시지 시간 숨기고 현재 메시지에 시간 표시
+            console.log("같은 그룹으로 처리 - 이전 메시지 시간 숨기고 현재 메시지에 시간 표시");
+
+            // 이전 그룹의 마지막 메시지 시간 숨기기
+            if (prevLastMessageInGroup) {
+                const timeWrapper = prevLastMessageInGroup.querySelector('.message-time-wrapper');
+                if (timeWrapper) {
+                    timeWrapper.style.display = 'none';
+                }
+            }
+
+            // 새 메시지 추가 (그룹의 마지막 메시지로, 시간 표시)
+            appendMessage(message, true, false, true, true);
+        }
+
+        // 발신자별 마지막 메시지 시간 업데이트
+        lastMessageDateBySender[message.senderId] = messageTime;
+    }
+}
+
+// 읽지 않은 사용자 수 업데이트 함수 (코드 중복 방지)
+function updateReadCount(messageElement, message) {
+    const timeWrapper = messageElement.querySelector('.message-time-wrapper');
+    if (!timeWrapper) return;
+
+    // 읽지 않은 사용자 수 계산
+    let unreadCount = 0;
+    if (participants && participants.length > 0) {
+        unreadCount = participants.length - (message.readCount+1 || 1);
+        unreadCount = unreadCount < 0 ? 0 : unreadCount;
+    }
+
+    // 현재 메시지가 내가 보낸 메시지인지 확인
+    const isSentByMe = messageElement.classList.contains('message-sent');
+
+    // 시간 요소 찾기
+    const timeElement = timeWrapper.querySelector('.message-time');
+    if (!timeElement) return;
+
+    const timeText = timeElement.textContent;
+
+    // 완전히 새로운 HTML로 내용 교체
+    if (isSentByMe) {
+        // 내가 보낸 메시지
+        timeWrapper.innerHTML = '';
+
+        if (unreadCount > 0) {
+            const countSpan = document.createElement('span');
+            countSpan.className = 'text-primary read-count me-1';
+            countSpan.textContent = unreadCount;
+            timeWrapper.appendChild(countSpan);
+        }
+
+        const newTimeSpan = document.createElement('span');
+        newTimeSpan.className = 'message-time';
+        newTimeSpan.textContent = timeText;
+        timeWrapper.appendChild(newTimeSpan);
+    } else {
+        // 상대방이 보낸 메시지
+        timeWrapper.innerHTML = '';
+
+        const newTimeSpan = document.createElement('span');
+        newTimeSpan.className = 'message-time';
+        newTimeSpan.textContent = timeText;
+        timeWrapper.appendChild(newTimeSpan);
+
+        if (unreadCount > 0) {
+            const countSpan = document.createElement('span');
+            countSpan.className = 'text-primary read-count ms-1';
+            countSpan.textContent = unreadCount;
+            timeWrapper.appendChild(countSpan);
+        }
     }
 }
 
@@ -266,6 +325,13 @@ function markAllMessagesAsRead() {
         if (messageId) {
             markAsRead(messageId);
         }
+    }
+
+    // 모든 메시지 읽음 상태 업데이트를 서버에 전송
+    if (isConnected) {
+        stompClient.send('/app/chat.markAllAsRead/' + roomId, {}, JSON.stringify({
+            userId: userId
+        }));
     }
 }
 
@@ -379,11 +445,7 @@ function displayMessages(messages) {
         chatMessages.appendChild(chatInfo);
     }
 
-    // 메시지 그룹화를 위한 변수
-    let lastSenderId = null;
-    let lastMessageDate = null;
-
-    // 메시지를 날짜별로 그룹화
+    // 날짜별로 메시지 그룹화
     const messagesByDate = {};
 
     messages.forEach(message => {
@@ -400,47 +462,80 @@ function displayMessages(messages) {
     // 날짜별로 메시지 표시
     Object.keys(messagesByDate).sort().forEach(dateKey => {
         // 날짜 헤더 추가
-        const dateHeader = document.createElement('div');
-        dateHeader.className = 'chat-info';
+        addDateHeader(chatMessages, dateKey);
 
-        const [year, month, day] = dateKey.split('-');
-        const dateObj = new Date(year, month - 1, day);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
+        // 해당 날짜의 메시지를 발신자별, 시간별로 그룹화
+        const messagesOfDay = messagesByDate[dateKey];
+        const messageGroups = groupMessagesBySender(messagesOfDay);
 
-        let dateText;
-        if (dateObj.toDateString() === today.toDateString()) {
-            dateText = '오늘';
-        } else if (dateObj.toDateString() === yesterday.toDateString()) {
-            dateText = '어제';
-        } else {
-            dateText = `${year}년 ${month}월 ${day}일`;
-        }
+        // 각 발신자 그룹마다 메시지 표시
+        messageGroups.forEach(group => {
+            // 그룹의 첫 메시지는 발신자 정보 표시
+            let isFirstInGroup = true;
 
-        dateHeader.innerHTML = `<span>${dateText}</span>`;
-        chatMessages.appendChild(dateHeader);
-
-        // 해당 날짜의 메시지 표시
-        lastSenderId = null; // 날짜가 바뀌면 발신자 연속성 초기화
-
-        messagesByDate[dateKey].forEach((message, index) => {
-            const isLastMessage = index === messagesByDate[dateKey].length - 1;
-            const isNewSender = lastSenderId !== message.senderId;
-            const showTime = shouldShowTime(message, lastMessageDate) || isLastMessage;
-
-            appendMessage(message, false, isNewSender, showTime);
-
-            lastSenderId = message.senderId;
-            lastMessageDate = new Date(message.sendTime);
+            // 그룹 내 메시지 표시
+            group.messages.forEach((message, index) => {
+                // 그룹의 마지막 메시지만 시간 표시
+                const isLastInGroup = index === group.messages.length - 1;
+                appendMessage(message, false, isFirstInGroup, isLastInGroup, true);
+                isFirstInGroup = false;
+            });
         });
     });
 
     // 스크롤을 가장 아래로
     scrollToBottom();
+
+    // 스크롤 읽음 감지 설정
+    setupScrollReadDetection();
 }
-// 시간 표시 여부 결정
+
+// 발신자별, 분 단위로 메시지 그룹화
+function groupMessagesBySender(messages) {
+    const groups = [];
+    let currentGroup = null;
+
+    messages.forEach(message => {
+        const messageTime = new Date(message.sendTime);
+        // 시와 분을 추출 (초는 무시)
+        const messageHour = messageTime.getHours();
+        const messageMinute = messageTime.getMinutes();
+
+        // 새 그룹 시작 여부 (다른 발신자이거나, 같은 발신자라도 분이 다르면)
+        if (!currentGroup ||
+            currentGroup.senderId !== message.senderId ||
+            currentGroup.hour !== messageHour ||
+            currentGroup.minute !== messageMinute) {
+
+            // 이전 그룹이 있으면 저장
+            if (currentGroup) {
+                groups.push(currentGroup);
+            }
+
+            // 새 그룹 시작
+            currentGroup = {
+                senderId: message.senderId,
+                messages: [message],
+                hour: messageHour,
+                minute: messageMinute
+            };
+        } else {
+            // 현재 그룹에 메시지 추가
+            currentGroup.messages.push(message);
+        }
+    });
+
+    // 마지막 그룹 추가
+    if (currentGroup) {
+        groups.push(currentGroup);
+    }
+
+    return groups;
+}
+
+// 발신자별 시간 표시 여부 결정 (수정된 함수)
 function shouldShowTime(message, lastMessageTime) {
+    // 해당 발신자의 첫 메시지인 경우 시간 표시
     if (!lastMessageTime) return true;
 
     const currentMessageTime = new Date(message.sendTime);
@@ -453,7 +548,8 @@ function shouldShowTime(message, lastMessageTime) {
         currentMessageTime.getFullYear() !== lastMessageTime.getFullYear();
 }
 
-function appendMessage(message, animate = true, isNewSender = true, showTime = true) {
+// 메시지 표시 함수
+function appendMessage(message, animate = true, isFirstInGroup = true, isLastInGroup = true, showTime = true) {
     const chatMessages = document.getElementById('chatMessages');
     const isCurrentUser = message.senderId === userId;
     const isClubChat = room && room.room_type === 'CLUB'; // 클럽 채팅인지 확인
@@ -477,22 +573,25 @@ function appendMessage(message, animate = true, isNewSender = true, showTime = t
     // 클라이언트의 현지 시간대로 형식화
     const formattedTime = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // 프로필 이미지 - 기본 이미지로 고정
+    // 프로필 이미지 설정 (기본 이미지 경로 포함)
     const defaultProfile = '/sources/picture/기본이미지.png';
+
+    // 프로필 이미지 URL 가져오기
+    const senderProfile = getProfileImageUrl(message.senderProfile);
 
     // 메시지 HTML 구성
     let messageHtml = '';
 
     // 받은 메시지인 경우 프로필 이미지와 이름 표시 (새 발신자인 경우만)
-    if (!isCurrentUser && isNewSender) {
+    if (!isCurrentUser && isFirstInGroup) {
         messageHtml += `
             <div class="me-2">
-                <img src="${defaultProfile}" alt="Profile" class="avatar">
+                <img src="${senderProfile}" alt="Profile" class="avatar">
             </div>
             <div class="message-content-wrapper">
                 <div class="small text-muted mb-1">${message.senderNickname || message.senderId}</div>
         `;
-    } else if (!isCurrentUser && !isNewSender) {
+    } else if (!isCurrentUser && !isFirstInGroup) {
         // 같은 발신자가 연속으로 보낸 메시지인 경우 여백만 추가
         messageHtml += `
             <div class="me-2 avatar-placeholder"></div>
@@ -503,17 +602,33 @@ function appendMessage(message, animate = true, isNewSender = true, showTime = t
         messageHtml += `<div class="message-content-wrapper">`;
     }
 
-    // 메시지 본문
-    messageHtml += `
-        <div class="message-bubble">
-            ${message.messageType === 'TEXT' ? message.messageContent : ''}
-            ${message.messageType === 'IMAGE' ? `<img src="${message.filePath}" alt="Image" class="img-fluid rounded">` : ''}
-            ${message.messageType === 'FILE' ? `<a href="${message.filePath}" target="_blank" class="btn btn-sm btn-light"><i class="fas fa-file"></i> 파일 다운로드</a>` : ''}
-        </div>
-    `;
+    // 메시지 본문 - 특히 이미지 처리 부분 수정
+    if (message.messageType === 'TEXT') {
+        messageHtml += `
+            <div class="message-bubble">
+                ${message.messageContent}
+            </div>
+        `;
+    } else if (message.messageType === 'IMAGE') {
+        // 이미지 파일 경로 처리 - 웹 접근 경로 사용
+        messageHtml += `
+            <div class="message-bubble">
+                <img src="${message.filePath}" alt="Image" class="img-fluid rounded" style="max-width: 200px;">
+            </div>
+        `;
+    } else if (message.messageType === 'FILE') {
+        messageHtml += `
+            <div class="message-bubble">
+                <a href="${message.filePath}" target="_blank" class="btn btn-sm btn-light">
+                    <i class="fas fa-file"></i> 파일 다운로드
+                </a>
+            </div>
+        `;
+    }
 
-    // 시간 및 읽음 상태 표시 (마지막 메시지이거나 시간이 변경된 경우만)
-    if (showTime) {
+    // 시간 및 읽음 상태 표시 부분은 그대로 유지
+    // 그룹의 마지막 메시지인 경우에만 시간 표시
+    if (isLastInGroup && showTime) {
         // 클럽 채팅일 경우 시간만 표시
         if (isClubChat) {
             messageHtml += `
@@ -572,6 +687,36 @@ function appendMessage(message, animate = true, isNewSender = true, showTime = t
     }
 }
 
+// 날짜 헤더 추가
+function addDateHeader(container, dateKey) {
+    const dateHeader = document.createElement('div');
+    dateHeader.className = 'chat-info';
+
+    const [year, month, day] = dateKey.split('-');
+    const dateObj = new Date(year, month - 1, day);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let dateText;
+    if (dateObj.toDateString() === today.toDateString()) {
+        dateText = '오늘';
+    } else if (dateObj.toDateString() === yesterday.toDateString()) {
+        dateText = '어제';
+    } else {
+        dateText = `${year}년 ${month}월 ${day}일`;
+    }
+
+    dateHeader.innerHTML = `<span>${dateText}</span>`;
+    container.appendChild(dateHeader);
+}
+
+
+// 스크롤을 가장 아래로
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 // 스크롤을 가장 아래로
 function scrollToBottom() {
@@ -588,13 +733,22 @@ function sendMessage() {
         // 입력 필드 초기화 (먼저 초기화하여 중복 전송 방지)
         messageInput.value = '';
 
-        // WebSocket으로 메시지 전송 (UI에는 표시하지 않음)
-        stompClient.send('/app/chat.sendMessage', {}, JSON.stringify({
+        console.log("메시지 전송 시도:", {
             roomId: roomId,
             senderId: userId,
             senderType: userType,
+            messageContent: messageContent
+        });
+
+        // WebSocket으로 메시지 전송
+        stompClient.send('/app/chat.sendMessage', {}, JSON.stringify({
+            roomId: roomId,
+            senderId: userId,
+            senderType: userType, // 현재 로그인한 사용자 타입 사용
             messageContent: messageContent,
-            messageType: 'TEXT'
+            messageType: 'TEXT',
+            senderNickname: currentUserNickname, // 닉네임 추가
+            senderProfile: currentUserProfile // 프로필 이미지 추가
         }));
 
         // 입력 중 상태 해제
@@ -607,7 +761,7 @@ function sendMessage() {
     }
 }
 
-// 파일 업로드
+// 파일 업로드 함수
 function uploadFile() {
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
@@ -625,8 +779,9 @@ function uploadFile() {
         })
             .then(response => response.json())
             .then(message => {
-                // 업로드된 파일 정보를 사용하여 메시지 전송
-                stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(message));
+                // The server has already sent the message via WebSocket in ChatFileController
+                // No need to send it again, just log that the upload was successful
+                console.log('File upload successful:', message);
             })
             .catch(error => {
                 console.error('파일 업로드 실패: ', error);
@@ -662,13 +817,13 @@ function updateTypingStatus(status) {
 
     if (status.isTyping) {
         userTyping.classList.remove('d-none');
-        userTyping.querySelector('span').textContent = `${status.userNickname || status.userId}님이 입력 중입니다...`;
+        userTyping.querySelector('span').textContent = `${status.user_nickname || status.userId}님이 입력 중입니다...`;
     } else {
         userTyping.classList.add('d-none');
     }
 }
 
-// 읽음 표시 처리 개선 (성능 최적화)
+// 읽음 표시 처리 (성능 최적화)
 function markAsRead(messageId) {
     if (!isConnected || !messageId) return;
 
@@ -693,15 +848,7 @@ function markAsRead(messageId) {
     sessionStorage.setItem('readMessageIds', JSON.stringify(readMessageIds));
 }
 
-// 페이지 가시성 변경 감지 (브라우저 탭 전환 등)
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') {
-        // 페이지가 다시 보이면 현재 화면에 표시된 메시지 읽음 처리
-        setTimeout(checkVisibleMessages, 1000);
-    }
-});
-
-// updateReadReceipt 함수 수정
+// 메시지 읽음 상태 업데이트
 function updateReadReceipt(message) {
     console.log('읽음 상태 업데이트:', message);
 
@@ -711,7 +858,7 @@ function updateReadReceipt(message) {
     }
 
     // 클럽 채팅인지 확인
-    const isClubChat = room.room_type === 'CLUB';
+    const isClubChat = room && room.room_type === 'CLUB';
 
     // 클럽 채팅일 경우 읽음 표시를 업데이트하지 않음
     if (isClubChat) {
@@ -728,7 +875,7 @@ function updateReadReceipt(message) {
         unreadCount = unreadCount < 0 ? 0 : unreadCount;
 
         // 디버깅 로그 추가
-        console.log(`메시지 ID: ${message.messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount || 0}, 안 읽은 사용자 수: ${unreadCount}`);
+        console.log(`메시지 ID: ${message.messageId}, 참가자 수: ${participants.length}, 읽은 사용자 수: ${message.readCount+1 || 1}, 안 읽은 사용자 수: ${unreadCount}`);
     }
 
     // 읽음 표시가 0이 되면 해당 메시지와 이전 메시지 모두 읽음 처리
@@ -800,13 +947,15 @@ function updateMessageTimeDisplay(messageElement, unreadCount) {
     }
 }
 
-// 알림 표시
+// 브라우저 알림 표시
 function showNotification(message) {
-    // 브라우저 알림 권한 요청 및 표시
     if (Notification.permission === 'granted') {
+        // 프로필 이미지 URL 설정
+        const profileImage = getProfileImageUrl(message.senderProfile);
+
         const notification = new Notification(message.senderNickname || message.senderId, {
             body: message.messageContent,
-            icon: message.senderProfile || '/sources/picture/기본이미지.png'
+            icon: profileImage
         });
 
         notification.onclick = function() {
@@ -922,6 +1071,7 @@ function showAlert(message) {
     const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 3000 });
     toast.show();
 }
+
 // 특정 메시지와 그 이전 메시지의 읽음 상태를 모두 업데이트
 function updateAllPreviousMessages(messageId, unreadCount) {
     // 현재 메시지 찾기
@@ -978,3 +1128,30 @@ function updateAllPreviousMessages(messageId, unreadCount) {
         }
     }
 }
+
+// 프로필 이미지 URL 가져오기
+function getProfileImageUrl(profilePath) {
+    // 기본 이미지 경로
+    const defaultImage = '/sources/picture/기본이미지.png';
+
+    // 프로필 경로가 없으면 기본 이미지 반환
+    if (!profilePath) {
+        return defaultImage;
+    }
+
+    // 상대 경로가 아닌 파일명만 있는 경우 (데이터베이스에 파일명만 저장된 경우)
+    if (!profilePath.includes('/')) {
+        return `/profile/${profilePath}`;
+    }
+
+    // 이미 전체 경로인 경우 그대로 사용
+    return profilePath;
+}
+
+// 페이지 가시성 변경 감지 (브라우저 탭 전환 등)
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        // 페이지가 다시 보이면 현재 화면에 표시된 메시지 읽음 처리
+        setTimeout(checkVisibleMessages, 1000);
+    }
+});

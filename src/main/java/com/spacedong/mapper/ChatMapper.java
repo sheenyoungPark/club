@@ -101,8 +101,8 @@ public interface ChatMapper {
 
     // === 채팅 참여자 관련 쿼리 ===
 
-    @Insert("INSERT INTO chat_participant (room_id, user_id, user_type) " +
-            "VALUES (#{room_id}, #{user_id}, #{user_type})")
+    @Insert("INSERT INTO chat_participant (room_id, user_id, user_type, user_nickname, userProfile) " +
+            "VALUES (#{room_id}, #{user_id}, #{user_type}, #{user_nickname}, #{userProfile,jdbcType=VARCHAR})")
     int addParticipant(ChatParticipantBean participant);
 
     @Select("SELECT cp.*, " +
@@ -110,7 +110,7 @@ public interface ChatMapper {
             "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cp.user_id) " +
             "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cp.user_id) " +
             "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cp.user_id) " +
-            "END as userNickname, " +
+            "END as user_nickname, " +
             "CASE cp.user_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cp.user_id) " +
             "  ELSE NULL " +
@@ -171,11 +171,11 @@ public interface ChatMapper {
     @Options(useGeneratedKeys = true, keyProperty = "messageId", keyColumn = "message_id")
     int sendMessage(ChatMessageBean message);
 
-    // 기존 메시지 조회 메서드
     @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
             "cm.sender_id as senderId, cm.sender_type as senderType, " +
             "cm.message_content as messageContent, cm.message_type as messageType, " +
-            "cm.file_path as filePath, cm.send_time as sendTime, cm.read_count as readCount, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, " +
+            "(SELECT COUNT(*) FROM chat_read_receipt WHERE message_id = cm.message_id) as readCount, " +
             "CASE cm.sender_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
             "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
@@ -197,7 +197,9 @@ public interface ChatMapper {
     @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
             "cm.sender_id as senderId, cm.sender_type as senderType, " +
             "cm.message_content as messageContent, cm.message_type as messageType, " +
-            "cm.file_path as filePath, cm.send_time as sendTime, cm.read_count as readCount, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, " +
+            // readCount를 실제 읽은 사용자 수로 정확하게 계산
+            "(SELECT COUNT(*) FROM chat_read_receipt WHERE message_id = cm.message_id) as readCount, " +
             "CASE cm.sender_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
             "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
@@ -221,7 +223,9 @@ public interface ChatMapper {
     @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
             "cm.sender_id as senderId, cm.sender_type as senderType, " +
             "cm.message_content as messageContent, cm.message_type as messageType, " +
-            "cm.file_path as filePath, cm.send_time as sendTime, cm.read_count as readCount, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, " +
+            // readCount를 실제 읽은 사용자 수로 정확하게 계산
+            "(SELECT COUNT(*) FROM chat_read_receipt WHERE message_id = cm.message_id) as readCount, " +
             "CASE cm.sender_type " +
             "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
             "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
@@ -294,6 +298,38 @@ public interface ChatMapper {
             " AND cm.sender_id != #{userId})) AS total_unread_count FROM chat_participant cp" +
             " WHERE cp.user_id = #{userId}")
     int getTotalUnreadMessageCount(@Param("userId") String userId);
+
+
+    /**
+     * 참여자의 닉네임을 업데이트
+     */
+    @Update("UPDATE chat_participant SET user_nickname = #{user_nickname} WHERE room_id = #{room_id} AND user_id = #{user_id}")
+    int updateParticipantNickname(ChatParticipantBean participant);
+
+    /**
+     * 사용자 닉네임이 없는 참여자 목록 조회
+     */
+    @Select("SELECT * FROM chat_participant WHERE user_nickname IS NULL OR user_nickname = ''")
+    List<ChatParticipantBean> getParticipantsWithoutNickname();
+
+    /**
+     * 모든 참여자의 정보 업데이트
+     */
+    @Update("<script>UPDATE chat_participant SET user_nickname = CASE user_type " +
+            "WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = chat_participant.user_id) " +
+            "WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = chat_participant.user_id) " +
+            "WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = chat_participant.user_id) " +
+            "ELSE user_nickname END " +
+            "WHERE user_nickname IS NULL OR user_nickname = ''</script>")
+    int updateAllParticipantsNickname();
+
+    @Update("UPDATE chat_participant SET user_nickname = #{user_nickname}, userProfile = #{userProfile,jdbcType=VARCHAR} " +
+            "WHERE room_id = #{room_id} AND user_id = #{user_id}")
+    int updateParticipant(ChatParticipantBean participant);
+
+    @Update("UPDATE chat_participant SET userProfile = #{userProfile,jdbcType=VARCHAR} " +
+            "WHERE user_id = #{user_id}")
+    void updateProfile(@Param("user_id") String user_id, @Param("userProfile") String userProfile);
 
 
 

@@ -13,6 +13,6 @@ public class ChatParticipantBean {
     private Long lastReadMsgId;
 
     // 추가 정보
-    private String userNickname;  // 회원 닉네임 또는 이름
+    private String user_nickname;  // 회원 닉네임 또는 이름
     private String userProfile;   // 프로필 이미지
 }

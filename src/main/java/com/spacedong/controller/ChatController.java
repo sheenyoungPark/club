@@ -1,6 +1,7 @@
 package com.spacedong.controller;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,58 @@ public class ChatController {
     @Resource(name = "loginMember")
     private MemberBean loginMember;
 
+    @Resource(name = "loginBusiness")
+    private BusinessBean loginBusiness;
+
+    @Resource(name = "loginAdmin")
+    private AdminBean loginAdmin;
+
     @Autowired
     private ChatService chatService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    // 로그인한 사용자 정보를 가져오는 헬퍼 메서드
+    private Map<String, String> getLoggedInUserInfo() {
+        Map<String, String> userInfo = new HashMap<>();
+
+        if (loginMember != null && loginMember.isLogin()) {
+            userInfo.put("userId", loginMember.getMember_id());
+            userInfo.put("userType", "MEMBER");
+            userInfo.put("userNickname", loginMember.getMember_nickname());
+
+            // 프로필 정보가 null이 아닌지 확인하고 설정
+            String profilePath = loginMember.getMember_profile();
+            userInfo.put("userProfile", profilePath != null ? profilePath : "");
+
+            System.out.println("로그인 회원 프로필: " + profilePath);
+        } else if (loginBusiness != null && loginBusiness.isLogin()) {
+            userInfo.put("userId", loginBusiness.getBusiness_id());
+            userInfo.put("userType", "BUSINESS");
+            userInfo.put("userNickname", loginBusiness.getBusiness_name());
+
+            // 프로필 정보가 null이 아닌지 확인하고 설정
+            String profilePath = loginBusiness.getBusiness_profile();
+            userInfo.put("userProfile", profilePath != null ? profilePath : "");
+
+            System.out.println("로그인 비즈니스 프로필: " + profilePath);
+        } else if (loginAdmin != null && loginAdmin.isAdmin_login()) {
+            userInfo.put("userId", loginAdmin.getAdmin_id());
+            userInfo.put("userType", "ADMIN");
+            userInfo.put("userNickname", loginAdmin.getAdmin_name());
+            userInfo.put("userProfile", ""); // 관리자는 일반적으로 프로필 이미지가 없음
+        }
+
+        return userInfo;
+    }
+
+    // 로그인 체크 헬퍼 메서드
+    private boolean isUserLoggedIn() {
+        return (loginMember != null && loginMember.isLogin()) ||
+                (loginBusiness != null && loginBusiness.isLogin()) ||
+                (loginAdmin != null && loginAdmin.isAdmin_login());
+    }
 
     // === REST API 엔드포인트 ===
 
@@ -47,11 +95,14 @@ public class ChatController {
     @GetMapping("/rooms")
     @ResponseBody
     public ResponseEntity<List<ChatRoomBean>> getUserChatRooms() {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
 
-        List<ChatRoomBean> rooms = chatService.getChatRoomsByUserId(loginMember.getMember_id());
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId = userInfo.get("userId");
+
+        List<ChatRoomBean> rooms = chatService.getChatRoomsByUserId(userId);
         return ResponseEntity.ok(rooms);
     }
 
@@ -59,13 +110,16 @@ public class ChatController {
     @GetMapping("/room/{roomId}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getChatRoomDetail(@PathVariable Long roomId) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
 
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId = userInfo.get("userId");
+
         ChatRoomBean room = chatService.getChatRoomById(roomId);
         List<ChatParticipantBean> participants = chatService.getRoomParticipants(roomId);
-        List<ChatMessageBean> messages = chatService.getRoomMessages(roomId, loginMember.getMember_id());
+        List<ChatMessageBean> messages = chatService.getRoomMessages(roomId, userId);
 
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("room", room);
@@ -78,7 +132,7 @@ public class ChatController {
     @PostMapping("/room/create")
     @ResponseBody
     public ResponseEntity<ChatRoomBean> createChatRoom(@RequestBody Map<String, Object> request) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -104,34 +158,93 @@ public class ChatController {
     @PostMapping("/room/personal")
     @ResponseBody
     public ResponseEntity<ChatRoomBean> getOrCreatePersonalChatRoom(@RequestBody Map<String, String> request) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
 
-        String userId1 = loginMember.getMember_id();
-        String userType1 = "MEMBER"; // 현재는 MEMBER만 지원, 필요시 확장
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId1 = userInfo.get("userId");
+        String userType1 = userInfo.get("userType");
+
         String userId2 = request.get("targetUserId");
         String userType2 = request.get("targetUserType");
 
-        System.out.println("Creating/finding personal chat between " + userId1 + " and " + userId2);
+        // 채팅방 생성 결과 객체 받기
+        ChatRoomCreationResult result = chatService.getOrCreatePersonalChatRoomWithResult(userId1, userType1, userId2, userType2);
+        ChatRoomBean room = result.getRoom();
 
-        ChatRoomBean room = chatService.getOrCreatePersonalChatRoom(userId1, userType1, userId2, userType2);
+        // 새로운 채팅방이 생성된 경우 또는 새 참가자가 추가된 경우 WebSocket으로 알림 전송
+        if (result.isNewRoom() || result.isNewParticipant()) {
+            // 채팅방 정보에 최근 메시지와 미읽은 메시지 수 정보 추가
+            room.setLastMessage("새로운 대화가 시작되었습니다.");
+            room.setLastMessageTime(LocalDateTime.now());
+            room.setUnreadCount(0);
+
+            // 상대방에게 알림 전송
+            messagingTemplate.convertAndSendToUser(
+                    userId2,
+                    "/queue/new-room",
+                    room
+            );
+        }
+
         return ResponseEntity.ok(room);
     }
 
-    // 클럽 채팅방 생성/조회
+    // 클럽 채팅방 생성/조회 - Member 및 Admin만 가능
     @PostMapping("/room/club")
     @ResponseBody
     public ResponseEntity<ChatRoomBean> getOrCreateClubChatRoom(@RequestBody Map<String, Object> request) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        // 비즈니스 계정은 클럽 채팅에 참여할 수 없음
+        if ((loginMember == null || !loginMember.isLogin()) &&
+                (loginAdmin == null || !loginAdmin.isAdmin_login())) {
             return ResponseEntity.badRequest().build();
         }
 
         int clubId = Integer.parseInt(request.get("clubId").toString());
-        String userId = loginMember.getMember_id();
-        String userType = "MEMBER"; // 현재는 MEMBER만 지원, 필요시 확장
+        String userId;
+        String userType;
 
-        ChatRoomBean room = chatService.getOrCreateClubChatRoom(clubId, userId, userType);
+        if (loginMember != null && loginMember.isLogin()) {
+            userId = loginMember.getMember_id();
+            userType = "MEMBER";
+        } else {
+            userId = loginAdmin.getAdmin_id();
+            userType = "ADMIN";
+        }
+
+        // 채팅방 생성 결과 객체 받기
+        ChatRoomCreationResult result = chatService.getOrCreateClubChatRoomWithResult(clubId, userId, userType);
+        ChatRoomBean room = result.getRoom();
+
+        // 새로운 채팅방이 생성된 경우 WebSocket으로 알림 전송
+        if (result.isNewRoom()) {
+            // 채팅방 정보에 최근 메시지와 미읽은 메시지 수 정보 추가
+            room.setLastMessage("새로운 동호회 채팅방이 개설되었습니다.");
+            room.setLastMessageTime(LocalDateTime.now());
+            room.setUnreadCount(0);
+
+            // 클럽의 모든 참여자들에게 채팅방 정보 전송
+            List<ChatParticipantBean> participants = chatService.getRoomParticipants((long)room.getRoom_id());
+            for (ChatParticipantBean participant : participants) {
+                if (!participant.getUser_id().equals(userId)) { // 현재 사용자는 제외
+                    messagingTemplate.convertAndSendToUser(
+                            participant.getUser_id(),
+                            "/queue/new-room",
+                            room
+                    );
+                }
+            }
+        }
+        // 새 참가자가 추가된 경우 해당 참가자에게만 알림
+        else if (result.isNewParticipant()) {
+            // 채팅방 정보에 미읽은 메시지 수 추가
+            int unreadCount = chatService.getUnreadMessageCount((long)room.getRoom_id(), userId);
+            room.setUnreadCount(unreadCount);
+
+            // 최근 메시지 정보 추가 (기존에 있는 정보 활용)
+        }
+
         return ResponseEntity.ok(room);
     }
 
@@ -139,11 +252,14 @@ public class ChatController {
     @PostMapping("/room/{roomId}/leave")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> leaveRoom(@PathVariable Long roomId) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
 
-        int result = chatService.leaveRoom(roomId, loginMember.getMember_id());
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId = userInfo.get("userId");
+
+        int result = chatService.leaveRoom(roomId, userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", result > 0);
@@ -156,7 +272,7 @@ public class ChatController {
     @ResponseBody
     public ResponseEntity<List<ChatMessageBean>> searchMessages(@PathVariable Long roomId,
                                                                 @RequestParam String keyword) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -168,7 +284,7 @@ public class ChatController {
     @GetMapping("/users/search")
     @ResponseBody
     public ResponseEntity<List<ChatUserBean>> searchUsers(@RequestParam String keyword) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -176,11 +292,12 @@ public class ChatController {
         return ResponseEntity.ok(users);
     }
 
-    // 클럽 검색
+    // 클럽 검색 (멤버와 관리자만 가능)
     @GetMapping("/clubs/search")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> searchClubs(@RequestParam String keyword) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if ((loginMember == null || !loginMember.isLogin()) &&
+                (loginAdmin == null || !loginAdmin.isAdmin_login())) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -188,11 +305,12 @@ public class ChatController {
         return ResponseEntity.ok(clubs);
     }
 
-    // 클럽 멤버 조회
+    // 클럽 멤버 조회 (멤버와 관리자만 가능)
     @GetMapping("/club/{clubId}/members")
     @ResponseBody
     public ResponseEntity<List<ChatUserBean>> getClubMembers(@PathVariable Long clubId) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if ((loginMember == null || !loginMember.isLogin()) &&
+                (loginAdmin == null || !loginAdmin.isAdmin_login())) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -200,22 +318,23 @@ public class ChatController {
         return ResponseEntity.ok(members);
     }
 
-    // Add this method to the ChatController class
-
     /**
      * API endpoint to get unread message counts for AJAX updates
      */
     @GetMapping("/unread-counts")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getUnreadCounts() {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return ResponseEntity.badRequest().build();
         }
+
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId = userInfo.get("userId");
 
         Map<String, Object> response = new HashMap<>();
 
         // Get all rooms
-        List<ChatRoomBean> allRooms = chatService.getMyRooms();
+        List<ChatRoomBean> allRooms = chatService.getChatRoomsByUserId(userId);
 
         // Separate rooms by type
         List<ChatRoomBean> personalRooms = allRooms.stream()
@@ -226,13 +345,16 @@ public class ChatController {
                 .filter(room -> room.getClub_id() != null)
                 .collect(Collectors.toList());
 
-        if(personalRooms.size() > 0 && clubRooms.size() > 0) {
-            for(ChatRoomBean room : personalRooms) {
-                int personalunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
+        if (!personalRooms.isEmpty()) {
+            for (ChatRoomBean room : personalRooms) {
+                int personalunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), userId);
                 room.setUnreadCount(personalunreadcount);
             }
-            for(ChatRoomBean room : clubRooms) {
-                int clubunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
+        }
+
+        if (!clubRooms.isEmpty()) {
+            for (ChatRoomBean room : clubRooms) {
+                int clubunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), userId);
                 room.setUnreadCount(clubunreadcount);
             }
         }
@@ -273,7 +395,6 @@ public class ChatController {
         chatService.sendMessage(message);
     }
 
-    // 메시지 읽음 표시
     @MessageMapping("/chat.markAsRead/{roomId}")
     public void markAsRead(@DestinationVariable Long roomId,
                            @Payload Map<String, Object> payload,
@@ -362,7 +483,7 @@ public class ChatController {
                 // 참여자의 닉네임 정보 추가
                 for (ChatParticipantBean p : participants) {
                     if (p.getUser_id().equals(userId)) {
-                        typingStatus.put("userNickname", p.getUserNickname());
+                        typingStatus.put("userNickname", p.getUser_nickname());
                         break;
                     }
                 }
@@ -378,17 +499,21 @@ public class ChatController {
 
     // === 뷰 컨트롤러 메서드 ===
 
-    // Modified chatRoomList method to separate personal and club chats
+    // 채팅방 목록 뷰
     @GetMapping("/view/rooms")
     public String chatRoomList(Model model) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return "redirect:/member/login";
         }
 
-        // Get all rooms
-        List<ChatRoomBean> allRooms = chatService.getMyRooms();
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId = userInfo.get("userId");
+        String userType = userInfo.get("userType");
 
-        // Separate rooms by type
+        // 모든 채팅방 가져오기
+        List<ChatRoomBean> allRooms = chatService.getChatRoomsByUserId(userId);
+
+        // 유형별로 분류
         List<ChatRoomBean> personalRooms = allRooms.stream()
                 .filter(room -> room.getClub_id() == null)
                 .collect(Collectors.toList());
@@ -397,18 +522,36 @@ public class ChatController {
                 .filter(room -> room.getClub_id() != null)
                 .collect(Collectors.toList());
 
-        if(personalRooms.size() > 0 && clubRooms.size() > 0) {
-            for(ChatRoomBean room : personalRooms) {
-                int personalunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
+        // 개인 채팅방에 대해 상대방 정보 추가
+        Map<Long, ChatParticipantBean> otherParticipants = new HashMap<>();
+
+        if (!personalRooms.isEmpty()) {
+            for (ChatRoomBean room : personalRooms) {
+                // 읽지 않은 메시지 카운트 설정
+                int personalunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), userId);
                 room.setUnreadCount(personalunreadcount);
+
+                // 상대방 정보 가져오기
+                ChatParticipantBean otherParticipant = chatService.getOtherParticipant(room.getRoom_id(), userId);
+                if (otherParticipant != null) {
+                    otherParticipants.put((long) room.getRoom_id(), otherParticipant);
+                    System.out.println("상대방 정보: " + otherParticipant.getUserProfile());
+                }
             }
-            for(ChatRoomBean room : clubRooms) {
-                int clubunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), loginMember.getMember_id());
+        }
+
+        for (Map.Entry<Long, ChatParticipantBean> entry : otherParticipants.entrySet()) {
+            System.out.println("roomId: " + entry.getKey() + ", userProfile: " + entry.getValue().getUserProfile());
+        }
+
+        if (!clubRooms.isEmpty()) {
+            for (ChatRoomBean room : clubRooms) {
+                int clubunreadcount = chatService.getUnreadMessageCount((long) room.getRoom_id(), userId);
                 room.setUnreadCount(clubunreadcount);
             }
         }
 
-        // Calculate unread counts
+        // 읽지 않은 메시지 수 계산
         int personalUnread = personalRooms.stream()
                 .mapToInt(ChatRoomBean::getUnreadCount)
                 .sum();
@@ -419,7 +562,24 @@ public class ChatController {
 
         int totalUnread = personalUnread + clubUnread;
 
-        // Add all to model
+        Map<Integer, ChatParticipantBean> convertedMap = new HashMap<>();
+        for (Map.Entry<Long, ChatParticipantBean> entry : otherParticipants.entrySet()) {
+            convertedMap.put(entry.getKey().intValue(), entry.getValue());
+        }
+
+        // 상대방 정보 모델에 추가
+        model.addAttribute("otherParticipants", convertedMap);
+
+        // 모든 방에 unreadCount가 제대로 설정되어 있는지 확인
+        for (ChatRoomBean room : allRooms) {
+            if (room.getUnreadCount() <= 0) {
+                int unreadCount = chatService.getUnreadMessageCount((long) room.getRoom_id(), userId);
+                room.setUnreadCount(unreadCount);
+                System.out.println("Room " + room.getRoom_id() + " unread: " + unreadCount);
+            }
+        }
+
+        // 모델에 모든 정보 추가
         model.addAttribute("rooms", allRooms);
         model.addAttribute("personalRooms", personalRooms);
         model.addAttribute("clubRooms", clubRooms);
@@ -427,53 +587,101 @@ public class ChatController {
         model.addAttribute("clubUnread", clubUnread);
         model.addAttribute("totalUnread", totalUnread);
 
+        // 현재 로그인한 사용자 정보 추가
+        model.addAttribute("currentUserId", userId);
+        model.addAttribute("currentUserType", userType);
+
         return "chat/roomList";
     }
 
-    // 채팅방 상세 페이지
     @GetMapping("/view/room/{roomId}")
     public String chatRoomDetail(@PathVariable Long roomId, Model model) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return "redirect:/member/login";
         }
+
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId = userInfo.get("userId");
+        String userType = userInfo.get("userType");
 
         ChatRoomBean room = chatService.getChatRoomById(roomId);
         if (room == null) {
             return "redirect:/chat/view/rooms";
         }
-        chatService.markAllMessagesAsRead((long)roomId, loginMember.getMember_id());
 
+        // 해당 채팅방의 모든 메시지를 읽음 처리
+        chatService.markAllMessagesAsRead(roomId, userId);
+
+        // 현재 로그인한 사용자 정보를 모델에 추가
+        model.addAttribute("currentUserId", userId);
+        model.addAttribute("currentUserType", userType);
+
+        // 모델에 정보 추가
         model.addAttribute("room", room);
         model.addAttribute("participants", chatService.getRoomParticipants(roomId));
+
+        // 각 사용자 유형에 따라 로그인 정보 전달
+        // 반드시 null 체크 후 모델에 추가
+        if (loginMember != null) {
+            model.addAttribute("loginMember", loginMember);
+        }
+
+        if (loginBusiness != null) {
+            model.addAttribute("loginBusiness", loginBusiness);
+        }
+
+        if (loginAdmin != null) {
+            model.addAttribute("loginAdmin", loginAdmin);
+        }
+
         return "chat/roomDetail";
     }
-
-
 
     // 새 채팅 시작 페이지 (사용자 검색)
     @GetMapping("/view/new")
     public String newChat(Model model) {
-        if (loginMember == null || !loginMember.isLogin()) {
+        if (!isUserLoggedIn()) {
             return "redirect:/member/login";
         }
+
+        Map<String, String> userInfo = getLoggedInUserInfo();
+        String userId = userInfo.get("userId");
+        String userType = userInfo.get("userType");
+
+        // 현재 로그인한 사용자 정보 추가
+        model.addAttribute("currentUserId", userId);
+        model.addAttribute("currentUserType", userType);
 
         return "chat/newChat";
     }
 
+    // ChatController.java - markAllMessagesAsRead 메소드 수정
     @MessageMapping("/chat.markAllAsRead/{roomId}")
     public void markAllAsRead(@DestinationVariable Long roomId,
                               @Payload Map<String, Object> payload) {
         String userId = (String) payload.get("userId");
 
         // 모든 메시지 읽음 처리
-        chatService.markAllMessagesAsRead((long)roomId, userId);
+        chatService.markAllMessagesAsRead(roomId, userId);
 
         // 채팅방의 모든 참여자에게 읽음 상태 업데이트 브로드캐스트
         List<ChatMessageBean> messages = chatService.getRoomMessages(roomId, userId);
         for (ChatMessageBean message : messages) {
-            messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+            // 발신자가 현재 사용자가 아닌 메시지만 브로드캐스트
+            if (!message.getSenderId().equals(userId)) {
+                // 읽음 상태 정보 갱신
+                List<ChatReadReceiptBean> readReceipts = chatService.getReadReceiptsByMessageId(message.getMessageId());
+                message.setReadCount(readReceipts.size());
+
+                messagingTemplate.convertAndSend("/topic/read-status/" + roomId, message);
+
+                // 원래 발신자에게도 개인 알림
+                messagingTemplate.convertAndSendToUser(
+                        message.getSenderId(),
+                        "/queue/read-receipts",
+                        message
+                );
+            }
         }
     }
-
-
 }

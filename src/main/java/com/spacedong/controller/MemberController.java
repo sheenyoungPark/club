@@ -6,6 +6,8 @@ import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.ClubBean;
 import com.spacedong.beans.MemberBean;
 import com.spacedong.service.AdminService;
+import com.spacedong.repository.ChatRepository;
+import com.spacedong.service.ChatService;
 import com.spacedong.service.MemberService;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
@@ -33,6 +35,9 @@ public class MemberController {
 
 	@Autowired
 	private AdminService adminService;
+
+	@Autowired
+	private ChatRepository chatRepository;
 
 	// session‑scope 빈으로 정의된 loginMember와 loginBusiness를 주입받음
 	@Resource(name = "loginMember")
@@ -91,14 +96,15 @@ public class MemberController {
 
 				// 디버깅 로그
 				System.out.println("일반 회원 로그인 성공: " + fullMember.getMember_id());
+				System.out.println("비즈니스 로그인 상태: " + loginBusiness.isLogin());
 
 				return "member/login_success";
+			} else {
+				return "member/login_fail";
 			}
+		} else {
+			return "member/login_fail";
 		}
-
-		// 로그인 실패
-		model.addAttribute("fail", true);
-		return "member/login";
 	}
 
 	// 모든 로그인 세션 초기화 메서드
@@ -315,6 +321,7 @@ public class MemberController {
 				File destFile = new File(UPLOAD_DIR + fileName);
 				profileImage.transferTo(destFile);
 				memberService.updateMemberProfile(loginMember.getMember_id(), fileName);
+				chatRepository.updateProfile(loginMember.getMember_id(), fileName);
 				loginMember.setMember_profile(fileName);
 			} catch (IOException e) {
 				e.printStackTrace();

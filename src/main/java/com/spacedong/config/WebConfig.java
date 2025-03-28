@@ -14,6 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @Value("${chat.upload.dir}")
+    private String chatDir;
+
     @Override
     public void addFormatters(FormatterRegistry registry) {
         // Date 타입 변환을 위한 설정
@@ -25,8 +28,18 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 외부 경로의 이미지 파일을 웹에서 접근할 수 있도록 설정
-        registry.addResourceHandler("/upload/image/**")
-                .addResourceLocations("file:///" + uploadDir);
+        registry.addResourceHandler("/upload/chat/**")
+                .addResourceLocations("file:///" + chatDir + "/");
+
+        // 기본 이미지 업로드 경로 설정
+        registry.addResourceHandler("/profile/**")
+                .addResourceLocations("file:///" + uploadDir + "profile/");
+
+        registry.addResourceHandler("/clubprofile/**")
+                .addResourceLocations("file:///" + uploadDir + "clubprofile/");
+
+        // 기존 정적 리소스 설정
+        registry.addResourceHandler("/sources/**")
+                .addResourceLocations("classpath:/static/sources/");
     }
 }
