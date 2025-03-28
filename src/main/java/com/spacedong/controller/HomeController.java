@@ -33,9 +33,6 @@ public class HomeController {
         List<ClubBean> clubCount = clubService.countClub();
         List<BusinessItemBean> itemList = itemService.randomItemList();
 
-        for (BusinessItemBean c : itemList){
-            System.out.println("id : " + c.getItem_title() + "name" + c.getItem_text());
-        }
         model.addAttribute("categoryCount", categoryCount);
         model.addAttribute("clubCount", clubCount);
         model.addAttribute("itemList", itemList);
