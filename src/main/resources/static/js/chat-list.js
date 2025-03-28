@@ -244,14 +244,9 @@ function updateChatRoom(room) {
                     unreadBadge.className = 'unread-badge';
 
                     // 적절한 위치에 배지 추가
-                    const chatTypeTag = roomElement.querySelector('.chat-type-tag');
-                    if (chatTypeTag) {
-                        chatTypeTag.insertAdjacentElement('afterend', unreadBadge);
-                    } else {
-                        const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
-                        if (previewContainer) {
-                            previewContainer.appendChild(unreadBadge);
-                        }
+                    const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
+                    if (previewContainer) {
+                        previewContainer.appendChild(unreadBadge);
                     }
                 }
                 // 배지 업데이트
@@ -291,7 +286,7 @@ function updateConnectionStatus(connected) {
     console.log('WebSocket 연결 상태:', connected ? '연결됨' : '연결 끊김');
 }
 
-// 주기적으로 안 읽은 메시지 수 확인 (5초마다)
+// 주기적으로 안 읽은 메시지 수 확인 (1초마다)
 function startPeriodicUnreadCheck() {
     if (unreadRefreshInterval) {
         clearInterval(unreadRefreshInterval);
@@ -301,7 +296,7 @@ function startPeriodicUnreadCheck() {
         if (isConnected) {
             fetchUnreadCounts();
         }
-    }, 1000); // 5초마다 업데이트
+    }, 1000); // 1초마다 업데이트 (기존 5초에서 변경)
 }
 
 // 안 읽은 메시지 수 업데이트를 위한 API 호출
@@ -309,67 +304,17 @@ function fetchUnreadCounts() {
     fetch('/chat/unread-counts')
         .then(response => response.json())
         .then(data => {
-            console.log('받은 데이터:', data);
-
             // 개인 채팅 및 동호회 채팅 안 읽은 메시지 수 업데이트
             updateTabBadge('personal-tab', data.personalUnread);
             updateTabBadge('club-tab', data.clubUnread);
             updateTabBadge('all-tab', data.totalUnread);
 
+            // 각 채팅방의 unreadCount 업데이트
             updateRoomUnreadCounts(data.roomUnreadCounts);
-
         })
         .catch(error => {
             console.error('안 읽은 메시지 수 조회 실패: ', error);
         });
-}
-
-// 채팅방 목록 업데이트 (안 읽은 메시지 수 반영)
-function updateRoomUnreadCounts(roomUnreadCounts) {
-    Object.keys(roomUnreadCounts).forEach(roomId => {
-        const unreadCount = roomUnreadCounts[roomId];
-
-        // 채팅방 요소 찾기 (모든 탭에서)
-        const roomElements = [
-            document.getElementById(`room-${roomId}`),
-            document.getElementById(`personal-room-${roomId}`),
-            document.getElementById(`club-room-${roomId}`)
-        ];
-
-        roomElements.forEach(roomElement => {
-            if (roomElement) {
-                // 기존 안 읽은 메시지 배지 찾기
-                let unreadBadge = roomElement.querySelector('.unread-badge');
-
-                if (unreadCount > 0) {
-                    if (!unreadBadge) {
-                        // 배지가 없으면 새로 생성
-                        unreadBadge = document.createElement('div');
-                        unreadBadge.className = 'unread-badge';
-
-                        // 동호회 채팅방이면 `.chat-type-tag.club-tag` 뒤에 배지 추가
-                        const chatTypeTag = roomElement.querySelector('.chat-type-tag.club-tag');
-                        if (chatTypeTag) {
-                            chatTypeTag.insertAdjacentElement('afterend', unreadBadge);
-                        } else {
-                            // 일반 채팅방이면 기본 미리보기 옆에 배지 추가
-                            const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
-                            if (previewContainer) {
-                                previewContainer.appendChild(unreadBadge);
-                            }
-                        }
-                    }
-
-                    // 배지 업데이트
-                    unreadBadge.textContent = unreadCount;
-                    unreadBadge.style.display = 'flex';
-                } else if (unreadBadge) {
-                    // 안 읽은 메시지가 없으면 배지 숨김
-                    unreadBadge.style.display = 'none';
-                }
-            }
-        });
-    });
 }
 
 // 탭의 읽지 않은 메시지 수 업데이트
@@ -440,7 +385,7 @@ function handleNewMessageNotification(message) {
                 timeElement.textContent = formattedTime;
             }
 
-            // 동호회 채팅방의 경우 `.chat-type-tag.club-tag` 옆에 배지를 추가
+            // 안 읽은 메시지 배지 업데이트
             let unreadBadge = roomElement.querySelector('.unread-badge');
             const unreadCount = unreadBadge ? parseInt(unreadBadge.textContent) : 0;
 
@@ -448,16 +393,9 @@ function handleNewMessageNotification(message) {
                 unreadBadge = document.createElement('div');
                 unreadBadge.className = 'unread-badge';
 
-                //동호회 채팅방인지 확인
-                const chatTypeTag = roomElement.querySelector('.chat-type-tag.club-tag');
-                if (chatTypeTag) {
-                    chatTypeTag.insertAdjacentElement('afterend', unreadBadge);
-                } else {
-                    // 일반 채팅방이면 기본 미리보기 옆에 추가
-                    const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
-                    if (previewContainer) {
-                        previewContainer.appendChild(unreadBadge);
-                    }
+                const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
+                if (previewContainer) {
+                    previewContainer.appendChild(unreadBadge);
                 }
             }
 
@@ -475,15 +413,17 @@ function handleNewMessageNotification(message) {
 
     // 브라우저 알림 표시
     showBrowserNotification(message);
+
+    // 채팅방의 미읽음 메시지 수를 갱신하기 위해 API 호출
+    fetchUnreadCounts();
 }
 
-// 채팅방 목록 업데이트 (안 읽은 메시지 수 반영)
+// 채팅방 목록 업데이트 (안 읽은 메시지 수 반영) - 중복 함수 제거하고 하나로 통합
 function updateRoomUnreadCounts(roomUnreadCounts) {
-    console.log('채팅방 별 안 읽은 메시지 수 업데이트:', roomUnreadCounts);
+    if (!roomUnreadCounts) return;
 
     Object.keys(roomUnreadCounts).forEach(roomId => {
         const unreadCount = roomUnreadCounts[roomId];
-        console.log(`Room ${roomId} unread: ${unreadCount}`);
 
         // 채팅방 요소 찾기 (모든 탭에서)
         const roomElements = [
@@ -503,15 +443,15 @@ function updateRoomUnreadCounts(roomUnreadCounts) {
                         unreadBadge = document.createElement('div');
                         unreadBadge.className = 'unread-badge';
 
-                        // 채팅방 정보 컨테이너 찾기
+                        // 미리보기 컨테이너 찾기
                         const previewContainer = roomElement.querySelector('.d-flex.justify-content-between.align-items-center.mt-1');
                         if (previewContainer) {
                             previewContainer.appendChild(unreadBadge);
                         } else {
-                            // 컨테이너를 찾을 수 없는 경우 우측 상단에 배치
-                            const chatTitle = roomElement.querySelector('.chat-title');
-                            if (chatTitle && chatTitle.parentElement) {
-                                chatTitle.parentElement.appendChild(unreadBadge);
+                            // 미리보기 컨테이너가 없는 경우 최선의 위치 찾기
+                            const chatInfo = roomElement.querySelector('.chat-info');
+                            if (chatInfo) {
+                                chatInfo.appendChild(unreadBadge);
                             }
                         }
                     }
@@ -527,7 +467,6 @@ function updateRoomUnreadCounts(roomUnreadCounts) {
         });
     });
 }
-
 
 // 브라우저 알림 표시
 function showBrowserNotification(message) {

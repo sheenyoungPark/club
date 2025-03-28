@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.spacedong.beans.*;
+import com.spacedong.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -47,6 +48,8 @@ public class ChatController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private ItemService itemService;
 
     // 로그인한 사용자 정보를 가져오는 헬퍼 메서드
     private Map<String, String> getLoggedInUserInfo() {
@@ -684,4 +687,57 @@ public class ChatController {
             }
         }
     }
+
+    @GetMapping("/new/ask")
+    public String newAsk(Model model,
+                         @RequestParam("item_id") Long itemId,
+                         @RequestParam("business_id") Long businessId) {
+
+        BusinessItemBean item = itemService.getItemById(itemId.toString());
+        String itemTitle = (item != null) ? item.getItem_title() : "상품 문의";
+
+        // 2. 채팅방 생성 또는 기존 채팅방 가져오기
+        ChatRoomCreationResult result = chatService.getOrCreatePersonalChatRoomWithResult(loginMember.getMember_id(), "MEMBER", businessId.toString(), "BUSINESS");
+        ChatRoomBean room = result.getRoom();
+
+        // 새 채팅방 또는 새 참가자인 경우 알림 전송
+        if (result.isNewRoom() || result.isNewParticipant()) {
+            room.setLastMessage("새로운 대화가 시작되었습니다.");
+            room.setLastMessageTime(LocalDateTime.now());
+            room.setUnreadCount(0);
+
+            // 비즈니스 사용자에게 새 채팅방 알림
+            messagingTemplate.convertAndSendToUser(
+                    businessId.toString(),
+                    "/queue/new-room",
+                    room
+            );
+        }
+
+        int room_id = room.getRoom_id();
+        long roomId = (long) room_id;
+
+        // 항상 메시지 생성 및 전송 (새 채팅방이든 기존 채팅방이든)
+        String firstMessage = itemTitle + "에 대해서 문의할게요";
+        ChatMessageBean message = new ChatMessageBean();
+        message.setRoomId(roomId);
+        message.setSenderId(loginMember.getMember_id());
+        message.setSenderType("MEMBER");
+        message.setMessageContent(firstMessage);
+        message.setMessageType("TEXT");
+        message.setSenderNickname(loginMember.getMember_nickname());
+        message.setSenderProfile(loginMember.getMember_profile());
+
+        // 메시지 저장 및 발송
+        chatService.sendMessage(message);
+
+        // 모든 경우에 채팅방으로 리다이렉트
+        return "redirect:/chat/view/room/" + roomId;
+    }
+
+
+
+
+
+
 }

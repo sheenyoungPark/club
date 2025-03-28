@@ -171,17 +171,17 @@ public class ChatService {
             }
             // 관리자-일반회원 대화인 경우
             else if ((userType1.equals("ADMIN") && userType2.equals("MEMBER"))) {
-                roomName = "관리자,일반회원 " + user2nickname;
+                roomName = "관리자 " + user1nickname + ",일반회원 " + user2nickname;
             }
             else if ((userType2.equals("ADMIN") && userType1.equals("MEMBER"))) {
-                roomName = "관리자,일반회원 " + user1nickname;
+                roomName = "관리자 " + user2nickname + ",일반회원 " + user1nickname;
             }
             // 관리자-판매자 대화인 경우
             else if ((userType1.equals("ADMIN") && userType2.equals("BUSINESS"))) {
-                roomName = "관리자,판매자 " + user2nickname;
+                roomName = "관리자 " + user1nickname + ",판매자 " + user2nickname;
             }
             else if ((userType2.equals("ADMIN") && userType1.equals("BUSINESS"))) {
-                roomName = "관리자,판매자 " + user1nickname;
+                roomName = "관리자 " + user2nickname + ",판매자 " + user1nickname;
             }
             // 일반회원-일반회원 대화인 경우
             else {
