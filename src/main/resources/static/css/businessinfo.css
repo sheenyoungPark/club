@@ -1,5 +1,5 @@
-/* businessinfo.css */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+/* 나눔스퀘어 폰트 임포트 */
+@import url('https://hangeul.pstatic.net/hangeul_static/css/nanum-square.css');
 
 * {
     margin: 0;
@@ -8,7 +8,7 @@
 }
 
 body {
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'NanumSquare', sans-serif;
     background-color: #f5f7fa;
     color: #333;
     line-height: 1.6;
@@ -43,6 +43,21 @@ h2:after {
     height: 3px;
     background-color: #9cee69;
     transform: translateX(-50%);
+}
+/* 제목 등에 나눔스퀘어 볼드 적용 */
+h2, .profile-name, .button, .activity-tabs button,
+.add-link, .reservation-button, .reservation-waiting-btn {
+    font-family: 'NanumSquare', sans-serif;
+    font-weight: 700; /* 나눔스퀘어 Bold */
+}
+
+/* 일반 텍스트에 나눔스퀘어 레귤러 적용 */
+.profile-nickname, .profile-gender, .profile-birthdate,
+.profile-phone, .profile-email, .profile-address,
+.profile-number, .profile-info, .profile-point,
+.club-list li a, .post-list li a {
+    font-family: 'NanumSquare', sans-serif;
+    font-weight: 400; /* 나눔스퀘어 Regular */
 }
 
 .profile-section {
