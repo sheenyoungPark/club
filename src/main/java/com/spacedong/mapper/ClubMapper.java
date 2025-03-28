@@ -197,7 +197,7 @@ import java.util.Map;
     @Select("SELECT c.club_id, c.club_name, c.club_point " +
             "FROM club c " +
             "JOIN club_member cm ON c.club_id = cm.club_id " +
-            "WHERE cm.member_id = #{memberId} AND cm.member_role = 'master'")
+            "WHERE cm.member_id = #{memberId} AND cm.member_role = 'master' and c.club_public = 'PASS'")
     List<Map<String, Object>> getMasterClubsByMemberId(String memberId);
 
     //클럽 포인트 업데이트
