@@ -20,7 +20,7 @@
     font-size: 28px;
     font-weight: bold;
     margin: 20px 0;
-    color: #1890ff;
+    color: #2a4b00;
 }
 
 .result-planet {
@@ -53,7 +53,7 @@
 .activities-category {
     font-weight: bold;
     margin-top: 15px;
-    color: #722ed1;
+    color: #2a4b00;
 }
 
 .activities-list {
@@ -83,8 +83,8 @@
 .btn-restart {
     margin-top: 30px;
     padding: 12px 24px;
-    background-color: #1890ff;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -95,7 +95,7 @@
 }
 
 .btn-restart:hover {
-    background-color: #096dd9;
+    background-color: #2a4b00;
 }
 
 /* 로고 컨테이너 스타일 */

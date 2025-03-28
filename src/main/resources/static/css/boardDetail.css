@@ -12,7 +12,7 @@
 .post-title {
     font-size: 24px;
     font-weight: bold;
-    color: #5d4b8c;
+    color: #14191f;
     margin-bottom: 15px;
 }
 
@@ -119,8 +119,8 @@
 
 .comment-btn {
     padding: 10px 20px;
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -128,7 +128,7 @@
 }
 
 .comment-btn:hover {
-    background-color: #4a3b72;
+    background-color: #395727;
 }
 
 .comment-list {
@@ -182,8 +182,8 @@
     margin: 40px auto 0 auto;
     text-align: center;
     font-size: 16px;
-    color: white;
-    background-color: #5d4b8c;
+    color: #14191f;
+    background-color: #9cee69;
     padding: 12px 24px;
     text-decoration: none;
     border-radius: 6px;
@@ -191,7 +191,7 @@
 }
 
 .back-btn:hover {
-    background-color: #4a3b72;
+    background-color: #2a4b00;
 }
 /* 답글 작성용 폼 */
 .comment-reply-form {

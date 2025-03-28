@@ -26,12 +26,12 @@
 }
 
 .choice:hover {
-    background-color: #f5faff;
+    background-color: #f0ffdd;
 }
 
 .selected {
-    background-color: #e6f7ff;
-    border-color: #1890ff;
+    background-color: #f0ffdd;
+    border-color: #9cee69;
 }
 
 /* 버튼 영역 */
@@ -62,14 +62,14 @@
 }
 
 .btn-next {
-    background-color: #1890ff;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
     border: none;
     cursor: pointer;
 }
 
 .btn-next:disabled {
-    background-color: #ccc;
+    background-color: #2a4b00;
     cursor: not-allowed;
 }
 
@@ -84,7 +84,7 @@
 
 .progress {
     height: 100%;
-    background-color: #5d4b8c;
+    background-color: #9cee69;
     border-radius: 5px;
     transition: width 0.3s ease;
 }

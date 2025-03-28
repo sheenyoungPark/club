@@ -7,7 +7,20 @@
     <!-- Daum 우편번호 서비스 스크립트 -->
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+                 background-size: cover;
+                 background-repeat: no-repeat;
+                 background-position: center;
+                 background-attachment: fixed;|">
+<!-- 로고만 추가 -->
+<a th:href="@{/}" class="logo-container" style="position: fixed; top: 20px; left: 60px; z-index: 1000; display: flex; align-items: center; height: 60px;">
+    <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
+    <div class="logo-hover-text">
+        <div><span class="first-letter">우</span>리</div>
+        <div><span class="first-letter">주</span>변의</div>
+        <div><span class="first-letter">동</span>호회</div>
+    </div>
+</a>
 <div class="container">
     <h2>회원 정보 수정</h2>
 
