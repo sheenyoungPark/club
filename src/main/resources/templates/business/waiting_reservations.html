@@ -157,7 +157,7 @@
 
         .btn-decline {
             background-color: #dc3545;
-            color: white;
+            color: #14191f;
         }
 
         .btn-decline:hover {
@@ -165,12 +165,12 @@
         }
 
         .btn-view {
-            background-color: #0d6efd;
-            color: white;
+            background-color: #9cee69;
+            color: #14191f;
         }
 
         .btn-view:hover {
-            background-color: #0b5ed7;
+            background-color: #9cee69;
         }
 
         .pagination-container {
@@ -193,8 +193,8 @@
         .page-link {
             display: block;
             padding: 0.5rem 0.75rem;
-            color: #0d6efd;
-            background-color: #fff;
+            color: #14191f;
+            background-color:#9cee69;
             border: 1px solid #dee2e6;
             border-radius: 4px;
             text-decoration: none;
@@ -203,13 +203,13 @@
         }
 
         .page-link:hover {
-            background-color: #e9ecef;
+            background-color: #2a4b00;
         }
 
         .page-item.active .page-link {
-            background-color: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
+            background-color: #9cee69;
+            color: #14191f;
+            border-color: #9cee69;
         }
 
         .page-item.disabled .page-link {
@@ -306,8 +306,8 @@
         }
 
         .section-count {
-            background-color: #0d6efd;
-            color: white;
+            background-color: #9cee69;
+            color: #14191f;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.9rem;
@@ -328,7 +328,7 @@
         }
 
         .section-toggle:hover {
-            background-color: #e9ecef;
+            background-color: #2a4b00;
         }
 
         .section-toggle i {
@@ -357,13 +357,13 @@
         }
 
         .type-filter-btn.active {
-            background-color: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
+            background-color: #9cee69;
+            color: #14191f;
+            border-color: #14191f;
         }
 
         .type-filter-btn:hover:not(.active) {
-            background-color: #e9ecef;
+            background-color: #2a4b00;
         }
 
         /* 반응형 스타일 */
@@ -493,7 +493,7 @@
                         <button type="submit" class="btn btn-approve">승인</button>
                     </form>
                     <button class="btn btn-decline" th:onclick="'openDeclineModal(' + ${reservation.reservation_id} + ')'">거절</button>
-                    <a th:href="@{/reservation/detail(reservation_id=${reservation.reservation_id})}" class="btn btn-view">상세</a>
+                    <a th:href="@{/reservation/confirmation(reservation_id=${reservation.reservation_id})}" class="btn btn-view">상세</a>
                 </td>
             </tr>
             </tbody>
@@ -578,7 +578,7 @@
                                     onclick="return confirm('이 예약을 취소하시겠습니까? 이 작업은 되돌릴 수 없습니다.')">취소</button>
                         </form>
                     </div>
-                    <a th:href="@{/reservation/detail(reservation_id=${reservation.reservation_id})}" class="btn btn-view">상세</a>
+                    <a th:href="@{/reservation/confirmation(reservation_id=${reservation.reservation_id})}" class="btn btn-view">상세</a>
                 </td>
             </tr>
             </tbody>
