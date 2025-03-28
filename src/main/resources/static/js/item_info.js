@@ -1,3 +1,91 @@
+// 예약 유형 관련 JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // 기존 변수들
+    const personalRadio = document.getElementById('personal_reservation');
+    const clubRadio = document.getElementById('club_reservation');
+    const clubSelect = document.getElementById('club_id');
+    const clubPointInfo = document.querySelector('.club-point-info');
+    const clubSelection = document.querySelector('.club-selection');
+
+    // 새로운 변수들 (카드 선택용)
+    const personalCard = document.getElementById('personal-card');
+    const clubCard = document.getElementById('club-card');
+
+    // 초기 상태 설정
+    personalCard.classList.add('selected');
+
+    // 카드 클릭 이벤트 리스너
+    personalCard.addEventListener('click', function() {
+        personalRadio.checked = true;
+        updateCardSelection();
+        handleReservationTypeChange();
+    });
+
+    clubCard.addEventListener('click', function() {
+        clubRadio.checked = true;
+        updateCardSelection();
+        handleReservationTypeChange();
+    });
+
+    // 라디오 버튼 변경 이벤트 리스너
+    personalRadio.addEventListener('change', function() {
+        updateCardSelection();
+        handleReservationTypeChange();
+    });
+
+    clubRadio.addEventListener('change', function() {
+        updateCardSelection();
+        handleReservationTypeChange();
+    });
+
+    // 카드 선택 상태 업데이트 함수
+    function updateCardSelection() {
+        if (personalRadio.checked) {
+            personalCard.classList.add('selected');
+            clubCard.classList.remove('selected');
+        } else {
+            clubCard.classList.add('selected');
+            personalCard.classList.remove('selected');
+        }
+    }
+
+    // 예약 유형 변경 처리 함수 - 기존 함수를 확장
+    function handleReservationTypeChange() {
+        if (clubRadio.checked) {
+            clubSelection.style.display = 'block';
+            clubSelect.disabled = false;
+            clubSelect.required = true;
+
+            // 슬라이드 다운 애니메이션 효과 (CSS 트랜지션과 함께 작동)
+            clubSelection.style.maxHeight = clubSelection.scrollHeight + "px";
+            clubSelection.style.opacity = 1;
+
+            // 클럽 선택이 유효하면 클럽 포인트 정보 표시
+            if (clubSelect.value) {
+                clubPointInfo.style.display = 'block';
+            }
+
+            // AJAX로 사용자가 마스터인 클럽 목록 가져오기
+            fetchMasterClubs();
+        } else {
+            // 슬라이드 업 애니메이션 효과
+            clubSelection.style.maxHeight = 0;
+            clubSelection.style.opacity = 0;
+
+            // 트랜지션 후 실제로 숨김 처리
+            setTimeout(() => {
+                clubSelection.style.display = 'none';
+                clubSelect.disabled = true;
+                clubSelect.required = false;
+                clubPointInfo.style.display = 'none';
+            }, 300); // CSS 트랜지션과 동일한 시간으로 설정
+        }
+
+        // 가격 및 유효성 다시 계산
+        calculatePrice();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const dateInput = document.getElementById('reservation_date');
     const startTimeSelect = document.getElementById('start_time');

@@ -304,3 +304,131 @@ select option:disabled {
 .btn-warning:hover {
     background-color: #e0a800;
 }
+.reservation-type-options {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* 카드 컨테이너를 납작하게 만들기 */
+.reservation-type-card {
+    flex: 1;
+    position: relative;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    padding: 10px; /* 패딩을 줄임 */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+    height: 85px; /* 높이를 명시적으로 지정 */
+}
+
+.reservation-type-card:hover {
+    border-color: #9cee69;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 선택된 카드 스타일 */
+.reservation-type-card.selected {
+    border-color: #9cee69;
+    background-color: rgba(156, 238, 105, 0.15);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* 라디오 버튼 숨기기 */
+.reservation-type-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+/* 라벨을 가로 배열로 변경 */
+.reservation-type-label {
+    display: flex;
+    flex-direction: row; /* 가로 배열로 변경 */
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* 아이콘 스타일 */
+.reservation-icon {
+    font-size: 1.5rem; /* 아이콘 크기 줄임 */
+    margin-right: 12px; /* 오른쪽 마진 추가 */
+    margin-bottom: 0; /* 기존 하단 마진 제거 */
+    color: #27374c;
+}
+
+/* 텍스트 컨테이너 추가 */
+.reservation-text-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* 예약 유형 제목 스타일 */
+.reservation-type-title {
+    font-weight: bold;
+    font-size: 1.1rem; /* 폰트 크기 줄임 */
+    margin-bottom: 2px; /* 하단 여백 줄임 */
+    color: #14191f;
+    text-align: left; /* 왼쪽 정렬 */
+}
+
+/* 예약 유형 설명 스타일 */
+.reservation-type-desc {
+    font-size: 0.8rem; /* 폰트 크기 줄임 */
+    color: #666;
+    text-align: left; /* 왼쪽 정렬 */
+}
+
+/* 개인 예약 카드 추가 스타일 */
+#personal-card.selected {
+    border-left: 5px solid #9cee69;
+}
+
+/* 클럽 예약 카드 추가 스타일 */
+#club-card.selected {
+    border-left: 5px solid #5873c6;
+}
+
+#personal-card .reservation-icon {
+    color: #5ea52d;
+}
+
+#club-card .reservation-icon {
+    color: #5873c6;
+}
+
+/* 클럽 선택 컨테이너 스타일 - 더 납작하게 */
+.club-selection-container {
+    background-color: rgba(215, 225, 248, 0.3);
+    padding: 12px; /* 패딩 줄임 */
+    border-radius: 8px;
+    border-left: 5px solid #5873c6;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.club-selection-container label {
+    color: #5873c6;
+    font-weight: bold;
+    margin-bottom: 5px; /* 라벨 하단 마진 줄임 */
+    display: block;
+}
+
+/* 클럽 포인트 정보를 더 납작하게 */
+.club-point-info {
+    margin-top: 8px;
+    padding: 6px 10px; /* 패딩 줄임 */
+    border-radius: 6px;
+    background-color: rgba(215, 225, 248, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 폼 그룹 간격 줄이기 */
+.form-group {
+    margin-bottom: 1.2rem; /* 기존 1.5rem에서 줄임 */
+}
