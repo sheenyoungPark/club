@@ -39,7 +39,7 @@
 
 .summary-item .value {
     font-weight: bold;
-    color: #007bff;
+    color: #9cee69;
 }
 
 /* 비활성화된 옵션 스타일 */
@@ -50,7 +50,7 @@ select option:disabled {
 
 /* 비활성화된 버튼 스타일 */
 .btn-primary:disabled {
-    background-color: #b9d4f2;
+    background-color: #f0ffdd;
     cursor: not-allowed;
 }
 

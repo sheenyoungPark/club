@@ -494,7 +494,7 @@ public class ReservationController {
             File saveFile = new File(uploadDir + savedFilename);
             try {
                 reviewImg.transferTo(saveFile);
-                review.setReview_img("/upload/image/review/" + savedFilename);
+                review.setReview_img(savedFilename);
             } catch (IOException e) {
                 e.printStackTrace();
                 redirectAttributes.addFlashAttribute("error", "이미지 업로드 중 오류 발생");

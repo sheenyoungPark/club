@@ -26,13 +26,15 @@ body {
 }
 
 h2 {
-    font-size: 28px;
+    font-family: 'NanumSquare', sans-serif;
+    font-size: 28px; /* 보기 좋게 조금 키움 */
     font-weight: 700;
     color: #333;
     margin-bottom: 30px;
     text-align: center;
     position: relative;
 }
+
 
 h2:after {
     content: '';
@@ -41,7 +43,7 @@ h2:after {
     left: 50%;
     width: 60px;
     height: 3px;
-    background-color: #5d4b8c;
+    background-color: #9cee69;
     transform: translateX(-50%);
 }
 
@@ -66,7 +68,7 @@ h2:after {
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #5d4b8c;
+    border: 4px solid #9cee69;
 }
 
 .profile-name {
@@ -131,8 +133,8 @@ h2, .profile-name, .button, .activity-tabs button,
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
     width: 100%;
     border: none;
 }
@@ -140,7 +142,7 @@ h2, .profile-name, .button, .activity-tabs button,
 .button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(93, 75, 140, 0.2);
-    background-color: #4a3d73;
+    background-color: #2a4b00;
 }
 
 .button.danger {
@@ -177,9 +179,9 @@ h2, .profile-name, .button, .activity-tabs button,
 }
 
 .activity-tabs button.active {
-    background-color: #5d4b8c;
-    color: white;
-    border-color: #5d4b8c;
+    background-color: #9cee69;
+    color: #14191f;
+    border-color: #9cee69;
 }
 
 .activity-content {
@@ -213,7 +215,7 @@ h2, .profile-name, .button, .activity-tabs button,
 }
 
 .club-list li a:hover, .post-list li a:hover {
-    color: #5d4b8c;
+    color: #9cee69;
 }
 
 .post-list li span {
@@ -230,8 +232,8 @@ h2, .profile-name, .button, .activity-tabs button,
 .add-link {
     display: inline-block;
     padding: 10px 15px;
-    background-color: #f1f5fd;
-    color: #3a7bd5;
+    background-color: #f0ffdd;
+    color: #14191f;
     text-decoration: none;
     border-radius: 6px;
     font-weight: 500;
@@ -239,7 +241,7 @@ h2, .profile-name, .button, .activity-tabs button,
 }
 
 .add-link:hover {
-    background-color: #e1e9fb;
+    background-color: #b9c3ac;
     transform: translateY(-2px);
     box-shadow: 0 3px 10px rgba(58, 123, 213, 0.15);
 }
@@ -285,15 +287,15 @@ h2, .profile-name, .button, .activity-tabs button,
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
     border: none;
 }
 
 .reservation-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(93, 75, 140, 0.2);
-    background-color: #4a3d73;
+    background-color: #2a4b00;
 }
 /* 게시글 목록 스타일 */
 .post-list a {
