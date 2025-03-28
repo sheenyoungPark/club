@@ -91,8 +91,17 @@
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Thymeleaf 변수를 JavaScript에서 사용하기 위한 전역 변수 설정 -->
 <script th:inline="javascript">
     /*<![CDATA[*/
+    // 서버에서 가져온 데이터를 전역변수로 설정
+    var MEMBER_ID = /*[[${loginMember.member_id}]]*/ '';
+    var CHECK_NICKNAME_URL = /*[[@{/member/checkNickname}]]*/ '';
+    /*]]>*/
+</script>
+
+<script>
     // 페이지 로드 시 원래 닉네임인 경우 중복체크 완료로 설정
     document.addEventListener('DOMContentLoaded', function() {
         const nickname = document.getElementById("nickname").value;
@@ -100,6 +109,14 @@
 
         if (nickname === originalNickname) {
             document.getElementById("isNicknameChecked").value = "true";
+        }
+
+        // 기존 주소가 있다면 처리
+        const fullAddress = document.getElementById("address").value;
+        if (fullAddress) {
+            // 여기서는 기존 주소를 그대로 표시합니다.
+            // 만약 주소를 우편번호, 기본주소, 상세주소로 분리해서 저장했다면
+            // 각 필드에 맞게 표시하는 로직을 추가하세요.
         }
     });
 
@@ -120,7 +137,7 @@
 
     function checkNickname() {
         let nickname = document.getElementById("nickname").value.trim();
-        let member_id = [[${loginMember.member_id}]];
+        let member_id = MEMBER_ID; // 전역변수 사용
 
         if (nickname.length === 0) {
             document.getElementById("nicknameError").textContent = "닉네임을 입력하세요.";
@@ -129,32 +146,30 @@
         }
 
         $.ajax({
-            url: [[@{/member/checkNickname}]],
-        type: "get",
+            url: CHECK_NICKNAME_URL, // 전역변수 사용
+            type: "get",
             data: {
-            member_nickname: nickname,
+                member_nickname: nickname,
                 current_id: member_id
-        },
-        success: function(result) {
-            if (result === true) {
-                document.getElementById("nicknameError").textContent = "사용 가능한 닉네임입니다.";
-                document.getElementById("nicknameError").style.color = "green";
-                document.getElementById("isNicknameChecked").value = "true";
-            } else {
-                document.getElementById("nicknameError").textContent = "이미 사용 중인 닉네임입니다.";
+            },
+            success: function(result) {
+                if (result === true) {
+                    document.getElementById("nicknameError").textContent = "사용 가능한 닉네임입니다.";
+                    document.getElementById("nicknameError").style.color = "green";
+                    document.getElementById("isNicknameChecked").value = "true";
+                } else {
+                    document.getElementById("nicknameError").textContent = "이미 사용 중인 닉네임입니다.";
+                    document.getElementById("nicknameError").style.color = "red";
+                    document.getElementById("isNicknameChecked").value = "false";
+                }
+            },
+            error: function(xhr, status, error) {
+                document.getElementById("nicknameError").textContent = "중복 확인 중 오류 발생.";
                 document.getElementById("nicknameError").style.color = "red";
                 document.getElementById("isNicknameChecked").value = "false";
             }
-        },
-        error: function(xhr, status, error) {
-            document.getElementById("nicknameError").textContent = "중복 확인 중 오류 발생.";
-            document.getElementById("nicknameError").style.color = "red";
-            document.getElementById("isNicknameChecked").value = "false";
-        }
-    });
+        });
     }
-
-
 
     function searchAddress() {
         new daum.Postcode({
@@ -173,18 +188,6 @@
         }).open();
     }
 
-    // 페이지 로드 시 주소를 분리해서 표시
-    document.addEventListener('DOMContentLoaded', function() {
-        // 기존 이벤트 리스너 코드는 그대로 유지...
-
-        // 기존 주소가 있다면 처리
-        const fullAddress = document.getElementById("address").value;
-        if (fullAddress) {
-            // 여기서는 기존 주소를 그대로 표시합니다.
-            // 만약 주소를 우편번호, 기본주소, 상세주소로 분리해서 저장했다면
-            // 각 필드에 맞게 표시하는 로직을 추가하세요.
-        }
-    });
     function validateAndSubmit() {
         // 닉네임 검증
         const nickname = document.getElementById("nickname").value.trim();
@@ -231,9 +234,6 @@
         // 폼 제출
         document.getElementById("memberEditForm").submit();
     }
-
-
-
 </script>
 </body>
 </html>

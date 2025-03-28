@@ -1,70 +1,90 @@
+/* 글쓰기 컨테이너 - 고정폭, 반투명 배경 */
 .write-container {
-    width: 80%;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    margin: 40px auto;
+    width: 1100px;
+    padding: 30px;
+    background-color: rgba(255, 255, 255, 0.92);
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* 제목 */
 .write-title {
     font-size: 24px;
     font-weight: bold;
     color: #5d4b8c;
-    margin-bottom: 10px;
+    margin-bottom: 25px;
+    text-align: center;
 }
 
+/* 입력 필드 */
 .input-field {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 10px;
+    border-radius: 6px;
+    margin-bottom: 20px;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
+/* 파일 업로드 필드 */
+.input-file {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+/* 작성 완료 버튼 */
 .write-btn {
-    padding: 10px 20px;
+    display: inline-block;
+    padding: 12px 24px;
     background-color: #5d4b8c;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 16px;
+    transition: background-color 0.3s;
 }
 
 .write-btn:hover {
     background-color: #4a3b72;
 }
 
+/* 돌아가기 버튼 */
 .back-btn {
     display: block;
-    margin-top: 20px;
+    margin: 40px auto 0 auto;
     text-align: center;
     font-size: 16px;
     color: white;
     background-color: #5d4b8c;
-    padding: 10px;
+    padding: 12px 24px;
     text-decoration: none;
-    border-radius: 5px;
+    border-radius: 6px;
+    width: 250px;
 }
 
 .back-btn:hover {
     background-color: #4a3b72;
 }
 
+/* 이미지 미리보기 컨테이너 */
 .preview-container {
     display: flex;
-    flex-wrap: wrap; /* 여러 개 이미지 정렬 */
+    flex-wrap: wrap;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
+/* 이미지 박스 */
 .img-wrapper {
     position: relative;
     display: inline-block;
 }
 
+/* 미리보기 이미지 스타일 */
 .preview-image {
     width: 100px;
     height: 100px;
@@ -73,6 +93,7 @@
     border: 1px solid #ddd;
 }
 
+/* 이미지 삭제 버튼 */
 .delete-btn {
     position: absolute;
     top: 5px;
@@ -84,4 +105,12 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
+    font-size: 12px;
+}
+
+/* 경고 문구 */
+#fileWarning {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
 }

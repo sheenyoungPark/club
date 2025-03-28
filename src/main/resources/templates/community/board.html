@@ -7,10 +7,16 @@
   <link rel="stylesheet" th:href="@{/css/bottom.css}">
   <link rel="stylesheet" th:href="@{/css/top.css}">
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center;
+background-attachment: fixed;|">
 <!-- 상단 메뉴 include -->
 <div th:replace="include/top_search :: top_search"></div>
 
+<!-- ⬇⬇⬇ 여기부터 감싸주는 상자 시작 -->
+<div class="board-wrapper">
 <!-- 카테고리 상단 -->
 <div class="category-header">
   <h3 class="category-title">
@@ -87,6 +93,8 @@
   <a th:if="${currentPage < totalPages}"
      th:href="@{/community/board(boardType=${boardType}, page=${currentPage + 1})}">▶</a>
 </div>
+</div>
+<!-- ⬆⬆⬆ 여기까지가 상자 -->
 
 <!-- 하단 정보바 -->
 <div th:replace="include/bottom_info :: bottom_info"></div>

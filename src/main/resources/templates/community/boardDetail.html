@@ -7,7 +7,11 @@
     <link rel="stylesheet" th:href="@{/css/top.css}">
     <link rel="stylesheet" th:href="@{/css/bottom.css}">
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center;
+background-attachment: fixed;|">
 <!-- 상단 메뉴 include -->
 <div th:insert="~{include/top_search :: top_search}"></div>
 
@@ -100,7 +104,7 @@
                 <!-- ✅ 로그인한 사용자만 답글 작성 가능 (비로그인 시 답글 폼 숨기기) -->
                 <div th:if="${loginMember != null || loginBusiness != null}">
                     <div th:if="${comment.parent_comment_id == null}">
-                        <form th:action="@{/community/comment/write}" method="post" style="display: flex; align-items: center;">
+                        <form th:action="@{/community/comment/write}" method="post" class="comment-reply-form">
                             <input type="hidden" name="board_id" th:value="${post.board_id}">
                             <input type="hidden" name="boardType" th:value="${boardType}">
 

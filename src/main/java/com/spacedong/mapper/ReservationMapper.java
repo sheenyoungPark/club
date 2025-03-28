@@ -88,13 +88,18 @@ public interface ReservationMapper {
             "WHERE reservation_id = #{reservationId}")
     void cancelReservation(@Param("reservationId") int reservationId);
 
-
     // 특정 상품 ID와 상태에 해당하는 예약
     @Select("<script>" +
-            "SELECT * FROM reservation WHERE item_id IN " +
+            "SELECT * FROM reservation WHERE " +
+            "<if test='item_id != null and item_id.size() > 0'>" +
+            "item_id IN " +
             "<foreach item='id' collection='item_id' open='(' separator=',' close=')'>" +
             "#{id}" +
             "</foreach>" +
+            "</if>" +
+            "<if test='item_id == null or item_id.size() == 0'>" +
+            "1=0" + // 빈 리스트일 경우 결과가 없도록 처리
+            "</if>" +
             " AND status = #{status}" +
             " ORDER BY reservation_date DESC" +
             "</script>")

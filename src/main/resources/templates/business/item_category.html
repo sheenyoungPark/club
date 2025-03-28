@@ -7,7 +7,11 @@
   <link rel="stylesheet" th:href="@{/css/category.css}">
   <link rel="stylesheet" th:href="@{/css/top.css}">
 </head>
-<body>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+background-size: cover;
+background-repeat: no-repeat;
+background-position: center;
+background-attachment: fixed;|">
 <!-- 상단 메뉴 include -->
 <div th:replace="~{include/top_search :: top_search}"></div>
 

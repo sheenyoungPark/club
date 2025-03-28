@@ -5,15 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>결제 요청</title>
   <script src="https://js.tosspayments.com/v1/payment"></script>
+  <link rel="stylesheet" th:href="@{/css/top.css}">
+  <link rel="stylesheet" th:href="@{/css/bottom.css}">
+  <style>
+    .payment-container {
+      width: 400px;
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+      background-color: #ffffff;
+      text-align: center;
+    }
+
+    .payment-container h2 {
+      color: #5d4b8c;
+      margin-bottom: 20px;
+    }
+
+    .payment-container p {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    #payButton {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    #payButton:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
-<body>
-<h2>결제 요청</h2>
-<p>결제 금액: <span th:text="${amount}"></span>원</p>
-<button id="payButton">결제하기</button>
+<body th:style="|background-image: url('@{/sources/picture/우주배경기본.png}');
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-attachment: fixed;|">
+
+<div th:insert="~{include/top_search :: top_search}"></div>
+
+<div class="payment-container">
+  <h2>결제 요청</h2>
+  <p>결제 금액: <span th:text="${amount}">0</span>원</p>
+  <button id="payButton">결제하기</button>
+</div>
+
+<div th:replace="~{include/bottom_info :: bottom_info}"></div>
 
 <script>
   document.getElementById("payButton").addEventListener("click", function () {
-    var clientKey = "test_ck_DnyRpQWGrN5BYwJnKKbyVKwv1M9E"; // 🔹 클라이언트 키 확인
+    var clientKey = "test_ck_DnyRpQWGrN5BYwJnKKbyVKwv1M9E";
     var orderId = "[[${orderId}]]";
     var orderName = "[[${orderName}]]";
     var amount = "[[${amount}]]";
