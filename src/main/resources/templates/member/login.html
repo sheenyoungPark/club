@@ -4,12 +4,24 @@
     <meta charset="UTF-8">
     <title>로그인 페이지</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/moonspam/NanumSquareRound@1.0/nanumsquareround.css">
 </head>
 <body th:style="|background-image: url('@{/sources/picture/우주배경.png}');
                  background-size: cover;
                  background-repeat: no-repeat;
                  background-position: center;
                  background-attachment: fixed;|">
+
+<!-- 로고만 추가 (헤더 없이) -->
+<a th:href="@{/}" class="logo-container">
+    <img th:src="@{/sources/picture/우주동로고.png}" alt="우주동 로고" class="logo-img">
+    <div class="logo-hover-text">
+        <div><span class="first-letter">우</span>리</div>
+        <div><span class="first-letter">주</span>변의</div>
+        <div><span class="first-letter">동</span>호회</div>
+    </div>
+</a>
+
 <div class="login-container">
     <div class="login-tabs">
         <div class="tab active" data-tab="personal">개인회원</div>

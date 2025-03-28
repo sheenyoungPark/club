@@ -41,5 +41,9 @@ public class ItemService {
         return itemRepository.getItemById(item_id);
     }
 
+    //아이템 리스트를 랜덤 순으로
+    public List<BusinessItemBean> randomItemList(){
+        return itemRepository.randomItemList();
+    }
 
 }

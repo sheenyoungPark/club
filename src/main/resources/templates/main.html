@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>웹사이트</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/moonspam/NanumSquare/master/nanumsquare.css">
   <link rel="stylesheet" th:href="@{/css/main.css}">
   <link rel="stylesheet" th:href="@{/css/bottom.css}">
   <link rel="stylesheet" th:href="@{/css/top.css}">
@@ -15,115 +17,127 @@
 
 <div th:insert="~{include/top_search :: top_search}"></div>
 
-<div class="slider">
-  <div class="arrow-left">◀</div>
-  <div class="arrow-right">▶</div>
-  <div class="slider-images">
-    <div class="slider-image" id="slider" style="display: none;">
-      <img th:src="@{/sources/picture/설명2.jpg}" alt="이미지 1">
+<!-- 슬라이더와 카테고리를 함께 감싸는 컨테이너 -->
+<div class="top-section-container fade-in-section">
+  <!-- 카테고리 부분 (왼쪽 배치) -->
+  <section class="categories">
+    <h2><span style="color: #9cee69;">추천</span> 카테고리</h2>
+    <div class="category-icons">
+      <!-- 비로그인 또는 성격유형 없는 경우 -->
+      <th:block th:if="${loginMember == null or !loginMember.isLogin or loginMember.member_personality == null or loginMember.member_personality == 0}">
+        <button class="category" th:each="category, iterStat : ${categoryCount}" th:if="${iterStat.index < 5}"
+                th:onclick="|location.href='@{/category/category_info(category_type=${category.category_type})}'|"
+                th:title="${category.category_type}">
+          <div class="category-icon">
+            <img th:src="@{'/sources/picture/' + ${category.category_type} + '.png'}"
+                 th:alt="${category.category_type} + ' 아이콘'"
+                 onerror="this.src='/sources/picture/default.png'">
+          </div>
+          <span class="category-name" th:text="${category.category_type}">카테고리명</span>
+        </button>
+      </th:block>
+
+      <!-- 성격유형 기반 추천 (마촉 추천) -->
+      <th:block th:if="${loginMember != null and loginMember.isLogin and loginMember.member_personality != null and loginMember.member_personality > 0}">
+        <th:block th:switch="${loginMember.member_personality}">
+          <th:block th:case="1">
+            <th:block th:with="categories=${'아웃도어,스포츠관람,자동차,게임,댄스'.split(',')}">
+              <button class="category" th:each="category : ${categories}"
+                      th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|"
+                      th:title="${category}">
+                <div class="category-icon">
+                  <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
+                </div>
+                <span class="category-name" th:text="${category}">카테고리명</span>
+              </button>
+            </th:block>
+          </th:block>
+          <th:block th:case="2">
+            <th:block th:with="categories=${'운동,요리,자기계발,봉사활동,업종'.split(',')}">
+              <button class="category" th:each="category : ${categories}"
+                      th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|"
+                      th:title="${category}">
+                <div class="category-icon">
+                  <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
+                </div>
+                <span class="category-name" th:text="${category}">카테고리명</span>
+              </button>
+            </th:block>
+          </th:block>
+          <th:block th:case="3">
+            <th:block th:with="categories=${'사교,언어,문화,반려동물,음악'.split(',')}">
+              <button class="category" th:each="category : ${categories}"
+                      th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|"
+                      th:title="${category}">
+                <div class="category-icon">
+                  <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
+                </div>
+                <span class="category-name" th:text="${category}">카테고리명</span>
+              </button>
+            </th:block>
+          </th:block>
+          <th:block th:case="4">
+            <th:block th:with="categories=${'인문학,공예,사진,스포츠관람'.split(',')}">
+              <button class="category" th:each="category : ${categories}"
+                      th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|"
+                      th:title="${category}">
+                <div class="category-icon">
+                  <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
+                </div>
+                <span class="category-name" th:text="${category}">카테고리명</span>
+              </button>
+            </th:block>
+          </th:block>
+          <th:block th:case="*">
+            <p>회원님의 성격 유형을 설정해주세요!</p>
+          </th:block>
+        </th:block>
+      </th:block>
     </div>
-    <div class="slider-image" style="display: none;">
-      <img th:src="@{/sources/picture/설명3.jpg}" alt="이미지 2">
+  </section>
+
+  <!-- 슬라이더 부분 (오른쪽 배치) -->
+  <div class="slider">
+    <div class="arrow-left"><i class="fas fa-chevron-left"></i></div>
+    <div class="arrow-right"><i class="fas fa-chevron-right"></i></div>
+    <div class="slider-images">
+      <div class="slider-image" id="slider" style="display: none;">
+        <img th:src="@{/sources/picture/설명2.jpg}" alt="이미지 1">
+      </div>
+      <div class="slider-image" style="display: none;">
+        <img th:src="@{/sources/picture/설명3.jpg}" alt="이미지 2">
+      </div>
+      <!-- 설명4.jpg 제거됨 -->
+      <div class="slider-image" style="display: none;">
+        <img th:src="@{/sources/picture/설명5.jpg}" alt="이미지 3">
+      </div>
+      <div class="slider-image" style="display: none;">
+        <img th:src="@{/sources/picture/설명6.jpg}" alt="이미지 4">
+      </div>
+      <div class="slider-image" style="display: none;">
+        <img th:src="@{/sources/picture/설명7.jpg}" alt="이미지 5">
+      </div>
     </div>
-    <div class="slider-image" style="display: none;">
-      <img th:src="@{/sources/picture/설명4.jpg}" alt="이미지 3">
+    <div class="slider-nav">
+      <div class="slider-dot"></div>
+      <div class="slider-dot"></div>
+      <div class="slider-dot"></div>
+      <div class="slider-dot"></div>
+      <div class="slider-dot"></div>
     </div>
-    <div class="slider-image" style="display: none;">
-      <img th:src="@{/sources/picture/설명5.jpg}" alt="이미지 4">
-    </div>
-    <div class="slider-image" style="display: none;">
-      <img th:src="@{/sources/picture/설명6.jpg}" alt="이미지 5">
-    </div>
-    <div class="slider-image" style="display: none;">
-      <img th:src="@{/sources/picture/설명7.jpg}" alt="이미지 6">
-    </div>
-  </div>
-  <div class="slider-nav">
-    <div class="slider-dot"></div>
-    <div class="slider-dot"></div>
-    <div class="slider-dot"></div>
-    <div class="slider-dot"></div>
-    <div class="slider-dot"></div>
-    <div class="slider-dot"></div>
   </div>
 </div>
 
-<!-- 최초 추천 카테고리 부분 -->
-<section class="categories">
-  <h2>추천 카테고리</h2>
-  <div class="category-icons">
-    <th:block th:if="${loginMember == null or !loginMember.isLogin or loginMember.member_personality == null or loginMember.member_personality == 0}">
-      <div class="category" th:each="category, iterStat : ${categoryCount}" th:if="${iterStat.index < 5}" th:title="${category.category_type}">
-        <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category.category_type})}'|">
-          <img th:src="@{'/sources/picture/' + ${category.category_type} + '.png'}"
-               th:alt="${category.category_type} + ' 아이콘'"
-               onerror="this.src='/sources/picture/default.png'">
-        </button>
-        <span class="category-name" th:text="${category.category_type}">카테고리명</span>
-      </div>
-    </th:block>
-
-    <!-- 마촉 추천 블록 -->
-    <th:block th:if="${loginMember != null and loginMember.isLogin and loginMember.member_personality != null and loginMember.member_personality > 0}">
-      <th:block th:switch="${loginMember.member_personality}">
-        <th:block th:case="1">
-          <th:block th:with="categories=${'아웃도어,스포츠관람,자동차,게임,댄스'.split(',')}">
-            <div class="category" th:each="category : ${categories}" th:title="${category}">
-              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
-                <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
-              </button>
-              <span class="category-name" th:text="${category}">카테고리명</span>
-            </div>
-          </th:block>
-        </th:block>
-        <th:block th:case="2">
-          <th:block th:with="categories=${'운동,요리,자기계발,봉사활동,업종'.split(',')}">
-            <div class="category" th:each="category : ${categories}" th:title="${category}">
-              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
-                <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
-              </button>
-              <span class="category-name" th:text="${category}">카테고리명</span>
-            </div>
-          </th:block>
-        </th:block>
-        <th:block th:case="3">
-          <th:block th:with="categories=${'사교,언어,문화,반려동물,음악'.split(',')}">
-            <div class="category" th:each="category : ${categories}" th:title="${category}">
-              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
-                <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
-              </button>
-              <span class="category-name" th:text="${category}">카테고리명</span>
-            </div>
-          </th:block>
-        </th:block>
-        <th:block th:case="4">
-          <th:block th:with="categories=${'인문학,공예,사진,스포츠관람'.split(',')}">
-            <div class="category" th:each="category : ${categories}" th:title="${category}">
-              <button class="category-icon" th:onclick="|location.href='@{/category/category_info(category_type=${category})}'|">
-                <img th:src="@{'/sources/picture/' + ${category} + '.png'}" onerror="this.src='/sources/picture/default.png'">
-              </button>
-              <span class="category-name" th:text="${category}">카테고리명</span>
-            </div>
-          </th:block>
-        </th:block>
-        <th:block th:case="*">
-          <p>회원님의 성격 유형을 설정해주세요!</p>
-        </th:block>
-      </th:block>
-    </th:block>
-  </div>
-</section>
-
 <!-- 인기 동호회 -->
-<section class="recommended-clubs" id="recommended-clubs">
-  <h2>인기 동호회</h2>
+<section class="recommended-clubs fade-in-section" id="recommended-clubs">
+  <h2><span style="color: #9cee69;">인기</span> 동호회</h2>
   <div class="club-container">
-    <button class="club-box" th:each="club, iterStat : ${clubCount}" th:if="${iterStat.index < 5}" th:title="${club.club_name}"
+    <button class="club-box" th:each="club, iterStat : ${clubCount}" th:if="${iterStat.index < 4}" th:title="${club.club_name}"
             th:onclick="|location.href='@{/club/club_info(club_id=${club.club_id})}'|">
       <div class="club-image-container">
         <img th:if="${club.club_profile != null}"
              th:src="@{/image/clubprofile/{img}(img=${club.club_profile})}"
-             alt="클럭 대표 이미지"
+             alt="클럴 대표 이미지"
              class="club-profile-image">
 
         <img th:unless="${club.club_profile != null}"
@@ -136,8 +150,46 @@
   </div>
 </section>
 
+<!-- 추가된 섹션: 설명4 이미지와 상품 목록 -->
+<div class="special-section-container fade-in-section">
+  <!-- 왼쪽에 설명4 이미지 -->
+  <div class="special-image">
+    <img th:src="@{/sources/picture/설명4.jpg}" alt="설명 이미지">
+  </div>
+
+  <!-- 오른쪽에 상품 목록 -->
+  <section class="item-list-section">
+    <h2><span style="color: #9cee69;">추천</span> 상품</h2>
+    <div class="item-container">
+      <div class="item-box" th:each="item, iterStat : ${itemList}" th:if="${iterStat.index < 3}"
+           th:onclick="|location.href='@{/business/item_info(item_id=${item.item_id})}'|">
+        <div class="item-image-container">
+          <img th:if="${item.item_img != null}"
+               th:src="@{/image/businessitem/{img}(img=${item.item_img})}"
+               alt="상품 이미지"
+               class="item-image">
+          <img th:unless="${item.item_img != null}"
+               th:src="@{/sources/picture/기본이미지.png}"
+               alt="기본 이미지"
+               class="item-image">
+        </div>
+        <div class="item-info">
+          <h3 class="item-name" th:text="${item.item_title}">상품명</h3>
+          <p class="item-price" th:text="${#numbers.formatDecimal(item.item_price, 0, 'COMMA', 0, 'POINT')} + '원'">가격</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- float 해제를 위한 div -->
+<div style="clear: both;"></div>
+
 <div th:replace="~{include/bottom_info :: bottom_info}"></div>
+
+<!-- 스크립트 -->
 <script th:src="@{/js/main.js}"></script>
 <script th:src="@{/js/top.js}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>

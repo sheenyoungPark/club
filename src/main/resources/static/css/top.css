@@ -1,230 +1,482 @@
+/* top.css - 수정된 스타일 */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    font-family: 'Noto Sans KR', sans-serif;
-    padding-top: 70px; /* 헤더 높이만큼 패딩 추가 */
+/* 나눔스퀘어라운드 폰트 임포트 */
+@import url('https://cdn.jsdelivr.net/gh/moonspam/NanumSquareRound@1.0/nanumsquareround.css');
+
+/* 폰트 패밀리 정의 - 다양한 폰트 이름 지정 */
+:root {
+    --nanum-round-font: 'NanumSquareRound', 'NanumSquare Round', 'NanumSquareRound Light', 'NanumSquareRound Regular', 'NanumSquareRound Bold', 'NanumSquareRound ExtraBold', sans-serif;
 }
 
+/* body 패딩 조정 */
+body {
+    font-family: 'NanumSquare', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    padding-top: 75px; /* 헤더 높이에 맞게 패딩 조정 */
+}
+
+/* 로고 컨테이너에 margin 추가하여 위치 조정 (필요시) */
+.header a:first-child {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    position: relative; /* 호버 텍스트 위치 기준점 */
+}
+
+/* 헤더 스타일 - Envato의 슬림한 헤더 */
 .header {
-    background-color: #191c25;
-    padding: 15px 30px;
+    background-color: rgba(25, 28, 37, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 7.5px 0;  /* 15px에서 7.5px로 줄임 */
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: fixed;
     width: 100%;
     top: 0;
-    z-index: 100;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: 75px; /* 고정 높이 설정 */
 }
 
+/* 로고 이미지 크기 60px로 증가 */
+.logo-img {
+    height: 60px;
+    width: auto;
+    transition: all 0.3s ease;
+    vertical-align: middle;
+    margin-left: 60px;
+}
+
+.logo-img:hover {
+    transform: scale(1.05);
+}
+
+/* 로고 호버 텍스트 스타일 - 애니메이션 효과 수정 */
+.logo-hover-text {
+    position: absolute;
+    left: calc(60px + 80px); /* 오른쪽으로 더 이동 */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    line-height: 1.3;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-family: 'NanumSquareRound', sans-serif;
+    /* display 속성 제거 - 항상 표시되지만 opacity로 숨김 */
+    opacity: 0;
+    pointer-events: none; /* 투명할 때 마우스 이벤트 무시 */
+    transition: opacity 0.3s ease;
+    /* !important 추가하여 다른 스타일에 의해 덮어쓰이지 않도록 함 */
+    font-family: 'NanumSquareRound', sans-serif !important;
+}
+
+/* 로고에 호버 시 텍스트 표시 */
+.header a:first-child:hover .logo-hover-text {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 각 줄 스타일 */
+.logo-hover-text > div {
+    display: block;
+    white-space: nowrap;
+    transform: translateX(-15px);
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.5s ease;
+}
+
+/* 각 줄 순차적으로 나타나는 효과 */
+.header a:first-child:hover .logo-hover-text > div:nth-child(1) {
+    opacity: 1;
+    transform: translateX(0);
+    transition-delay: 0.05s;
+}
+
+.header a:first-child:hover .logo-hover-text > div:nth-child(2) {
+    opacity: 1;
+    transform: translateX(0);
+    transition-delay: 0.15s;
+}
+
+.header a:first-child:hover .logo-hover-text > div:nth-child(3) {
+    opacity: 1;
+    transform: translateX(0);
+    transition-delay: 0.25s;
+}
+
+/* 첫 글자 색상 변경 */
+.first-letter {
+    color: #9cee69;
+}
+
+/* 네비게이션 메뉴 */
 .nav {
     display: flex;
-    gap: 20px;
+    gap: 30px;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .nav a {
+    padding: 8px 12px;
     color: white;
     text-decoration: none;
-    font-size: 14px;
+    position: relative;
+    transition: color 0.3s ease;
 }
 
+/* 호버 효과 - 초록색 밑줄 */
+.nav a:hover::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #9cee69;
+}
+
+/* 클릭 효과 - 배경색 변경 */
+.nav a:active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 로그인/회원가입 버튼 영역 */
 .right-section {
+    padding-right: 20px; /* 여백 추가 */
+    min-width: 180px; /* 최소 너비 설정 */
+}
+/* 채팅 메뉴 항목 정렬 */
+.nav-item {
+    list-style: none;
     display: flex;
     align-items: center;
-    min-width: 100px;
-    justify-content: flex-end;
 }
 
+.nav-link {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* 로그인 버튼 스타일 */
 .login-btn {
-    background-color: white;
-    color: #5d4b8c;
-    border: none;
-    border-radius: 20px;
-    padding: 5px 15px;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 8px 15px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-left: 10px;
 }
 
-/* 검색 컨테이너 수정 */
+.login-btn:hover {
+    background-color: #9cee69;
+    color: black;
+    border-color: white;
+}
+
+/* 사용자 이름 스타일 */
+.right-section span {
+    color: rgba(255, 255, 255, 0.9);
+    margin-right: 10px;
+    font-weight: 500;
+}
+
 .search-container {
     width: 100%;
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 12px 5%; /* 패딩 줄임 (20px → 12px) */
+    background-color: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     position: fixed;
-    top: 70px;
-    z-index: 99;
-    display: block;
-    height: auto;
-    max-height: 500px;
-    overflow: visible;
-    transition: all 0.3s ease;
+    top: 75px;
+    left: 0;
+    z-index: 999;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 효과 */
+    transform-origin: top;
+}
+#regionDropdown {
+    position: relative; /* 상대적 위치 지정 */
+    z-index: 1000;
 }
 
-/* hidden 클래스 수정 */
+#regionModal {
+    display: none; /* JavaScript에서 block으로 변경됨 */
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 1200 !important; /* 매우 높은 z-index */
+}
+
 .search-container.hidden {
-    display: none !important;
+    transform: translateY(-100%); /* 사라질 때 약간 축소되며 위로 사라짐 */
+    opacity: 0;
+    pointer-events: none;
+}
+.search-dropdown, .search-age, .search-input, .search-btn {
+    padding: 8px 12px; /* 패딩 줄임 (12px → 8px) */
+}
+@keyframes searchAppear {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+/* 사라지는 모션 효과 추가 */
+@keyframes searchDisappear {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+}
+
+.search-container:not(.hidden) {
+    animation: searchAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .search-box {
     display: flex;
     align-items: center;
-    position: relative;
-    width: 100%;
-}
-.user-info {
-    margin-right: 10px;
-    font-weight: bold;
-    color: white;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
+/* 검색 폼 및 요소 스타일 */
 .search-form {
     display: flex;
     width: 100%;
     align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
 .search-dropdown {
-    padding: 8px;
-    width: 200px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    margin-right: 10px;
-    cursor: pointer;
+    padding: 12px 15px;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
     background-color: white;
-    -webkit-appearance: none;
-    -moz-appearance: none;
+    font-size: 15px;
+    min-width: 150px;
     appearance: none;
-    background-image:
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cpath d='M0 2l4 4 4-4H0z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8.825L1.175 4 2.237 2.938 6 6.7 9.763 2.937 10.825 4z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 8px center;
-    padding-right: 24px;
+    background-position: right 15px center;
+    padding-right: 35px;
+    transition: border-color 0.3s;
 }
 
-.search-dropdown::-ms-expand {
-    display: none;
+.search-dropdown:focus {
+    outline: none;
+    border-color: #0076ff;
 }
 
 .search-age {
-    padding: 8px;
-    width: 150px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    margin-right: 10px;
+    padding: 12px 15px;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    width: 120px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.search-age:focus {
+    outline: none;
+    border-color: #0076ff;
 }
 
 .search-input {
-    flex: 1;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    margin-right: 10px;
+    flex-grow: 1;
+    padding: 12px 15px;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #0076ff;
 }
 
 .search-btn {
-    background: none;
+    background-color: #9cee69; /* 색상 변경: #0076ff → #9cee69 */
+    color: black; /* 텍스트 색상을 검은색으로 변경 */
     border: none;
+    border-radius: 5px;
+    padding: 8px 15px; /* 패딩 조정하여 높이 맞춤 */
+    font-size: 15px;
     cursor: pointer;
-    font-size: 16px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px; /* 높이 명시적으로 지정 */
 }
 
+.search-btn:hover {
+    background-color: #8bdd58; /* 호버 색상도 변경 */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 검색 태그 스타일 */
 .search-tags {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-top: 15px;
-    overflow-x: auto;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .tag {
-    background-color: #ebebeb;
-    padding: 5px 15px;
-    border-radius: 20px;
+    background-color: #f1f7ff;
+    color: #0076ff;
+    padding: 6px 15px;
+    border-radius: 5px;
     white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
+.tag:hover {
+    background-color: #0076ff;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* 지역 모달 스타일 */
 .region-modal {
     display: none;
     position: absolute;
-    top: 100%;
+    top: 100%; /* 버튼 높이의 100%에 위치하도록 설정 */
     left: 0;
     width: 550px;
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    margin-top: 5px;
-}
-
-.region-modal-content {
-    width: 100%;
-    background-color: white;
-    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1100;
+    margin-top: 5px; /* 버튼과의 간격 */
     overflow: hidden;
 }
 
 .region-modal-header {
     padding: 15px 20px;
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69; /* #0076ff → #9cee69 */
+    color: black; /* 텍스트 색상도 검정색으로 변경 */
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+.region-modal-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
 .region-modal-close {
     background: none;
     border: none;
-    color: white;
-    font-size: 20px;
+    color: black; /* 흰색에서 검정색으로 변경 */
+    font-size: 24px;
     cursor: pointer;
 }
 
 .region-selection-container {
     display: flex;
-    height: 300px;
+    height: 350px;
+}
+.region-button {
+    position: relative; /* 모달의 absolute 위치를 위한 기준점 설정 */
 }
 
 .city-list {
-    width: 30%;
+    width: 35%;
     border-right: 1px solid #eee;
     overflow-y: auto;
 }
 
 .district-list {
-    width: 70%;
+    width: 65%;
     padding: 15px;
     overflow-y: auto;
 }
 
-.city-item, .district-item {
+.city-item {
     padding: 12px 15px;
     cursor: pointer;
     transition: background-color 0.2s;
+    border-bottom: 1px solid #f5f5f5;
 }
 
-.city-item:hover, .district-item:hover {
-    background-color: #f5f5f5;
+.city-item:hover {
+    background-color: #f5f9f2;
 }
 
 .city-item.active {
-    background-color: #e6d7f9;
-    font-weight: bold;
+    background-color: #e0f5d7; /* #e0f0ff → #e0f5d7 */
+    font-weight: 600;
+    color: #65a636; /* #0076ff → #65a636 (더 어두운 녹색) */
 }
 
 .district-item {
     display: inline-block;
     margin: 5px;
     padding: 8px 15px;
-    background-color: #f0f0f7;
+    background-color: #f5f5f5;
     border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: black;
+}
+
+.district-item:hover {
+    background-color: #e0f5d7; /* #e0f0ff → #e0f5d7 */
+    color: #65a636; /* #0076ff → #65a636 */
+}
+
+.district-item.selected {
+    background-color: #9cee69; /* #0076ff → #9cee69 */
+    color: black; /* 텍스트 색상을 검정색으로 변경 */
+    font-weight: 600;
+}
+.district-item.all-district {
+    text-align: center;
+    width: calc(100% - 10px);
+    font-weight: bold;
+    background-color: #f0f0f0; /* 회색 배경으로 변경 */
+    color: black; /* 검은색 텍스트 */
+    margin-bottom: 10px;
+}
+.district-item.all-district:hover,
+.district-item.all-district.selected {
+    background-color: #9cee69; /* 호버 및 선택 시 녹색으로 변경 */
+    color: black;
 }
 
 .region-modal-footer {
@@ -234,80 +486,166 @@ body {
 }
 
 .confirm-btn {
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69; /* #0076ff → #9cee69 */
+    color: black; /* 텍스트 색상을 검정색으로 변경 */
     border: none;
     border-radius: 4px;
-    padding: 8px 20px;
+    padding: 10px 20px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-/* 검색 토글 버튼 스타일 수정 */
-.search-toggle {
+
+.confirm-btn:hover {
+    background-color: #8bdd58;
+}
+
+/* 알림 배지 스타일 */
+.position-relative {
+    position: relative;
+}
+
+#unreadChatCount {
+    position: absolute;
+    top: -8px;
+    right: -12px;
+    background-color: #ff3366;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+.search-icon-img {
+    max-width: 30px;
+    max-height: 30px;
+    width: auto;
+    height: auto;
     display: block;
-    margin-right: 15px;
+    filter: brightness(0) invert(1);
+}
+
+/* 검색 폼의 검색 버튼 이미지 스타일 */
+.search-btn-img {
+    max-width: 30px;
+    max-height: 30px;
+    width: auto;
+    height: auto;
+    display: block;
+    filter: none;
+}
+
+/* 검색 토글 버튼 */
+.search-toggle {
     background: none;
     border: none;
     color: white;
     cursor: pointer;
     font-size: 18px;
-    position: relative;
-    padding: 5px;
-}
-
-/* 검색 토글 버튼 호버 효과 추가 */
-.search-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
+    transition: all 0.3s ease;
 }
 
-/* 로고설정 */
-.logo-img {
-    width: 50px; /* 원하는 크기로 조정 */
-    height: auto;
-    display: block;
+.search-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* 미디어 쿼리 */
+/* 반응형 미디어 쿼리 */
+@media (max-width: 1200px) {
+    .nav {
+        gap: 20px;
+    }
+
+    .region-modal {
+        width: 500px;
+    }
+}
+
+@media (max-width: 992px) {
+    .header {
+        padding: 15px 3%;
+    }
+
+    .nav {
+        gap: 15px;
+    }
+
+    .nav a {
+        padding: 8px 12px; /* 패딩 추가로 클릭 영역 확대 */
+    }
+
+    .region-modal {
+        width: 450px;
+    }
+}
+
 @media (max-width: 768px) {
+    .header {
+        padding: 12px 3%;
+    }
+
+    .nav {
+        display: none; /* 모바일 메뉴 버튼 구현 필요 */
+    }
+
+    .search-form {
+        flex-direction: column;
+    }
+
+    .search-dropdown, .search-age, .search-input, .search-btn {
+        width: 100%;
+    }
+
     .region-modal {
         width: 100%;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        left: 0;
     }
-    .nav {
-        position: static;
-        transform: none;
-        justify-content: center;
-        flex-wrap: wrap;
+
+    .city-list, .district-list {
+        width: 100%;
     }
+
     .region-selection-container {
         flex-direction: column;
         height: 500px;
     }
-    .city-list, .district-list {
-        width: 100%;
-    }
+
     .city-list {
         height: 40%;
         border-right: none;
         border-bottom: 1px solid #eee;
     }
+
     .district-list {
         height: 60%;
     }
-    .search-form {
-        flex-direction: column;
-        align-items: stretch;
+}
+
+/* 미디어 쿼리 추가 - 화면이 작아질 때 처리 */
+@media (max-width: 1024px) {
+    .nav {
+        gap: 15px;
     }
-    .search-dropdown, .search-age, .search-input {
-        width: 100%;
-        margin-right: 0;
-        margin-bottom: 10px;
+
+    .nav a {
+        font-size: 14px;
+        padding: 6px 8px;
     }
-    .search-btn {
-        align-self: flex-end;
-    }
+}
+
+/* 폰트 어썸 아이콘 스타일 */
+.fas {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
 }

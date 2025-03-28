@@ -45,6 +45,10 @@ public interface ItemMapper {
 	@Select("select * from business_item where item_id = #{item_id}")
 	BusinessItemBean getItemById(String item_id);
 
+	//아이템 리스트를 랜덤 순으로
+	@Select("SELECT * FROM business_item ORDER BY DBMS_RANDOM.VALUE")
+	List<BusinessItemBean> randomItemList();
+
 
 
 }
