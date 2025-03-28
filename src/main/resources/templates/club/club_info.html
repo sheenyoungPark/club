@@ -192,6 +192,12 @@
                     </div>
                 </div>
             </div>
+
+            <div class="pagination-controls">
+                <button class="page-btn" id="prevPage" onclick="changePage(-1)"><i class="fas fa-chevron-left"></i></button>
+                <span id="currentPage">1</span> / <span id="totalPages">3</span>
+                <button class="page-btn" id="nextPage" onclick="changePage(1)"><i class="fas fa-chevron-right"></i></button>
+            </div>
         </div>
     </div>
 
@@ -342,6 +348,68 @@
         const leftColumn = document.querySelector('.club-left-column');
         const rightColumn = document.querySelector('.club-right-column');
         const rightColumnContent = document.querySelector('.right-column-content');
+
+        // 게시글 페이징 관련 변수
+        const postsPerPage = 4; // 페이지당 표시할 게시글 수
+        const postCards = document.querySelectorAll('.post-card');
+        const totalPosts = postCards.length;
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+
+        let currentPage = 1;
+
+        // 초기 페이지 정보 설정
+        if(document.getElementById('currentPage')) {
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+
+            // 초기 게시글 표시
+            updatePostsDisplay();
+            updatePaginationButtons();
+        }
+
+        // 페이지 변경 함수
+        window.changePage = function(direction) {
+            const newPage = currentPage + direction;
+
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                document.getElementById('currentPage').textContent = currentPage;
+                updatePostsDisplay();
+                updatePaginationButtons();
+            }
+        };
+
+        // 게시글 표시 업데이트
+        function updatePostsDisplay() {
+            const startIdx = (currentPage - 1) * postsPerPage;
+            const endIdx = Math.min(startIdx + postsPerPage, totalPosts);
+
+            // 모든 게시글 숨기기
+            postCards.forEach(card => {
+                card.style.display = 'none';
+            });
+
+            // 현재 페이지에 해당하는 게시글만 표시
+            for (let i = startIdx; i < endIdx; i++) {
+                if (postCards[i]) {
+                    postCards[i].style.display = 'flex';
+                }
+            }
+        }
+
+        // 페이지 버튼 상태 업데이트
+        function updatePaginationButtons() {
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+
+            if(!prevBtn || !nextBtn) return;
+
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.classList.toggle('disabled', currentPage === 1);
+
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.classList.toggle('disabled', currentPage === totalPages);
+        }
 
         if (leftColumn && rightColumn && rightColumnContent) {
             // 약간의 지연을 두어 이미지 로드 등이 완료된 후 계산

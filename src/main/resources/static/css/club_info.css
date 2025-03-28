@@ -362,47 +362,66 @@ body {
 
 /* 예약 카드 */
 .reservations-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px; /* 높이 제한 */
+    overflow-y: auto;
 }
 
 .reservation-card {
+    display: flex;
+    align-items: center;
+    height: 46px;
+    padding: 0;
     background-color: white;
     border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
-    display: flex;
-    flex-direction: column;
 }
 
 .reservation-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
 }
 
 .reservation-content {
-    padding: 15px;
-    flex: 1;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    height: 100%;
+}
+
+.reservation-info {
+    flex: 2;
+    align-self: flex-start;
+    width: 100%;
 }
 
 .reservation-title {
-    font-size: 18px;
     font-weight: 600;
-    margin: 0 0 10px 0;
-    color: #333;
+    width: 180px;
+    padding: 0 10px 0 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    margin: 0;
 }
 
 .reservation-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 15px;
-    color: #777;
-    font-size: 14px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    gap: 20px;
 }
 
 .reservation-date, .reservation-time, .reservation-price {
+    font-size: 13px;
+    white-space: nowrap;
     display: flex;
     align-items: center;
 }
@@ -414,15 +433,14 @@ body {
 }
 
 .reservation-status-container {
-    margin-top: 15px;
+    margin: 0 15px;
 }
 
 .reservation-status {
-    display: inline-block;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 .status-pending {
@@ -447,25 +465,58 @@ body {
 
 .reservation-actions {
     display: flex;
-    gap: 10px;
-    padding: 15px;
-    border-top: 1px solid #eee;
-    background-color: #f9f9f9;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding-right: 15px;
+}
+/* 스크롤바 스타일 */
+.reservations-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.reservations-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.reservations-list::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 10px;
+}
+
+.reservations-list::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+}
+
+/* 모든 버튼 공통 스타일 */
+.btn-cancel, .btn-view, .btn-disabled, .btn-secondary {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    height: 28px;
+    min-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    white-space: nowrap;
+    text-decoration: none;
+}
+.btn-cancel i, .btn-view i, .btn-disabled i, .btn-secondary i {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 12px;
+    line-height: 1;
+    margin-top: -1px;
 }
 
 .btn-cancel {
-    padding: 8px 12px;
     background-color: #dc3545;
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
 }
 
 .btn-cancel:hover {
@@ -473,34 +524,17 @@ body {
 }
 
 .btn-view {
-    padding: 8px 12px;
     background-color: #9cee69;
     color: black;
-    border: none;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 14px;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
 }
 
 .btn-view:hover {
-    background-color: #27374c;
+    background-color: #2a4b00;
 }
 
 .btn-disabled {
-    padding: 8px 12px;
     background-color: #6c757d;
     color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: not-allowed;
-    display: flex;
-    align-items: center;
-    gap: 5px;
 }
 
 /* 액션 푸터 */
@@ -564,8 +598,17 @@ body {
 }
 
 .btn-secondary {
-    background-color: #9cee69;
-    color: black;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    height: 26px;
+    min-width: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: #14191f;
 }
 
 .btn-secondary:hover {
@@ -740,19 +783,24 @@ body {
 
 /* 게시글 카드 디자인 */
 .posts-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px; /* 높이를 절반으로 줄임 */
+    overflow-y: hidden; /* 스크롤 제거 */
 }
 
 .post-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     background-color: white;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    height: 80px; /* 높이 고정 */
 }
 
 .post-card:hover {
@@ -760,8 +808,9 @@ body {
 }
 
 .post-image {
-    height: 180px;
-    overflow: hidden;
+    width: 80px; /* 이미지 너비 고정 */
+    height: 80px; /* 이미지 높이 고정 */
+    flex-shrink: 0;
 }
 
 .post-image img {
@@ -776,15 +825,17 @@ body {
 }
 
 .post-content {
-    padding: 15px;
     flex: 1;
-    position: relative;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .post-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
-    margin: 0 0 10px 0;
+    margin: 0 0 5px 0;
     color: #333;
 }
 
@@ -793,7 +844,25 @@ body {
     flex-wrap: wrap;
     gap: 15px;
     color: #777;
-    font-size: 14px;
+    font-size: 12px;
+}
+/* 스크롤바 스타일 */
+.posts-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.posts-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.posts-list::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 10px;
+}
+
+.posts-list::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
 }
 
 .post-date, .post-author {
@@ -811,6 +880,41 @@ body {
     position: absolute;
     top: 15px;
     right: 15px;
+}
+/* 페이징 컨트롤 추가 */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.page-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.page-btn.active {
+    background-color: #9cee69;
+    color: black;
+    border-color: #9cee69;
+}
+
+.page-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .btn-delete {
@@ -861,4 +965,46 @@ body {
     .admin-label {
         margin-bottom: 10px;
     }
+    .post-card {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 160px;
+        }
+            .reservation-card {
+                height: auto;
+                flex-wrap: wrap;
+                padding: 8px;
+            }
+
+        .reservation-content {
+                flex-wrap: wrap;
+            }
+            .reservation-title {
+                    width: 100%;
+                    padding: 5px 0;
+                }
+
+                .reservation-meta {
+                        width: 100%;
+                        flex-wrap: wrap;
+                        padding: 5px 0;
+                        gap: 10px;
+                    }
+                    .reservation-status-container {
+                            margin: 5px 0;
+                        }
+
+                .reservation-status {
+                    margin: 5px 0;
+                }
+
+        .reservation-actions {
+                width: 100%;
+                justify-content: flex-start;
+                padding: 5px 0;
+            }
 }
