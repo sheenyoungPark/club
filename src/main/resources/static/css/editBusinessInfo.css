@@ -44,7 +44,7 @@ h2:after {
     left: 50%;
     width: 60px;
     height: 3px;
-    background-color: #5d4b8c;
+    background-color: #9cee69;
     transform: translateX(-50%);
 }
 
@@ -82,7 +82,7 @@ label {
 }
 
 .input-field:focus {
-    border-color: #5d4b8c;
+    border-color: #9cee69;
     box-shadow: 0 0 0 2px rgba(93, 75, 140, 0.2);
 }
 
@@ -109,13 +109,13 @@ label {
     text-align: center;
     transition: all 0.3s;
     text-decoration: none;
-    background-color: #5d4b8c;
-    color: white;
+    background-color: #9cee69;
+    color: #14191f;
     margin-bottom: 15px;
 }
 
 .button:hover {
-    background-color: #4a3d73;
+    background-color: #2a4b00;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(93, 75, 140, 0.3);
 }
