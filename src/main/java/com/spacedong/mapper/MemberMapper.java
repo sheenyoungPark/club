@@ -134,4 +134,15 @@ public interface MemberMapper {
             "member_nickname LIKE '%' || #{keyword} || '%' " +
             "ORDER BY member_joindate DESC")
     List<MemberBean> searchMembersByAllFields(@Param("keyword") String keyword);
+
+    @Select("select member_id from member where member_phone = #{member_phone}")
+    String findByPhone(String member_phone);
+
+    @Select("Select * from member where member_id = #{member_id} and member_phone = #{member_phone}")
+    MemberBean findMemberByIdAndPhone(@Param("member_id") String member_id,@Param("member_phone") String member_phone);
+
+    @Update("UPDATE member SET member_pw = #{newPassword} WHERE member_id = #{member_id}")
+    void resetPw(@Param("member_id") String member_id,@Param("newPassword") String newPassword);
+
+
 }

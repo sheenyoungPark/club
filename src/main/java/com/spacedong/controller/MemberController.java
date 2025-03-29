@@ -317,4 +317,114 @@ public class MemberController {
 		}
 		return "redirect:/member/memberinfo";
 	}
+
+	/**
+	 * 아이디 찾기 페이지 표시
+	 */
+	@GetMapping("/find_id")
+	public String findIdForm() {
+		return "member/find_id";
+	}
+
+	/**
+	 * 아이디 찾기 처리
+	 */
+	@PostMapping("/find_id_pro")
+	public String findId(@RequestParam("phone") String phone, Model model) {
+		try {
+			// 휴대폰 번호로 회원 아이디 찾기
+			String foundId = memberService.findByPhone(phone);
+
+			if (foundId != null) {
+				model.addAttribute("foundId", foundId);
+				model.addAttribute("message", "회원님의 아이디를 찾았습니다.");
+				model.addAttribute("success", true);
+			} else {
+				model.addAttribute("message", "해당 휴대폰 번호로 등록된 회원 정보가 없습니다.");
+				model.addAttribute("success", false);
+			}
+		} catch (Exception e) {
+			model.addAttribute("message", "아이디 찾기 중 오류가 발생했습니다. 다시 시도해 주세요.");
+			model.addAttribute("success", false);
+		}
+
+		return "member/find_id";
+	}
+
+
+	/**
+	 * 비밀번호 찾기 페이지 표시
+	 */
+	@GetMapping("/find_password")
+	public String findPasswordForm() {
+		return "member/find_password";
+	}
+
+	/**
+	 * 비밀번호 찾기 처리 (본인 확인)
+	 */
+	@PostMapping("/find_password_pro")
+	public String findPassword(
+			@RequestParam("member_id") String memberId,
+			@RequestParam("phone") String phone,
+			Model model) {
+
+		try {
+			// 아이디와 휴대폰 번호로 회원 확인
+			MemberBean member = memberService.findMemberByIdAndPhone(memberId, phone);
+
+			if (member != null) {
+
+				// 본인 확인 성공 - 세션에 정보 저장
+				model.addAttribute("message", "본인 확인이 완료되었습니다. 새 비밀번호를 설정해 주세요.");
+				model.addAttribute("success", true);
+
+				model.addAttribute("member_id", member.getMember_id());
+
+			} else {
+				model.addAttribute("message", "일치하는 회원 정보가 없습니다. 아이디와 휴대폰 번호를 확인해 주세요.");
+				model.addAttribute("success", false);
+			}
+		} catch (Exception e) {
+			model.addAttribute("message", "비밀번호 찾기 중 오류가 발생했습니다. 다시 시도해 주세요.");
+			model.addAttribute("success", false);
+		}
+
+		return "member/reset_password";
+	}
+
+	/**
+	 * 비밀번호 재설정 페이지 표시
+	 */
+	@GetMapping("/reset_password")
+	public String resetPasswordForm(@RequestParam("member_id")String memberId, Model model) {
+		// 세션에서 회원 아이디 확인
+
+		if (memberId == null) {
+			// 세션 정보가 없으면 비밀번호 찾기 페이지로 리다이렉트
+			model.addAttribute("message", "비밀번호 재설정 세션이 만료되었습니다. 다시 시도해 주세요.");
+			model.addAttribute("success", false);
+			return "redirect:/member/find_password";
+		}
+
+		model.addAttribute("member_id", memberId);
+		return "member/reset-password";
+	}
+
+	/**
+	 * 비밀번호 재설정 처리
+	 */
+	@PostMapping("/reset_password_pro")
+	public String resetPassword(
+			@RequestParam("member_id") String memberId,
+			@RequestParam("new_password") String newPassword,
+			RedirectAttributes redirectAttributes) {
+
+			// 새 비밀번호 설정
+			memberService.newpassowrd(memberId, newPassword);
+
+			return "member/reset_password_success";
+
+	}
+
 }

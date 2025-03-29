@@ -250,5 +250,58 @@ public class MemberService {
 		return memberRepository.getMemberById(member_id);
 	}
 
+	//핸드폰으로 멤버찾기
+	public String findByPhone(String member_phone){
+		String formattedPhone = formatPhoneNumber(member_phone);
+
+		return memberRepository.findByPhone(formattedPhone);
+	}
+
+	public MemberBean findMemberByIdAndPhone(String member_id,String member_phone){
+		String formattedPhone = formatPhoneNumber(member_phone);
+		System.out.println("mService" + formattedPhone);
+		return memberRepository.findMemberByIdAndPhone(member_id, formattedPhone);
+	}
+
+	public void newpassowrd(String member_id, String newPassword) {
+		MemberBean member = memberRepository.selectMemberById(member_id);
+
+		if (member != null) {
+			// 비밀번호 암호화
+			member.setMember_pw(newPassword);
+
+			memberRepository.resetPw(member.getMember_id(), member.getMember_pw());
+		}
+
+	}
+
+	/**
+	 * 전화번호 형식 변환 (하이픈 추가)
+	 * 예: 01012345678 -> 010-1234-5678
+	 */
+	private String formatPhoneNumber(String phone) {
+		System.out.println("mService" + phone);
+		// 이미 하이픈이 있는 경우 그대로 반환
+		if (phone.contains("-")) {
+			return phone;
+		}
+
+		// 숫자만 남기기
+		phone = phone.replaceAll("[^0-9]", "");
+
+		// 길이에 따라 적절한 형식으로 변환
+		if (phone.length() == 10) { // 10자리 (예: 0101231234)
+			return phone.substring(0, 2) + "-" +
+					phone.substring(3, 6) + "-" +
+					phone.substring(6);
+		} else if (phone.length() == 11) { // 11자리 (예: 01012345678)
+			return phone.substring(0, 3) + "-" +
+					phone.substring(3, 7) + "-" +
+					phone.substring(7);
+		} else {
+			// 기타 형식은 그대로 반환
+			return phone;
+		}
+	}
 
 }
