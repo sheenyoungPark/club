@@ -112,12 +112,9 @@ public class ReservationService {
             reservationEndTime.setTime(reservation.getReservation_date());
             reservationEndTime.set(Calendar.HOUR_OF_DAY, reservation.getEnd_time());
 
-            if (today.after(reservationEndTime.getTime())) {
-                reservation.setStatus("COMPLETED");
-                reservationMapper.updateReservation(reservation);
             }
         }
-    }
+
     // 리뷰 등록
     public void insertReview(ReservationReviewBean review) {
         reservationRepository.insertReview(review);
