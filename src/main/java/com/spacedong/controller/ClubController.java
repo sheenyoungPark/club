@@ -1,10 +1,7 @@
 package com.spacedong.controller;
 
 import com.spacedong.beans.*;
-import com.spacedong.service.CategoryService;
-import com.spacedong.service.ClubMemberService;
-import com.spacedong.service.ClubService;
-import com.spacedong.service.ReservationService;
+import com.spacedong.service.*;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -47,6 +44,9 @@ public class ClubController {
 
 	@Autowired
 	private ReservationService reservationService;
+
+	@Autowired
+	private AdminNotificationService adminNotificationService;
 
 	// ✅ 클럽 정보 페이지
 	@GetMapping("/club_info")
@@ -214,6 +214,12 @@ public class ClubController {
 		// ✅ 생성된 클럽의 ID로 회장 자동 가입
 		ClubBean newClubBean = clubService.searchClubName(clubBean.getClub_name());
 		clubService.create_join_club(newClubBean.getClub_id(), loginMember.getMember_id());
+
+		// ✅ 관리자에게 알림 전송
+		adminNotificationService.sendApprovalNotification("admin", "ADMIN", "REQUEST2",
+				"클럽" + clubBean.getClub_name(), "새로운 동호회가 생성되었습니다.");
+
+
 
 		return "redirect:/category/category_info";
 	}
