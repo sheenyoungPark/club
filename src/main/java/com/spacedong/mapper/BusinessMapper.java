@@ -226,5 +226,30 @@ public interface BusinessMapper {
     // 판매자 상태 업데이트
     @Update("UPDATE business SET business_public = #{param2} WHERE business_id = #{param1}")
     void updateBusinessStatus(String businessId, String status);
+
+    /**
+     * 이메일과 사업자 번호로 기업회원 아이디 찾기
+     */
+    @Select("SELECT business_id FROM business WHERE business_email = #{param1} AND business_number = #{param2}")
+    String findBusinessIdByEmailAndNumber(String email, String businessNumber);
+
+    /**
+     * 기업회원 정보 확인 (비밀번호 찾기용)
+     */
+    @Select("SELECT COUNT(*) FROM business WHERE business_id = #{param1} AND business_email = #{param2} AND business_number = #{param3}")
+    int verifyBusinessInfo(String businessId, String email, String businessNumber);
+
+    /**
+     * 휴대폰 번호로 기업회원 아이디 찾기
+     */
+    @Select("SELECT business_id FROM business WHERE business_phone = #{phone}")
+    String findBusinessIdByPhone(String phone);
+
+    /**
+     * 아이디와 휴대폰 번호로 기업회원 정보 확인
+     */
+    @Select("SELECT COUNT(*) FROM business WHERE business_id = #{param1} AND business_phone = #{param2}")
+    int verifyBusinessIdAndPhone(String businessId, String phone);
+
     //===============================================================
 }

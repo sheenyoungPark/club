@@ -637,6 +637,144 @@ public class BusinessController {
         return "redirect:/business/category";
     }
 
+    // 아이디 찾기 페이지
+    @GetMapping("/find_id")
+    public String findId(Model model) {
+        return "business/find_id";
+    }
+
+
+    // 아이디 찾기 처리
+    @PostMapping("/find_id_pro")
+    public String findIdPro(@RequestParam("business_phone") String phone,
+                            Model model) {
+        try {
+            // 전화번호로 사업자 아이디 조회
+            String foundId = businessService.findBusinessIdByPhone(phone);
+            System.out.println("BC" + foundId);
+
+            if (foundId != null) {
+                model.addAttribute("foundId", foundId);
+                model.addAttribute("message", "아이디를 찾았습니다.");
+                model.addAttribute("success", true);
+            } else {
+                model.addAttribute("message", "일치하는 정보가 없습니다. 입력하신 휴대폰 번호를 다시 확인해 주세요.");
+                model.addAttribute("success", false);
+            }
+        } catch (Exception e) {
+            logger.error("아이디 찾기 오류", e);
+            model.addAttribute("message", "아이디 찾기 중 오류가 발생했습니다.");
+            model.addAttribute("success", false);
+        }
+
+        return "business/find_id";
+    }
+
+    // 비밀번호 찾기 페이지
+    @GetMapping("/find_password")
+    public String findPassword(Model model) {
+        return "business/find_password";
+    }
+
+    // 비밀번호 찾기 처리 (본인 확인)
+    @PostMapping("/find_password_pro")
+    public String findPasswordPro(@RequestParam("business_id") String businessId,
+                                  @RequestParam("business_phone") String phone,
+                                  Model model) {
+        try {
+            // 사업자 정보 확인 (아이디와 휴대폰 번호로)
+            boolean verified = businessService.verifyBusinessIdAndPhone(businessId, phone);
+
+            if (verified) {
+                model.addAttribute("verified", true);
+                model.addAttribute("business_id", businessId);
+                model.addAttribute("message", "본인 확인이 완료되었습니다. 새로운 비밀번호를 설정해 주세요.");
+                model.addAttribute("success", true);
+            } else {
+                model.addAttribute("message", "입력하신 정보와 일치하는 계정이 없습니다. 다시 확인해 주세요.");
+                model.addAttribute("success", false);
+            }
+        } catch (Exception e) {
+            logger.error("비밀번호 찾기 오류", e);
+            model.addAttribute("message", "비밀번호 찾기 중 오류가 발생했습니다.");
+            model.addAttribute("success", false);
+        }
+
+        return "business/find_password";
+    }
+
+
+
+    // 전화번호 형식 변환 메서드 (000-0000-0000 형식으로 변환)
+    private String formatPhoneNumber(String phone) {
+        // 모든 하이픈(-), 공백 제거
+        String numberOnly = phone.replaceAll("[\\-\\s]", "");
+
+        // 숫자만 남기기
+        numberOnly = numberOnly.replaceAll("[^0-9]", "");
+
+        // 형식이 맞지 않으면 원래 입력 반환
+        if (numberOnly.length() < 10 || numberOnly.length() > 11) {
+            return phone;
+        }
+
+        // 000-0000-0000 형식으로 변환
+        if (numberOnly.length() == 11) {
+            // 11자리 (대부분의 휴대폰 번호)
+            return numberOnly.substring(0, 3) + "-" +
+                    numberOnly.substring(3, 7) + "-" +
+                    numberOnly.substring(7);
+        } else {
+            // 10자리 (일부 지역번호나 예전 휴대폰 번호)
+            return numberOnly.substring(0, 3) + "-" +
+                    numberOnly.substring(3, 6) + "-" +
+                    numberOnly.substring(6);
+        }
+    }
+
+    // 비밀번호 재설정 처리
+    @PostMapping("/reset_password")
+    public String resetPassword(@RequestParam("business_id") String businessId,
+                                @RequestParam("new_password") String newPassword,
+                                @RequestParam("confirm_password") String confirmPassword,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        // 비밀번호 일치 확인
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("verified", true);
+            model.addAttribute("business_id", businessId);
+            model.addAttribute("message", "비밀번호가 일치하지 않습니다.");
+            model.addAttribute("success", false);
+            return "business/find_password";
+        }
+
+        // 비밀번호 길이 검사 (8~16자)
+        if (newPassword.length() < 8 || newPassword.length() > 16) {
+            model.addAttribute("verified", true);
+            model.addAttribute("business_id", businessId);
+            model.addAttribute("message", "비밀번호는 8~16자리여야 합니다.");
+            model.addAttribute("success", false);
+            return "business/find_password";
+        }
+
+        try {
+            // 비밀번호 변경
+            businessService.updatePassword(businessId, newPassword);
+
+            // 성공 메시지를 리다이렉트 속성에 추가
+            redirectAttributes.addFlashAttribute("successMessage", "비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해 주세요.");
+
+            // 로그인 페이지로 리다이렉트
+            return "redirect:/member/login";
+        } catch (Exception e) {
+            logger.error("비밀번호 재설정 오류", e);
+            model.addAttribute("verified", true);
+            model.addAttribute("business_id", businessId);
+            model.addAttribute("message", "비밀번호 변경 중 오류가 발생했습니다.");
+            model.addAttribute("success", false);
+            return "business/find_password";
+        }
+    }
 
 
 

@@ -35,4 +35,15 @@ public class BusinessValidator implements Validator {
             }
         }
     }
+
+    /**
+     * 비밀번호 유효성 검사 - 길이만 체크
+     *
+     * @param password 검사할 비밀번호
+     * @return 유효성 검사 결과 (true: 유효, false: 유효하지 않음)
+     */
+    public boolean validatePassword(String password) {
+        // 비밀번호 길이 체크 (8~16자)
+        return password != null && password.length() >= 8 && password.length() <= 16;
+    }
 }

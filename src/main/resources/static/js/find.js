@@ -36,20 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
 
-            // 입력 시 실시간으로 하이픈을 표시하지만 전송 시에는 숫자만 전송하려면 아래 주석을 해제
-            /*
-            input.addEventListener('keyup', function(e) {
-                const value = this.value.replace(/[^0-9]/g, '');
-
-                if (value.length <= 3) {
-                    this.value = value;
-                } else if (value.length <= 7) {
-                    this.value = value.substring(0, 3) + '-' + value.substring(3);
-                } else {
-                    this.value = value.substring(0, 3) + '-' + value.substring(3, 7) + '-' + value.substring(7, 11);
-                }
-            });
-            */
         });
     }
 

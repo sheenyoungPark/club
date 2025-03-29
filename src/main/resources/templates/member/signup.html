@@ -47,7 +47,7 @@
       <span th:if="${#fields.hasErrors('member_name')}" th:errors="*{member_name}" class="error-message"></span>
     </div>
     <div class="form-group">
-      <label for="member_gender" class="required-field">성별</label>
+      <label th:for="member_gender" class="required-field">성별</label>
       <div class="gender-options">
         <div class="radio-group">
           <input type="radio" id="gender_male" name="member_gender" value="남성" th:field="*{member_gender}" />

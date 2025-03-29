@@ -16,6 +16,9 @@
         <h3>로그인 실패</h3>
         <p th:text="${loginError}">로그인 실패 메시지</p>
     </div>
+    <div th:if="${successMessage}" class="alert alert-success">
+        <p th:text="${successMessage}">성공 메시지</p>
+    </div>
 
 
 
@@ -60,6 +63,17 @@
 
 
 </div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 성공 메시지가 있는 경우 알림창 표시
+    document.addEventListener('DOMContentLoaded', function() {
+        const successMessage = /*[[${successMessage}]]*/ null;
+        if (successMessage) {
+            alert(successMessage);
+        }
+    });
+    /*]]>*/
+</script>
 
 <script th:src="@{/js/login.js}"></script>
 </body>
