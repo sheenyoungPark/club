@@ -38,6 +38,13 @@
             </button>
         </nav>
 
+        <!-- 햄버거 메뉴 버튼 추가 -->
+        <div class="hamburger-menu" id="hamburgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
         <div class="right-section">
             <!-- 일반 회원 로그인 상태 -->
             <div th:if="${loginMember != null && loginMember.login == true}">
@@ -60,6 +67,62 @@
             </div>
         </div>
     </header>
+
+    <!-- 모바일 메뉴 오버레이 추가 -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- 모바일 메뉴 컨테이너 추가 -->
+    <div class="mobile-menu-container" id="mobileMenuContainer">
+        <div class="mobile-menu">
+            <!-- 모바일 로그인 섹션 -->
+            <div class="mobile-login-section">
+                <!-- 일반 회원 로그인 상태 -->
+                <div th:if="${loginMember != null && loginMember.login == true}">
+                    <div class="login-info" th:text="${loginMember.member_nickname} + '님 환영합니다'"></div>
+                    <a th:href="@{/member/memberinfo}" class="mobile-btn">내정보</a>
+                    <a th:href="@{/member/logout}" class="mobile-btn">로그아웃</a>
+                </div>
+
+                <!-- 비즈니스 회원 로그인 상태 -->
+                <div th:if="${loginBusiness != null && loginBusiness.login == true}">
+                    <div class="login-info" th:text="${loginBusiness.business_name} + '님 환영합니다'"></div>
+                    <a th:href="@{/business/info}" class="mobile-btn">사업자정보</a>
+                    <a th:href="@{/business/logout}" class="mobile-btn">로그아웃</a>
+                </div>
+
+                <!-- 로그인하지 않은 상태 -->
+                <div th:unless="${(loginMember != null && loginMember.login == true) || (loginBusiness != null && loginBusiness.login == true)}">
+                    <a th:href="@{/member/login}" class="mobile-btn">로그인</a>
+                    <a th:href="@{/member/signup_choice}" class="mobile-btn">회원가입</a>
+                </div>
+            </div>
+
+            <!-- 모바일 메뉴 항목 -->
+            <a th:href="@{/category/category}"><i class="fas fa-users"></i> 동호회</a>
+            <a th:href="@{/business/category}"><i class="fas fa-shopping-cart"></i> 대여하기</a>
+            <a th:href="@{/community/board}"><i class="fas fa-comments"></i> 커뮤니티</a>
+
+            <!-- 회원 유형에 따라 표시 -->
+            <a th:if="${loginBusiness == null || loginBusiness.login == false}" th:href="@{/survey/start}">
+                <i class="fas fa-clipboard-check"></i> 유형검사
+            </a>
+            <a th:if="${loginBusiness != null && loginBusiness.login == true}" th:href="@{/business/create_item}">
+                <i class="fas fa-plus-circle"></i> 아이템 등록하기
+            </a>
+
+            <!-- 채팅 메뉴 - 로그인 상태일 때만 표시 -->
+            <a th:if="${loginMember.isLogin || loginBusiness.isLogin}" th:href="@{/chat/view/rooms}">
+                <i class="fas fa-comments"></i> 채팅
+                <!-- 안 읽은 메시지 배지 -->
+                <span id="mobileUnreadChatCount"
+                      class="mobile-unread-count"
+                      th:text="${unreadChatCount}"
+                      th:style="${unreadChatCount > 0 ? 'display:inline-flex' : 'display:none'}">
+                    0
+                </span>
+            </a>
+        </div>
+    </div>
 
     <div id="searchContainer" class="search-container hidden">
         <div class="search-box">

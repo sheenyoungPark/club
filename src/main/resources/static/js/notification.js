@@ -87,6 +87,7 @@ function fetchUnreadChatCount() {
 
 // 안 읽은 메시지 배지 업데이트 함수
 function updateUnreadBadge(count) {
+    // 메인 헤더의 배지 업데이트
     const unreadBadge = document.getElementById('unreadChatCount');
     if (unreadBadge) {
         // 카운트가 있으면 표시, 없으면 숨김
@@ -97,7 +98,21 @@ function updateUnreadBadge(count) {
             unreadBadge.style.display = 'none';
         }
     }
+
+    // 모바일 메뉴의 배지도 함께 업데이트
+    const mobileUnreadBadge = document.getElementById('mobileUnreadChatCount');
+    if (mobileUnreadBadge) {
+        if (count > 0) {
+            mobileUnreadBadge.textContent = count;
+            mobileUnreadBadge.style.display = 'inline-flex';
+        } else {
+            mobileUnreadBadge.style.display = 'none';
+        }
+    }
 }
+
+// 전역 함수로 노출하여 다른 스크립트에서도 사용할 수 있게 함
+window.updateUnreadCount = updateUnreadBadge;
 
 // 페이지 종료 시 WebSocket 정리
 window.addEventListener('beforeunload', function() {
