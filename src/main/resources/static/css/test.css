@@ -175,3 +175,78 @@
 .first-letter {
     color: #9cee69;
 }
+@media screen and (max-width: 768px) {
+    /* 로고 위치 조정 - 왼쪽 정렬 유지 */
+    .logo-container {
+        position: fixed;
+        top: 20px;
+        left: 20px; /* 왼쪽에 위치하도록 수정 */
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        height: 50px;
+    }
+
+    /* 로고 이미지 스타일 */
+    .logo-img {
+        height: 50px;
+    }
+
+    /* 로고 호버 텍스트 스타일 - 기존처럼 호버 시에만 보이게 */
+    .logo-hover-text {
+        position: absolute;
+        left: calc(50px + 10px);
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* 각 줄 스타일 - 기존과 동일하게 유지 */
+    .logo-hover-text > div {
+        display: block;
+        white-space: nowrap;
+        transform: translateX(-15px);
+        opacity: 0;
+    }
+
+    /* 소개 텍스트 조정 */
+    .intro-text {
+        margin-top: 100px; /* 로고 아래 공간 확보 */
+        padding: 0 15px;
+        text-align: center;
+        width: 100%;
+    }
+
+    /* 문제 컨테이너 여백 조정 */
+    .question-container {
+        margin: 20px auto;
+        max-width: 90%;
+        padding: 20px;
+    }
+
+    /* 버튼 영역 조정 */
+    .btn-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-prev, .btn-next {
+        width: 100%;
+    }
+}
+
+/* 더 작은 화면에 대한 추가 조정 */
+@media screen and (max-width: 480px) {
+    .intro-text {
+        margin-top: 140px;
+    }
+
+    .intro-text h2 {
+        font-size: 1.5rem;
+    }
+
+    .intro-text p {
+        font-size: 0.9rem;
+    }
+}

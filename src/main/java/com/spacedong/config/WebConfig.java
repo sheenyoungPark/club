@@ -1,12 +1,17 @@
 package com.spacedong.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.DateFormatter;
 import org.springframework.format.datetime.DateFormatterRegistrar;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.thymeleaf.spring6.view.ThymeleafViewResolver;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -41,5 +46,12 @@ public class WebConfig implements WebMvcConfigurer {
         // 기존 정적 리소스 설정
         registry.addResourceHandler("/sources/**")
                 .addResourceLocations("classpath:/static/sources/");
+
+
+        registry.addResourceHandler("/favicons/**")
+                .addResourceLocations("classpath:/static/favicons/");
+
     }
+
+
 }
