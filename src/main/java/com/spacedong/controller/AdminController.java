@@ -57,6 +57,9 @@ public class AdminController {
     @Autowired
     private AdminNotificationService adminNotificationService;
 
+    @Autowired
+    private ChatService chatService;
+
     @GetMapping("/init")
     public String admininit() {
         return "admin/init";
@@ -183,13 +186,22 @@ public class AdminController {
             clubService.updateClubStatus(club_id, "PASS");
             response.put("success", true);
             List<ClubMemberBean> clubmembers =  clubMemberService.getClubMemberList(club_id);
+
+            // 동호회 승인 알림 전송
             for(ClubMemberBean cmb : clubmembers) {
                 adminNotificationService.sendApprovalNotification(cmb.getMember_id(), "MEMBER", "APPROVED", "동호회 생성", "");
             }
+            //동호회 채팅방 생성
+            ClubBean selectedclub = clubService.oneClubInfo(club_id);
+            String masterId = clubMemberService.getMasterMember(club_id);
+            chatService.getOrCreateClubChatRoom(club_id, masterId, "MEMBER");
+
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", e.getMessage());
         }
+
+
 
         return response;
     }

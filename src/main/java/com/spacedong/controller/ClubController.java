@@ -48,6 +48,9 @@ public class ClubController {
 	@Autowired
 	private AdminNotificationService adminNotificationService;
 
+    @Autowired
+    private ChatService chatService;
+
 	// ✅ 클럽 정보 페이지
 	@GetMapping("/club_info")
 	public String club_info(@RequestParam("club_id") int club_id, Model model) {
