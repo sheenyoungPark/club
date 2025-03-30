@@ -1,18 +1,15 @@
 package com.spacedong.config;
 
 
+import com.spacedong.beans.AdminBean;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.MemberBean;
-import com.spacedong.interceptor.BusinessInterceptor;
-import com.spacedong.interceptor.LocationInterceptor;
-import com.spacedong.interceptor.TopMenuInterceptor;
+import com.spacedong.interceptor.*;
 import com.spacedong.service.ChatService;
 import com.spacedong.service.LocationService;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -29,10 +26,14 @@ public class WebContext implements WebMvcConfigurer {
     @Resource(name = "loginBusiness")  // ✅ @Resource 추가 (세션에서 주입)
     public BusinessBean loginBusiness;
 
+    @Resource(name="loginAdmin")
+    public AdminBean loginAdmin;
+
     @Autowired
     private ChatService ChatService;
     @Autowired
     private ChatService chatService;
+
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -50,6 +51,13 @@ public class WebContext implements WebMvcConfigurer {
         InterceptorRegistration reg5 = registry.addInterceptor(businessInterceptor);
         reg5.addPathPatterns("/**");
 
+        AdminAuthInterceptor adminAuthInterceptor = new AdminAuthInterceptor(loginAdmin);
+        InterceptorRegistration reg3 = registry.addInterceptor(adminAuthInterceptor);
+        reg3.addPathPatterns("/admin/**").excludePathPatterns("/admin/assets/**");
+
+        AdminInterceptor adminInterceptor = new AdminInterceptor(loginAdmin);
+        InterceptorRegistration reg4 = registry.addInterceptor(adminInterceptor);
+        reg4.addPathPatterns("/admin/**").excludePathPatterns("/admin/assets/**");;
 
 
     }

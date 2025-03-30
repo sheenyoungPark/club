@@ -3,6 +3,7 @@ package com.spacedong.config;
 import com.spacedong.beans.AdminBean;
 import com.spacedong.beans.BusinessBean;
 import com.spacedong.beans.MemberBean;
+import com.spacedong.interceptor.AdminAuthInterceptor;
 import com.spacedong.interceptor.TopMenuInterceptor;
 import com.spacedong.service.ChatService;
 import com.zaxxer.hikari.HikariConfig;
@@ -34,7 +35,7 @@ public class AppContext implements WebMvcConfigurer {
         return memberBean;
     }
 
-    @Bean("loginBusiness")
+    @Bean(name="loginBusiness")
     @SessionScope
     public BusinessBean loginBusiness() {
         BusinessBean businessBean = new BusinessBean();
@@ -98,6 +99,7 @@ public class AppContext implements WebMvcConfigurer {
         return new TopMenuInterceptor(memberbean, businessbean, () -> applicationContext.getBean("chatService", ChatService.class));
 
     }
+
     // 인터셉터 등록
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -105,5 +107,10 @@ public class AppContext implements WebMvcConfigurer {
         registry.addInterceptor(topMenuInterceptor())
                 .addPathPatterns("/**")
                 .excludePathPatterns("/resources/**", "/css/**", "/js/**", "/images/**");
+
+
+
+
+
     }
 }

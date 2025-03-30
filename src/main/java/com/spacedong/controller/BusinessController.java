@@ -55,6 +55,8 @@ public class BusinessController {
 
     @Resource(name = "loginMember")
     private MemberBean loginMember;
+    @Autowired
+    private SessionService sessionService;
 
     @InitBinder
     protected void initBinder(WebDataBinder binder) {
@@ -109,14 +111,7 @@ public class BusinessController {
             return "/member/login_fail";
         }
 
-        // 개인회원 로그인 상태 초기화 (필요 시)
-        if (loginMember != null && loginMember.isLogin()) {
-            loginMember.setLogin(false);
-            loginMember.setMember_id(null);
-            loginMember.setMember_nickname(null);
-            loginMember.setMember_pw(null);
-            System.out.println("기업회원 로그인 시도 - 기존 개인회원 로그인 초기화됨");
-        }
+        sessionService.resetAllLoginSessions();
 
         if (businessService.getLoginBusiness(businessBean)) {
             // DB에서 전체 사업자 정보를 조회

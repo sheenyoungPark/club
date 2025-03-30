@@ -9,6 +9,7 @@ import com.spacedong.service.AdminService;
 import com.spacedong.repository.ChatRepository;
 import com.spacedong.service.ChatService;
 import com.spacedong.service.MemberService;
+import com.spacedong.service.SessionService;
 import com.spacedong.validator.MemberValidator;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
@@ -48,6 +49,8 @@ public class MemberController {
 
 	@Resource(name = "loginAdmin")
 	private AdminBean loginAdmin;
+    @Autowired
+    private SessionService sessionService;
 
 	@InitBinder("memberBean")
 	protected void initBinder(WebDataBinder binder) {
@@ -62,41 +65,40 @@ public class MemberController {
 	}
 
 	@PostMapping("/login_pro")
-	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean, Model model) {
-		// 로그인 상태 초기화 - 모든 로그인 세션을 초기화
-		resetAllLoginSessions();
+	public String login_pro(@ModelAttribute("tempLoginMember") MemberBean memberBean,
+							Model model,
+							RedirectAttributes redirectAttributes) {
+		// 관리자 ID 확인
+		boolean isAdmin = memberService.isAdminId(memberBean.getMember_id());
 
-		// 1. 먼저 관리자 계정인지 확인
-		AdminBean tempAdmin = new AdminBean();
-		tempAdmin.setAdmin_id(memberBean.getMember_id());
-		tempAdmin.setAdmin_pw(memberBean.getMember_pw());
+		// 관리자 계정으로 로그인 시도 감지
+		if (isAdmin) {
+			// 관리자 ID와 PW가 일치하는지 먼저 확인
+			AdminBean tempAdmin = new AdminBean();
+			tempAdmin.setAdmin_id(memberBean.getMember_id());
+			tempAdmin.setAdmin_pw(memberBean.getMember_pw());
 
-		if (adminService.getLoginAdmin(tempAdmin)) {
-			// 관리자 로그인 성공 - loginAdmin 세션 정보는 adminService에서 이미 설정됨
-			System.out.println("관리자 로그인 성공: " + loginAdmin.getAdmin_id());
+			// 관리자 로그인 정보를 임시로 저장해서 관리자 로그인 페이지로 전달
+			redirectAttributes.addFlashAttribute("adminId", memberBean.getMember_id());
 
-			// 관리자 대시보드로 리다이렉트
-			//return "admin/dashboard";
-			return "redirect:/admin/dashboard";
+			// 관리자 로그인 페이지로 리다이렉트
+			return "redirect:/admin/login";
 		}
 
-		// 2. 일반 회원 로그인 시도
+		// 일반 회원 로그인 로직은 그대로 유지
+		sessionService.resetAllLoginSessions();
+
+		// 일반 회원 로그인 처리
 		if (memberService.getLoginMember(memberBean)) {
-			// DB에서 전체 회원 정보를 조회
 			MemberBean fullMember = memberService.selectMemberById(memberBean.getMember_id());
 			if(fullMember != null && fullMember.getMember_pw().equals(memberBean.getMember_pw())){
-				// DI로 주입받은 loginMember 빈에 DB에서 조회한 전체 정보를 업데이트
+				// 로그인 성공 처리...
 				loginMember.setMember_id(fullMember.getMember_id());
 				loginMember.setMember_pw(fullMember.getMember_pw());
 				loginMember.setMember_nickname(fullMember.getMember_nickname());
 				loginMember.setMember_phone(fullMember.getMember_phone());
 				loginMember.setMember_email(fullMember.getMember_email());
-				// 그 외 필요한 필드도 설정
 				loginMember.setLogin(true);
-
-				// 디버깅 로그
-				System.out.println("일반 회원 로그인 성공: " + fullMember.getMember_id());
-				System.out.println("비즈니스 로그인 상태: " + loginBusiness.isLogin());
 
 				return "member/login_success";
 			} else {
@@ -107,36 +109,10 @@ public class MemberController {
 		}
 	}
 
-	// 모든 로그인 세션 초기화 메서드
-	private void resetAllLoginSessions() {
-		// 개인회원 로그인 상태 초기화
-		if (loginMember != null) {
-			loginMember.setLogin(false);
-			loginMember.setMember_id(null);
-			loginMember.setMember_nickname(null);
-			loginMember.setMember_pw(null);
-		}
-
-		// 기업회원 로그인 상태 초기화
-		if (loginBusiness != null) {
-			loginBusiness.setLogin(false);
-			loginBusiness.setBusiness_id(null);
-			loginBusiness.setBusiness_name(null);
-			loginBusiness.setBusiness_pw(null);
-		}
-
-		// 관리자 로그인 상태 초기화
-		if (loginAdmin != null) {
-			loginAdmin.setAdmin_login(false);
-			loginAdmin.setAdmin_id(null);
-			loginAdmin.setAdmin_name(null);
-		}
-	}
-
 	@RequestMapping("/logout")
 	public String logout() {
 		// 모든 로그인 세션 초기화
-		resetAllLoginSessions();
+		sessionService.resetAllLoginSessions();
 		return "redirect:/";
 	}
 
@@ -191,7 +167,7 @@ public class MemberController {
 	@PostMapping("/deleteAccount_pro")
 	public String deleteAccount(@RequestParam("password") String password, Model model) {
 		if (!loginMember.isLogin()) {
-			return "redirect:/member/login";
+			return "member/login";
 		}
 		// 비밀번호 확인
 		boolean isCorrectPassword = memberService.checkPassword(loginMember.getMember_id(), password);
@@ -216,7 +192,7 @@ public class MemberController {
 	@GetMapping("/edit")
 	public String editInfoVerification(Model model) {
 		if (!loginMember.isLogin()) {
-			return "redirect:/member/login";
+			return "member/login";
 		}
 		// 비밀번호가 없는 경우 (예: SNS 로그인 사용자)에는 바로 정보 수정 페이지로 이동
 		if (loginMember.getMember_pw() == null || loginMember.getMember_pw().isEmpty()) {

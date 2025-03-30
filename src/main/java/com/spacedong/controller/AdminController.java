@@ -59,6 +59,8 @@ public class AdminController {
 
     @Autowired
     private ChatService chatService;
+    @Autowired
+    private SessionService sessionService;
 
     @GetMapping("/init")
     public String admininit() {
@@ -66,19 +68,30 @@ public class AdminController {
     }
 
     @GetMapping("/login")
-    public String login(@ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin) {
+    public String login(@ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin,
+                        Model model,
+                        @ModelAttribute("adminId") String adminId) {
+        // 리다이렉트된 관리자 ID가 있으면 폼에 설정
+        if (adminId != null && !adminId.isEmpty()) {
+            tempLoginAdmin.setAdmin_id(adminId);
+            model.addAttribute("redirectedFromMember", true);
+        }
+
+        // 인터셉터에서 이미 로그인 상태를 확인하고 리다이렉트하므로 여기서는 체크하지 않음
         return "admin/login";
     }
 
     @PostMapping("/loginproc")
-    public String loginPro(@Valid @ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin, Model model,
-                           BindingResult result) {
-        System.out.println(result.hasErrors());
+    public String loginPro(@Valid @ModelAttribute("tempLoginAdmin") AdminBean tempLoginAdmin,
+                           BindingResult result,
+                           Model model) {
         if (result.hasErrors()) {
             return "admin/login";
         }
+
+        // adminService.getLoginAdmin 메서드는 loginAdmin 객체를 설정함
         if (adminService.getLoginAdmin(tempLoginAdmin)) {
-            return "admin/main";
+            return "redirect:/admin/dashboard";
         } else {
             model.addAttribute("loginfail", true);
             return "admin/login";
