@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import lombok.Data;
 
-@Data
+@Data//111
 public class ChatRoomBean {
     private int room_id;
     private String room_name;
