@@ -274,14 +274,14 @@
                 <i class="fas fa-user-plus"></i> 가입 신청하기
             </a>
 
-            <a th:href="@{chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
+            <a th:href="@{/chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
                 <i class="fas fa-envelope"></i> 문의하기
             </a>
         </div>
 
         <!-- 일반 회원용 버튼 -->
         <div th:if="${member_role != null && member_role != 'master'}" class="action-buttons">
-            <a th:href="@{/club/contact(club_id=${club.club_id})}" class="btn btn-outline">
+            <a th:href="@{/chat/club/ask(club_id=${club.club_id})}" class="btn btn-outline">
                 <i class="fas fa-envelope"></i> 문의하기
             </a>
             <a th:if="${isMember}" th:href="@{/club/leaveClub(club_id=${club.club_id})}"

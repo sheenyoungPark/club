@@ -696,14 +696,14 @@ public class ChatController {
 
     @GetMapping("/new/ask")
     public String newAsk(Model model,
-                         @RequestParam("item_id") Long itemId,
-                         @RequestParam("business_id") Long businessId) {
+                         @RequestParam("item_id") String itemId,
+                         @RequestParam("business_id") String businessId) {
 
         if (!isUserLoggedIn()) {
             return "redirect:/member/login";
         }
 
-        BusinessItemBean item = itemService.getItemById(itemId.toString());
+        BusinessItemBean item = itemService.getItemById(itemId);
         String itemTitle = (item != null) ? item.getItem_title() : "상품 문의";
 
         // 2. 채팅방 생성 또는 기존 채팅방 가져오기
@@ -718,7 +718,7 @@ public class ChatController {
 
             // 비즈니스 사용자에게 새 채팅방 알림
             messagingTemplate.convertAndSendToUser(
-                    businessId.toString(),
+                    businessId,
                     "/queue/new-room",
                     room
             );
