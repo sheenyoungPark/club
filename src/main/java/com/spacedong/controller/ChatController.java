@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.spacedong.beans.*;
+import com.spacedong.service.ClubMemberService;
+import com.spacedong.service.ClubService;
 import com.spacedong.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +52,10 @@ public class ChatController {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private ItemService itemService;
+    @Autowired
+    private ClubService clubService;
+    @Autowired
+    private ClubMemberService clubMemberService;
 
     // 로그인한 사용자 정보를 가져오는 헬퍼 메서드
     private Map<String, String> getLoggedInUserInfo() {
@@ -693,6 +699,10 @@ public class ChatController {
                          @RequestParam("item_id") Long itemId,
                          @RequestParam("business_id") Long businessId) {
 
+        if (!isUserLoggedIn()) {
+            return "redirect:/member/login";
+        }
+
         BusinessItemBean item = itemService.getItemById(itemId.toString());
         String itemTitle = (item != null) ? item.getItem_title() : "상품 문의";
 
@@ -735,7 +745,52 @@ public class ChatController {
         return "redirect:/chat/view/room/" + roomId;
     }
 
+    @GetMapping("club/ask")
+    public String clubask(@RequestParam("club_id") int club_id, Model model) {
 
+        if (!isUserLoggedIn()) {
+            return "redirect:/member/login";
+        }
+
+        String masterID = clubMemberService.getMasterMember(club_id);
+
+        ChatRoomCreationResult result = chatService.getOrCreatePersonalChatRoomWithResult(loginMember.getMember_id(), "MEMBER", masterID, "MEMBER");
+        ChatRoomBean room = result.getRoom();
+
+        if (result.isNewRoom() || result.isNewParticipant()) {
+            room.setLastMessage("새로운 대화가 시작되었습니다.");
+            room.setLastMessageTime(LocalDateTime.now());
+            room.setUnreadCount(0);
+
+            // 비즈니스 사용자에게 새 채팅방 알림
+            messagingTemplate.convertAndSendToUser(
+                    masterID,
+                    "/queue/new-room",
+                    room
+            );
+        }
+
+        int room_id = room.getRoom_id();
+        long roomId = (long) room_id;
+
+        ClubBean oneclub = clubService.oneClubInfo(club_id);
+
+
+        String firstMessage = oneclub.getClub_name() + "에 대해서 문의할게요";
+        ChatMessageBean message = new ChatMessageBean();
+        message.setRoomId(roomId);
+        message.setSenderId(loginMember.getMember_id());
+        message.setSenderType("MEMBER");
+        message.setMessageContent(firstMessage);
+        message.setMessageType("TEXT");
+        message.setSenderNickname(loginMember.getMember_nickname());
+        message.setSenderProfile(loginMember.getMember_profile());
+
+        // 메시지 저장 및 발송
+        chatService.sendMessage(message);
+
+        return "redirect:/chat/view/room/" + roomId;
+    }
 
 
 
