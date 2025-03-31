@@ -142,7 +142,7 @@ function showBrowserNotification(title, body, icon) {
         notification.onclick = function() {
             window.focus();
             if (body.includes('메시지')) {
-                window.location.href = '/chat/view/rooms';
+                window.location.href = '/chat/view/rooms';//1111
             }
         };
     }
