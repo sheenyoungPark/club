@@ -180,10 +180,22 @@
         }
         /*]]>*/
     </script>
-    <th:block th:if="${loginMember != null && loginMember.isLogin}">
+    <th:block th:if="${(loginMember != null && loginMember.isLogin) || (loginBusiness != null && loginBusiness.isLogin)}">
         <!-- 사용자 ID 설정 (JavaScript에서 사용) -->
         <script th:inline="javascript">
-            var userId = /*[[${loginMember.member_id}]]*/ null;
+            // 현재 사용자 ID를 JavaScript 전역 변수로 설정
+            var currentUserId = null;
+            var currentUserType = null;
+
+            if ([[${loginMember != null && loginMember.isLogin}]]) {
+                currentUserId = /*[[${loginMember.member_id}]]*/ '';
+                currentUserType = 'MEMBER';
+            } else if ([[${loginBusiness != null && loginBusiness.isLogin}]]) {
+                currentUserId = /*[[${loginBusiness.business_id}]]*/ '';
+                currentUserType = 'BUSINESS';
+            }
+
+            console.log('현재 사용자:', { id: currentUserId, type: currentUserType });
         </script>
 
         <!-- WebSocket 라이브러리 -->

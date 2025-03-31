@@ -601,8 +601,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // 채팅 창 팝업 함수
 function openChatWindow() {
     // 팝업 창의 크기와 위치 설정
-    const width = 800;
-    const height = 600;
+    const width = 500;
+    const height = 700;
     const left = (window.innerWidth - width) / 2;
     const top = (window.innerHeight - height) / 2;
 
