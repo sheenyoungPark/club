@@ -126,8 +126,41 @@ public class MemberController {
 		if (result.hasErrors()) {
 			return "member/signup";
 		}
+		memberBean.setMember_phone(formatPhoneNumber(memberBean.getMember_phone()));
 		memberService.signupMember(memberBean);
 		return "member/signup_success";
+	}
+
+	/**
+	 * 전화번호 형식 변환 (하이픈 추가)
+	 * 예: 01012345678 -> 010-1234-5678
+	 */
+	private String formatPhoneNumber(String phone) {
+		if (phone == null || phone.trim().isEmpty()) {
+			return phone;
+		}
+
+		// 이미 하이픈이 있는 경우 그대로 반환
+		if (phone.contains("-")) {
+			return phone;
+		}
+
+		// 숫자만 남기기
+		phone = phone.replaceAll("[^0-9]", "");
+
+		// 길이에 따라 적절한 형식으로 변환
+		if (phone.length() == 10) { // 10자리 (예: 0101231234)
+			return phone.substring(0, 3) + "-" +
+					phone.substring(3, 6) + "-" +
+					phone.substring(6);
+		} else if (phone.length() == 11) { // 11자리 (예: 01012345678)
+			return phone.substring(0, 3) + "-" +
+					phone.substring(3, 7) + "-" +
+					phone.substring(7);
+		} else {
+			// 기타 형식은 그대로 반환
+			return phone;
+		}
 	}
 
 	@GetMapping("/signup_choice")
@@ -347,7 +380,6 @@ public class MemberController {
 	public String findPasswordForm() {
 		return "member/find_password";
 	}
-
 	/**
 	 * 비밀번호 찾기 처리 (본인 확인)
 	 */
@@ -355,31 +387,43 @@ public class MemberController {
 	public String findPassword(
 			@RequestParam("member_id") String memberId,
 			@RequestParam("phone") String phone,
+			@RequestParam(value = "isPhoneVerified", required = false, defaultValue = "false") String isPhoneVerified,
 			Model model) {
 
 		try {
+			// 휴대폰 인증 확인
+			if (!isPhoneVerified.equals("true")) {
+				model.addAttribute("message", "휴대폰 인증이 완료되지 않았습니다.");
+				model.addAttribute("success", false);
+				return "member/find_password"; // 인증을 먼저 완료하도록 페이지 유지
+			}
+
+			// 전화번호 포맷팅 적용
+			String formattedPhone = formatPhoneNumber(phone);
+
 			// 아이디와 휴대폰 번호로 회원 확인
-			MemberBean member = memberService.findMemberByIdAndPhone(memberId, phone);
+			MemberBean member = memberService.findMemberByIdAndPhone(memberId, formattedPhone);
 
 			if (member != null) {
-
 				// 본인 확인 성공 - 세션에 정보 저장
 				model.addAttribute("message", "본인 확인이 완료되었습니다. 새 비밀번호를 설정해 주세요.");
 				model.addAttribute("success", true);
-
 				model.addAttribute("member_id", member.getMember_id());
-
+				model.addAttribute("verified", true);
 			} else {
 				model.addAttribute("message", "일치하는 회원 정보가 없습니다. 아이디와 휴대폰 번호를 확인해 주세요.");
 				model.addAttribute("success", false);
+				return "member/find_password"; // 일치하는 회원 정보가 없을 경우 find_password 페이지로 유지
 			}
 		} catch (Exception e) {
 			model.addAttribute("message", "비밀번호 찾기 중 오류가 발생했습니다. 다시 시도해 주세요.");
 			model.addAttribute("success", false);
+			return "member/find_password"; // 오류 발생 시 find_password 페이지로 유지
 		}
 
 		return "member/reset_password";
 	}
+
 
 	/**
 	 * 비밀번호 재설정 페이지 표시

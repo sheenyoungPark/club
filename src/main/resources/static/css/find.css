@@ -211,3 +211,52 @@ label {
 .first-letter {
     color: #9cee69;
 }
+
+/* 휴대폰 인증 관련 스타일 */
+.phone-input-group {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.phone-input-group .input-field {
+  flex: 1;
+}
+
+.btn-auth {
+  padding: 8px 12px;
+  background-color: #9cee69;
+  color: #14191f;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background-color 0.3s;
+}
+
+.btn-auth:hover {
+  background-color: #2a4b00;
+}
+
+.btn-auth:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.auth-message {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+/* 인증 결과 메시지 */
+#authResult {
+  margin-top: 5px;
+  font-weight: normal;
+}
+
+/* 비활성화된 제출 버튼 */
+.submit-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}

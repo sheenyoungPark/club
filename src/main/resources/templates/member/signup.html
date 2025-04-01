@@ -93,22 +93,22 @@
       <span th:if="${#fields.hasErrors('member_nickname')}" th:errors="*{member_nickname}" class="error-message"></span>
     </div>
 
-    <div class="form-group">
-      <label for="member_phone" class="required-field">휴대폰</label>
-      <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />
-      <span th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}" class="error-message"></span>
-    </div>
-
 <!--    <div class="form-group">-->
 <!--      <label for="member_phone" class="required-field">휴대폰</label>-->
-<!--      <div class="input-row">-->
-<!--        <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />-->
-<!--        <input type="hidden" id="isPhoneVerified" name="isPhoneVerified" value="false" />-->
-<!--        <button type="button" class="check-button" id="sendAuthCode">인증요청</button>-->
-<!--      </div>-->
+<!--      <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />-->
 <!--      <span th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}" class="error-message"></span>-->
-<!--      <span id="phoneAuthMessage" class="error-message"></span>-->
 <!--    </div>-->
+
+    <div class="form-group">
+      <label for="member_phone" class="required-field">휴대폰</label>
+      <div class="input-row">
+        <input type="text" id="member_phone" th:field="*{member_phone}" class="input-field" placeholder="- 없이 입력" />
+        <input type="hidden" id="isPhoneVerified" name="isPhoneVerified" value="false" />
+        <button type="button" class="check-button" id="sendAuthCode">인증요청</button>
+      </div>
+      <span th:if="${#fields.hasErrors('member_phone')}" th:errors="*{member_phone}" class="error-message"></span>
+      <span id="phoneAuthMessage" class="error-message"></span>
+    </div>
 
     <!-- 인증번호 입력창 (처음에는 숨김) -->
     <div class="form-group" id="authCodeContainer" style="display: none;">
@@ -334,6 +334,19 @@
   }
 
   $(document).ready(function() {
+    // 휴대폰 번호 입력 시 자동 하이픈 추가
+    $("#member_phone").on('input', function() {
+      var phoneNumber = $(this).val().replace(/[^0-9]/g, '');
+
+      if(phoneNumber.length > 3 && phoneNumber.length <= 7) {
+        phoneNumber = phoneNumber.substring(0,3) + '-' + phoneNumber.substring(3);
+      } else if(phoneNumber.length > 7) {
+        phoneNumber = phoneNumber.substring(0,3) + '-' + phoneNumber.substring(3,7) + '-' + phoneNumber.substring(7);
+      }
+
+      $(this).val(phoneNumber);
+    });
+
     $("#all_consent").change(function() {
       let isChecked = $(this).prop("checked");
       $(".consent-section input[type='checkbox']").prop("checked", isChecked);
@@ -344,18 +357,21 @@
               $(".consent-section input[type='checkbox']:checked").not("#all_consent").length;
       $("#all_consent").prop("checked", allChecked);
     });
-  });
 
-  $(document).ready(function() {
     // 인증 요청 버튼 클릭 시 실행
     $("#sendAuthCode").click(function() {
       console.log("인증 요청 버튼이 클릭되었습니다!"); // 추가
-      let phoneNumber = "+82" + $("#member_phone").val().trim();
+
+      // 전화번호에서 하이픈 제거
+      let phoneNumber = $("#member_phone").val().trim().replace(/-/g, '');
 
       if (phoneNumber.length === 0) {
         alert("휴대폰 번호를 입력하세요.");
         return;
       }
+
+      // 국제번호 형식으로 변환
+      phoneNumber = "+82" + phoneNumber;
 
       $.post("/auth/sendCode", { phoneNumber: phoneNumber }, function(response) {
         console.log("서버 응답:", response); // 추가
@@ -369,7 +385,12 @@
 
     // 인증번호 확인 버튼 클릭 시 실행
     $("#verifyAuthCode").click(function() {
-      let phoneNumber = "+82"+$("#member_phone").val().trim();
+      // 전화번호에서 하이픈 제거
+      let phoneNumber = $("#member_phone").val().trim().replace(/-/g, '');
+
+      // 국제번호 형식으로 변환
+      phoneNumber = "+82" + phoneNumber;
+
       let authCode = $("#authCode").val().trim();
 
       if (authCode.length === 0) {
