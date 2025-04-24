@@ -584,7 +584,7 @@ public class ChatController {
             if (room.getUnreadCount() <= 0) {
                 int unreadCount = chatService.getUnreadMessageCount((long) room.getRoom_id(), userId);
                 room.setUnreadCount(unreadCount);
-                System.out.println("Room " + room.getRoom_id() + " unread: " + unreadCount);
+                System.out.println("Room " + room.getRoom_id() + " unread: " + unreadCount + "roomname:"+ room.getRoom_name());
             }
         }
 
