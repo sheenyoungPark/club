@@ -331,6 +331,25 @@ public interface ChatMapper {
             "WHERE user_id = #{user_id}")
     void updateProfile(@Param("user_id") String user_id, @Param("userProfile") String userProfile);
 
+    @Select("SELECT cm.message_id as messageId, cm.room_id as roomId, " +
+            "cm.sender_id as senderId, cm.sender_type as senderType, " +
+            "cm.message_content as messageContent, cm.message_type as messageType, " +
+            "cm.file_path as filePath, cm.send_time as sendTime, " +
+            "(SELECT COUNT(*) FROM chat_read_receipt WHERE message_id = cm.message_id) as readCount, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_nickname FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  WHEN 'BUSINESS' THEN (SELECT b.business_name FROM business b WHERE b.business_id = cm.sender_id) " +
+            "  WHEN 'ADMIN' THEN (SELECT a.admin_name FROM admin a WHERE a.admin_id = cm.sender_id) " +
+            "END as senderNickname, " +
+            "CASE cm.sender_type " +
+            "  WHEN 'MEMBER' THEN (SELECT m.member_profile FROM member m WHERE m.member_id = cm.sender_id) " +
+            "  ELSE NULL " +
+            "END as senderProfile " +
+            "FROM chat_message cm " +
+            "WHERE cm.room_id = #{roomId} " +
+            "ORDER BY cm.send_time ASC")
+    List<ChatMessageBean> getAllRoomMessages(@Param("roomId") Long roomId);
+
 
 
 

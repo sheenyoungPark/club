@@ -42,16 +42,12 @@ public class SurveyService {
 
     private void loadSurveyData() {
         try {
-            // Spring Boot 정적 리소스 접근 방식
             ClassPathResource resource = new ClassPathResource(SURVEY_RESOURCE_PATH);
-
             if (!resource.exists()) {
                 logger.error("리소스 파일을 찾을 수 없습니다: {}", SURVEY_RESOURCE_PATH);
                 return;
             }
-
             logger.info("리소스 파일을 찾았습니다: {}", resource.getFilename());
-
             try (InputStream inputStream = resource.getInputStream()) {
                 ObjectMapper mapper = new ObjectMapper();
                 surveyData = mapper.readValue(inputStream, SurveyData.class);
@@ -61,19 +57,14 @@ public class SurveyService {
             logger.error("설문 데이터 로드 중 오류 발생: {}", e.getMessage(), e);
         }
     }
-
     private void loadSpaceTypeData() {
         try {
-            // Spring Boot 정적 리소스 접근 방식
             ClassPathResource resource = new ClassPathResource(SPACE_TYPE_RESOURCE_PATH);
-
             if (!resource.exists()) {
                 logger.error("리소스 파일을 찾을 수 없습니다: {}", SPACE_TYPE_RESOURCE_PATH);
                 return;
             }
-
             logger.info("리소스 파일을 찾았습니다: {}", resource.getFilename());
-
             try (InputStream inputStream = resource.getInputStream()) {
                 ObjectMapper mapper = new ObjectMapper();
                 spaceTypeData = mapper.readValue(inputStream, SpaceTypeData.class);

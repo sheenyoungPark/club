@@ -400,16 +400,33 @@ public class ChatService {
                 participant.setJoinDate(LocalDateTime.now()); // Set join date to current time
                 chatRepository.addParticipant(participant);
 
-                // 채팅방의 메시지 목록 조회
-                List<ChatMessageBean> messages = chatRepository.getMessagesByRoomId((long)chatRoom.getRoom_id(), userId);
+                // 수정: 채팅방의 모든 메시지 조회 (가입 시간과 관계없이)
+                List<ChatMessageBean> allMessages = chatRepository.getAllRoomMessages((long)chatRoom.getRoom_id());
 
-                // 메시지가 있는 경우만 읽음 처리
-                if (messages != null && !messages.isEmpty()) {
-                    // 이전 메시지 읽음 처리
-                    markPreviousMessagesAsRead(chatRoom.getRoom_id(), userId);
+                // 메시지가 있는 경우 모두 읽음 처리
+                if (allMessages != null && !allMessages.isEmpty()) {
+                    // 각 메시지에 대해 읽음 표시 생성
+                    for (ChatMessageBean message : allMessages) {
+                        // 자신이 보낸 메시지는 제외
+                        if (!message.getSenderId().equals(userId)) {
+                            ChatReadReceiptBean readReceipt = new ChatReadReceiptBean();
+                            readReceipt.setMessageId(message.getMessageId());
+                            readReceipt.setReaderId(userId);
+                            readReceipt.setReadTime(LocalDateTime.now());
+                            chatRepository.markAsRead(readReceipt);
+                        }
+                    }
+
+                    // 마지막 메시지 ID를 last_read_msg_id로 설정
+                    Long lastMessageId = allMessages.get(allMessages.size() - 1).getMessageId();
+                    chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), userId, lastMessageId);
+
+                    // 디버깅 로그
+                    System.out.println("새 참가자 '" + userId + "'의 모든 이전 메시지 읽음 처리 완료: " + allMessages.size() + "개의 메시지, 마지막 메시지 ID: " + lastMessageId);
                 } else {
                     // 메시지가 없는 경우, 마지막 읽은 메시지 ID를 0으로 설정 (기준점 설정)
                     chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), userId, 0L);
+                    System.out.println("새 참가자 '" + userId + "' 추가됨. 채팅방에 메시지 없음.");
                 }
             } else {
                 // 기존 참여자 정보 업데이트 (프로필이 변경되었을 수 있음)

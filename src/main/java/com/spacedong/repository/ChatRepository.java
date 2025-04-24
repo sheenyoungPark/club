@@ -205,5 +205,9 @@ public class ChatRepository {
         chatMapper.updateProfile(user_id, userProfile);
     }
 
+    public List<ChatMessageBean> getAllRoomMessages(Long roomId) {
+        return chatMapper.getAllRoomMessages(roomId);
+    }
+
 
 }

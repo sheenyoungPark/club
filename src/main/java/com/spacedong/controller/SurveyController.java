@@ -39,13 +39,11 @@ public class SurveyController {
         // 설문 시작 - 첫 번째 문제 표시
         session.setAttribute("currentQuestionNum", 1);
         session.setAttribute("memberAnswers", new HashMap<Integer, String>());
-
         QuestionBean question = surveyService.getQuestionByNum(1);
         model.addAttribute("question", question);
         model.addAttribute("title", surveyService.getSurveyTitle());
         model.addAttribute("story", surveyService.getSurveyStory());
         model.addAttribute("totalQuestions", surveyService.getTotalQuestions());
-
         return "survey/test";
     }
 
@@ -57,9 +55,7 @@ public class SurveyController {
             @RequestParam("answer") String answer,
             HttpSession session,
             HttpServletRequest request) {
-
         Map<String, Object> response = new HashMap<>();
-
         // 사용자 답변 저장
         Map<Integer, String> memberAnswers = (Map<Integer, String>) session.getAttribute("memberAnswers");
         if (memberAnswers == null) {
@@ -67,15 +63,12 @@ public class SurveyController {
         }
         memberAnswers.put(questionNum, answer);
         session.setAttribute("memberAnswers", memberAnswers);
-
         // 다음 문제 번호 계산
         int nextQuestionNum = questionNum + 1;
         session.setAttribute("currentQuestionNum", nextQuestionNum);
-
         if (surveyService.hasNextQuestion(nextQuestionNum)) {
             // 다음 문제가 있는 경우
             QuestionBean nextQuestion = surveyService.getQuestionByNum(nextQuestionNum);
-
             // JSON 응답에 다음 문제 정보 추가
             response.put("hasNext", true);
             response.put("nextQuestion", nextQuestion);
@@ -84,7 +77,6 @@ public class SurveyController {
             response.put("hasNext", false);
             response.put("redirectUrl", request.getContextPath() + "/survey/result");
         }
-
         return response;
     }
 

@@ -116,14 +116,17 @@ public class ClubMemberController {
                         if (messages != null && !messages.isEmpty()) {
                             // 이전 메시지 읽음 처리
                             chatService.markPreviousMessagesAsRead(chatRoom.getRoom_id(), memberId);
+                            // 마지막 메시지의 ID 가져오기
+                            Long lastMessageId = messages.get(messages.size() - 1).getMessageId();
+
+                            // 마지막 읽은 메시지 ID 업데이트
+                            chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), memberId, lastMessageId);
                         } else {
                             // 메시지가 없는 경우, 로그에 기록 (필요시)
+                            chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), memberId, 0L);
                             System.out.println("클럽 채팅방 " + chatRoom.getRoom_id() + "에 메시지가 없습니다. 읽음 처리가 필요하지 않습니다.");
                         }
 
-                        // 마지막 읽은 메시지 ID 업데이트 (메시지가 없더라도 현재 상태를 기록)
-                        // 이렇게 하면 새 메시지가 올 때만 unreadCount가 증가함
-                        chatRepository.updateLastReadMsgId((long)chatRoom.getRoom_id(), memberId, 0L);
                     }
                 }
             }

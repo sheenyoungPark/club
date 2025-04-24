@@ -43,25 +43,18 @@ public class LocationService {
 	private List<LocationBean> loadLocationData() {
 		List<LocationBean> locations = new ArrayList<>();
 		Gson gson = new Gson();
-
 		try {
-			// Spring Boot 정적 리소스 접근 방식
 			ClassPathResource resource = new ClassPathResource(RESOURCE_PATH);
-
 			if (!resource.exists()) {
 				logger.error("리소스 파일을 찾을 수 없습니다: {}", RESOURCE_PATH);
 				return locations;
 			}
-
 			logger.info("리소스 파일을 찾았습니다: {}", resource.getFilename());
 
 			try (InputStream inputStream = resource.getInputStream();
 				 Reader reader = new InputStreamReader(inputStream)) {
-
-				// JSON 파싱
 				Type type = new TypeToken<Map<String, List<String>>>() {}.getType();
 				Map<String, List<String>> regionMap = gson.fromJson(reader, type);
-
 				for (Map.Entry<String, List<String>> entry : regionMap.entrySet()) {
 					String city = entry.getKey();
 					for (String district : entry.getValue()) {
@@ -69,11 +62,9 @@ public class LocationService {
 					}
 				}
 			}
-
 		} catch (IOException e) {
 			logger.error("JSON 파일을 읽는 중 오류 발생: {}", e.getMessage(), e);
 		}
-
 		return locations;
 	}
 
